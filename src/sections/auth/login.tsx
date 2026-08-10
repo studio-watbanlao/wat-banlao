@@ -1,55 +1,56 @@
-"use client";
+'use client';
 
-import * as Yup from "yup";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
+import * as Yup from 'yup';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 
-import Link from "@mui/material/Link";
-import Alert from "@mui/material/Alert";
-import Stack from "@mui/material/Stack";
-import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
-import LoadingButton from "@mui/lab/LoadingButton";
-import InputAdornment from "@mui/material/InputAdornment";
+import Link from '@mui/material/Link';
+import Alert from '@mui/material/Alert';
+import Divider from '@mui/material/Divider';
+import Stack from '@mui/material/Stack';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import LoadingButton from '@mui/lab/LoadingButton';
+import InputAdornment from '@mui/material/InputAdornment';
 
-import { paths } from "src/routes/paths";
-import { RouterLink } from "src/routes/components";
-import { useRouter, useSearchParams } from "src/routes/hooks";
+import { paths } from 'src/routes/paths';
+import { RouterLink } from 'src/routes/components';
+import { useRouter, useSearchParams } from 'src/routes/hooks';
 
-import { useBoolean } from "src/hooks/use-boolean";
+import { useBoolean } from 'src/hooks/use-boolean';
 
-import { useAuthContext } from "src/auth/hooks";
-import { PATH_AFTER_LOGIN } from "src/config-global";
+import { useAuthContext } from 'src/auth/hooks';
+import { PATH_AFTER_LOGIN } from 'src/config-global';
+import { getErrorMessage } from 'src/utils/error-message';
 
-import Iconify from "src/components/iconify";
-import FormProvider, { RHFTextField } from "src/components/hook-form";
+import Iconify from 'src/components/iconify';
+import FormProvider, { RHFTextField } from 'src/components/hook-form';
+import GoogleSignInButton from './google-sign-in-button';
 
 // ----------------------------------------------------------------------
 
 const LoginView = () => {
-  const { login } = useAuthContext();
+  const { login, loginWithGoogle } = useAuthContext();
 
   const router = useRouter();
 
-  const [errorMsg, setErrorMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState('');
 
   const searchParams = useSearchParams();
 
-  const returnTo = searchParams.get("returnTo");
+  const returnTo = searchParams.get('returnTo');
 
   const password = useBoolean();
 
   const LoginSchema = Yup.object().shape({
-    email: Yup.string()
-      .required("Email is required")
-      .email("Email must be a valid email address"),
-    password: Yup.string().required("Password is required"),
+    email: Yup.string().required('Email is required').email('Email must be a valid email address'),
+    password: Yup.string().required('Password is required'),
   });
 
   const defaultValues = {
-    email: "admin@gmail.com",
-    password: "0987654321",
+    email: '',
+    password: '',
   };
 
   const methods = useForm({
@@ -65,17 +66,32 @@ const LoginView = () => {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      // await login?.(data.email, data.password);
-      router.push(PATH_AFTER_LOGIN);
+      const user = await login(data.email, data.password);
+      router.replace(
+        user?.role === 'user' ? '/auth/pending-approval' : returnTo || PATH_AFTER_LOGIN
+      );
     } catch (error) {
       console.error(error);
       reset();
-      setErrorMsg(typeof error === "string" ? error : error.message);
+      setErrorMsg(getErrorMessage(error, 'เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่'));
     }
   });
 
+  const handleGoogleCredential = async (credential: string) => {
+    try {
+      setErrorMsg('');
+      const user = await loginWithGoogle(credential);
+      router.replace(
+        user?.role === 'user' ? '/auth/pending-approval' : returnTo || PATH_AFTER_LOGIN
+      );
+    } catch (error) {
+      console.error(error);
+      setErrorMsg(getErrorMessage(error, 'เข้าสู่ระบบด้วย Google ไม่สำเร็จ'));
+    }
+  };
+
   return (
-    <Stack sx={{ minWidth: "320px" }}>
+    <Stack sx={{ minWidth: '320px' }}>
       <FormProvider methods={methods} onSubmit={onSubmit}>
         <Stack spacing={2} sx={{ mb: 5 }}>
           <Typography variant="h4">Sign in to Wat Ban lao</Typography>
@@ -89,30 +105,19 @@ const LoginView = () => {
           <RHFTextField
             name="password"
             label="Password"
-            type={password.value ? "text" : "password"}
+            type={password.value ? 'text' : 'password'}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton onClick={password.onToggle} edge="end">
-                    <Iconify
-                      icon={
-                        password.value
-                          ? "solar:eye-bold"
-                          : "solar:eye-closed-bold"
-                      }
-                    />
+                    <Iconify icon={password.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
                   </IconButton>
                 </InputAdornment>
               ),
             }}
           />
 
-          <Link
-            variant="body2"
-            color="inherit"
-            underline="always"
-            sx={{ alignSelf: "flex-end" }}
-          >
+          <Link variant="body2" color="inherit" underline="always" sx={{ alignSelf: 'flex-end' }}>
             Forgot password?
           </Link>
 
@@ -126,6 +131,10 @@ const LoginView = () => {
           >
             Login
           </LoadingButton>
+
+          <Divider>OR</Divider>
+
+          <GoogleSignInButton onCredential={handleGoogleCredential} />
         </Stack>
       </FormProvider>
     </Stack>

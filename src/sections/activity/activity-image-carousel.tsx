@@ -5,17 +5,22 @@ import { alpha, styled, useTheme } from '@mui/material/styles';
 import Carousel, { CarouselArrowIndex, useCarousel } from 'src/components/carousel';
 import Image from 'src/components/image';
 import { bgGradient } from 'src/theme/css';
+import type { ActivityGalleryImage, ActivityItem } from 'src/types/activity';
 
 const THUMB_SIZE = 64;
 
 type ActivityImageCarouselProps = {
-  data: any;
+  data: ActivityItem;
 };
 
 const ActivityImageCarousel = ({ data }: ActivityImageCarouselProps) => {
   const theme = useTheme();
 
-  const slides = JSON.parse(data?.images);
+  const slides: ActivityGalleryImage[] = Array.isArray(data.images)
+    ? data.images
+    : data.images
+      ? JSON.parse(data.images)
+      : [];
 
   const carouselLarge = useCarousel({
     rtl: false,
@@ -59,7 +64,7 @@ const ActivityImageCarousel = ({ data }: ActivityImageCarouselProps) => {
           asNavFor={carouselThumb.nav}
           ref={carouselLarge.carouselRef}
         >
-          {slides?.map((slide: any) => (
+          {slides.map((slide) => (
             <Image
               key={slide.src}
               alt={slide.src}
@@ -84,7 +89,7 @@ const ActivityImageCarousel = ({ data }: ActivityImageCarouselProps) => {
           asNavFor={carouselLarge.nav}
           ref={carouselThumb.carouselRef}
         >
-          {slides?.map((item: any, index: any) => (
+          {slides.map((item, index) => (
             <Box key={item.src} sx={{ px: 0.5 }}>
               <Avatar
                 key={item.src}

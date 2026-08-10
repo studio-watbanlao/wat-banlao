@@ -125,8 +125,7 @@ const StyledNavItem = styled(Stack, {
   const deepSubItem = Number(depth) > 2;
 
   const noWrapStyles = {
-    width: '100%',
-    maxWidth: '100%',
+    minWidth: 0,
     display: 'block',
     overflow: 'hidden',
     whiteSpace: 'nowrap',
@@ -148,6 +147,7 @@ const StyledNavItem = styled(Stack, {
     },
     label: {
       ...noWrapStyles,
+      flex: 1,
       ...theme.typography.body2,
       textTransform: 'capitalize',
       fontWeight: theme.typography[active ? 'fontWeightSemiBold' : 'fontWeightMedium'],
@@ -168,6 +168,11 @@ const StyledNavItem = styled(Stack, {
   } as const;
 
   return {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+
     // Root item
     ...(!subItem && {
       ...baseStyles.item,

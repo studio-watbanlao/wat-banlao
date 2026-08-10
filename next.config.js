@@ -3,6 +3,9 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 });
 
 module.exports = withBundleAnalyzer({
+  // Keep development artifacts separate from production builds. Running
+  // `next build` while the dev server is open must not overwrite its chunks.
+  distDir: process.env.NODE_ENV === 'development' ? '.next-dev' : '.next',
   output: 'standalone',
   reactStrictMode: true,
   trailingSlash: true,

@@ -1,7 +1,7 @@
-# 🔧 แก้ปัญหา Standalone Docker รูปไม่มา - สมบูรณ์แล้ว! ✅
+# 🔧 แก้ปัญหา Standalone รูปไม่มา - สมบูรณ์แล้ว! ✅
 
 ## ปัญหาที่แก้ไข
-Next.js standalone mode ไม่ copy public assets และ static files โดยอัตโนมัติ ทำให้รูปภาพ, favicon, fonts, และ assets อื่นๆ ไม่แสดงใน Docker container
+Next.js standalone mode ไม่ copy public assets และ static files โดยอัตโนมัติ ทำให้รูปภาพ, favicon, fonts, และ assets อื่นๆ ไม่แสดง
 
 ## วิธีแก้ไข
 
@@ -21,30 +21,12 @@ Next.js standalone mode ไม่ copy public assets และ static files โ�
 - ไฟล์: `custom-server.js` 
 - รองรับการ serve static files ได้ดีขึ้น
 
-### 5. ปรับปรุง Dockerfile
-- ลดการ copy ซ้ำซ้อน
-- ใช้ asset copy script แทน
-- เพิ่ม debug output
-
 ## การใช้งาน
 
 ### Build และ Test Local
 ```bash
 npm run build                 # Build พร้อม copy assets
 ./test-standalone.sh         # ทดสอบ standalone
-```
-
-### Docker Commands
-```bash
-npm run docker:build        # Build Docker image
-npm run docker:run          # Run container
-npm run docker:debug        # Debug assets ใน container
-```
-
-### Docker Compose
-```bash
-npm run docker:prod         # Production mode
-npm run docker:dev          # Development mode
 ```
 
 ## Assets ที่ถูก Copy
@@ -68,11 +50,6 @@ npm run docker:dev          # Development mode
 
 ## Debug และ Troubleshooting
 
-### ตรวจสอบ Assets ใน Container
-```bash
-npm run docker:debug
-```
-
 ### ตรวจสอบ Local Build
 ```bash
 ./test-standalone.sh
@@ -90,17 +67,8 @@ find .next/standalone/public -type f | head -20
 3. ✅ `src/middleware.ts` - Static asset middleware
 4. ✅ `package.json` - Updated build script
 5. ✅ `next.config.js` - Standalone optimizations
-6. ✅ `Dockerfile` - Simplified asset handling
-7. ✅ `test-standalone.sh` - Local testing script
-8. ✅ `debug-assets.sh` - Docker debug script
+6. ✅ `test-standalone.sh` - Local testing script
 
 ## เรียบร้อยแล้ว! 🎉
 
-ตอนนี้ Docker standalone สามารถแสดงรูปภาพและ assets ทั้งหมดได้ถูกต้องแล้ว
-
-สำหรับการใช้งาน:
-```bash
-npm run docker:prod
-```
-
-เข้าใช้งานที่: http://localhost:8082
+ตอนนี้ standalone build สามารถแสดงรูปภาพและ assets ทั้งหมดได้ถูกต้องแล้ว

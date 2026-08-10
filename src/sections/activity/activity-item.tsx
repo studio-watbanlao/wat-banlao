@@ -17,23 +17,13 @@ import { fDate } from 'src/utils/format-time';
 import Iconify from 'src/components/iconify';
 import Image from 'src/components/image';
 import TextMaxLine from 'src/components/text-max-line';
+import type { ActivityItem as ActivityItemType, ActivityType } from 'src/types/activity';
 
 // --------------------
 // ✅ TYPE SAFE
 // --------------------
-type ActivityType = 'temple' | 'community' | 'school';
-
-type Activity = {
-  id: string;
-  title: string;
-  imageUrl: string;
-  view: number;
-  createdAt: string;
-  type?: ActivityType;
-};
-
 type ActivityItemProps = {
-  data: Activity;
+  data: ActivityItemType;
   index?: number;
 };
 

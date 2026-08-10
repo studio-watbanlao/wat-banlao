@@ -4,7 +4,7 @@ import ReactPlayer from 'react-player';
 
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import Iconify from 'src/components/iconify';
-import { usePostFastival } from 'src/queries/fastival/mutation';
+import { usePostArchitecture } from 'src/queries/architecture';
 import { fShortenNumber } from 'src/utils/format-number';
 import { fDateTime } from 'src/utils/format-time';
 
@@ -25,17 +25,17 @@ const ArchitectureDetailsView = () => {
   const theme = useTheme();
 
   const { data } = useGetArchitectureById(id);
-  const { mutate } = usePostFastival();
+  const { mutate } = usePostArchitecture();
 
   useEffect(() => {
     mutate(id);
   }, [id]);
 
-  const urlShare = `${CONFIG.websiteUrl}/${paths.fastival.root}/${data?.id}`;
+  const urlShare = `${CONFIG.websiteUrl}${paths.banlao.architecture.root}/${data?.id}`;
 
   return (
     <>
-      <MataData data={data} url={urlShare} />
+      <MataData data={data ?? undefined} url={urlShare} />
       <CustomBreadcrumbs
         links={[
           {
@@ -72,7 +72,7 @@ const ArchitectureDetailsView = () => {
                   {data?.createdDate && fDateTime(data?.createdDate, 'dd/MM/yyyy hh:mm:ss')}
                 </Typography>
                 <Stack spacing={2} direction="row" alignItems="center">
-                  <ShareComponent urlShare={urlShare} title={data?.title} />
+                  {data?.title && <ShareComponent urlShare={urlShare} title={data.title} />}
 
                   <Stack direction="row" alignItems="center">
                     <Iconify
@@ -81,7 +81,7 @@ const ArchitectureDetailsView = () => {
                       sx={{ mr: 0.5, color: theme.palette.primary.main }}
                     />
                     <Typography variant="body1" color="primary">
-                      {fShortenNumber(data?.view)}
+                      {fShortenNumber(data?.view ?? 0)}
                     </Typography>
                   </Stack>
                 </Stack>

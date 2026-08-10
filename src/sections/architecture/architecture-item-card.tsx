@@ -8,9 +8,10 @@ import Iconify from 'src/components/iconify';
 import Image from 'src/components/image';
 import TextMaxLine from 'src/components/text-max-line';
 import { paths } from 'src/routes/paths';
+import type { ArchitectureItem } from 'src/types/architecture';
 
 type ArchitectureItemCardProps = {
-  data: any;
+  data: ArchitectureItem;
   index?: number;
 };
 

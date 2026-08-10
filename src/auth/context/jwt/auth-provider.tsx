@@ -5,7 +5,6 @@ import { useMemo, useEffect, useReducer, useCallback } from 'react';
 import axios, { endpoints } from 'src/utils/axios';
 
 import { AuthContext } from './auth-context';
-import { setSession, isValidToken } from './utils';
 import { AuthUserType, ActionMapType, AuthStateType } from '../../types';
 
 // ----------------------------------------------------------------------
@@ -75,8 +74,6 @@ const reducer = (state: AuthStateType, action: ActionsType) => {
 
 // ----------------------------------------------------------------------
 
-const STORAGE_KEY = 'accessToken';
-
 type Props = {
   children: React.ReactNode;
 };
@@ -86,34 +83,12 @@ export function AuthProvider({ children }: Props) {
 
   const initialize = useCallback(async () => {
     try {
-      const accessToken = sessionStorage.getItem(STORAGE_KEY);
-
-      if (accessToken && isValidToken(accessToken)) {
-        setSession(accessToken);
-
-        const res = await axios.get(endpoints.auth.me);
-
-        const { user } = res.data;
-
-        dispatch({
-          type: Types.INITIAL,
-          payload: {
-            user: {
-              ...user,
-              accessToken,
-            },
-          },
-        });
-      } else {
-        dispatch({
-          type: Types.INITIAL,
-          payload: {
-            user: null,
-          },
-        });
-      }
-    } catch (error) {
-      console.error(error);
+      const res = await axios.get(endpoints.auth.me);
+      dispatch({
+        type: Types.INITIAL,
+        payload: { user: res.data.user },
+      });
+    } catch {
       dispatch({
         type: Types.INITIAL,
         payload: {
@@ -136,19 +111,22 @@ export function AuthProvider({ children }: Props) {
 
     const res = await axios.post(endpoints.auth.login, data);
 
-    const { accessToken, user } = res.data;
-
-    setSession(accessToken);
+    const { user } = res.data;
 
     dispatch({
       type: Types.LOGIN,
-      payload: {
-        user: {
-          ...user,
-          accessToken,
-        },
-      },
+      payload: { user },
     });
+
+    return user;
+  }, []);
+
+  const loginWithGoogle = useCallback(async (credential: string) => {
+    const res = await axios.post(endpoints.auth.googleToken, { credential });
+    const { user } = res.data;
+
+    dispatch({ type: Types.LOGIN, payload: { user } });
+    return user;
   }, []);
 
   // REGISTER
@@ -163,17 +141,12 @@ export function AuthProvider({ children }: Props) {
 
       const res = await axios.post(endpoints.auth.register, data);
 
-      const { accessToken, user } = res.data;
-
-      sessionStorage.setItem(STORAGE_KEY, accessToken);
+      const { user } = res.data;
 
       dispatch({
         type: Types.REGISTER,
         payload: {
-          user: {
-            ...user,
-            accessToken,
-          },
+          user,
         },
       });
     },
@@ -182,7 +155,7 @@ export function AuthProvider({ children }: Props) {
 
   // LOGOUT
   const logout = useCallback(async () => {
-    setSession(null);
+    await axios.post(endpoints.auth.logout);
     dispatch({
       type: Types.LOGOUT,
     });
@@ -203,10 +176,11 @@ export function AuthProvider({ children }: Props) {
       unauthenticated: status === 'unauthenticated',
       //
       login,
+      loginWithGoogle,
       register,
       logout,
     }),
-    [login, logout, register, state.user, status]
+    [login, loginWithGoogle, logout, register, state.user, status]
   );
 
   return <AuthContext.Provider value={memoizedValue}>{children}</AuthContext.Provider>;

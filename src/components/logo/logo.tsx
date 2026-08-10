@@ -6,26 +6,32 @@ import { RouterLink } from 'src/routes/components';
 
 export type LogoProps = BoxProps & {
   disabledLink?: boolean;
+  href?: string;
 };
 
-const Logo = forwardRef<HTMLDivElement, LogoProps>(({ disabledLink = false, sx }) => {
-  const logo = (
-    <Box
-      component="img"
-      src="/logo/logo.png"
-      sx={{ width: 40, height: 40, cursor: 'pointer', ...sx }}
-    />
-  );
+const Logo = forwardRef<HTMLImageElement, LogoProps>(
+  ({ disabledLink = false, href = '/', sx, ...other }, ref) => {
+    const logo = (
+      <Box
+        ref={ref}
+        component="img"
+        src="/logo/logo.png"
+        alt="Wat Ban Lao"
+        sx={{ width: 40, height: 40, cursor: 'pointer', ...sx }}
+        {...other}
+      />
+    );
 
-  if (disabledLink) {
-    return logo;
+    if (disabledLink) {
+      return logo;
+    }
+
+    return (
+      <Link component={RouterLink} href={href} sx={{ display: 'contents' }}>
+        {logo}
+      </Link>
+    );
   }
-
-  return (
-    <Link component={RouterLink} href="/" sx={{ display: 'contents' }}>
-      {logo}
-    </Link>
-  );
-});
+);
 
 export default Logo;

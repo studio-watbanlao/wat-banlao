@@ -6,7 +6,6 @@
     "dev": "next dev -p 3300",
     "start": "next start -p 3300",
     "build": "next build",
-    "db:import": "node scripts/import-google-sheets-to-supabase.mjs",
     "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
     "lint:fix": "eslint --fix \"src/**/*.{js,jsx,ts,tsx}\"",
     "prettier": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
@@ -17,14 +16,7 @@
     "dev:ts": "yarn dev & yarn ts:watch",
     "ts": "tsc --noEmit --incremental",
     "ts:watch": "yarn ts --watch",
-    "build:standalone": "next build && mkdir -p .next/standalone/public/_next && cp -r .next/static .next/standalone/public/_next/",
-    "docker:build": "docker build -t webkrub .",
-    "docker:run": "docker run -p 8082:3000 webkrub",
-    "docker:dev": "docker-compose -f docker-compose.dev.yml up --build",
-    "docker:prod": "docker-compose up --build",
-    "docker:stop": "docker-compose down",
-    "docker:clean": "docker system prune -f && docker volume prune -f",
-    "docker:debug": "chmod +x debug-assets.sh && ./debug-assets.sh"
+    "build:standalone": "next build && mkdir -p .next/standalone/public/_next && cp -r .next/static .next/standalone/public/_next/"
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.2.1",

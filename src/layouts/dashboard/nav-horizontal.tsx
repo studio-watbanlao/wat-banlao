@@ -1,24 +1,24 @@
-import { memo } from "react";
+import { memo } from 'react';
 
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import { useTheme } from "@mui/material/styles";
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import { useTheme } from '@mui/material/styles';
 
-import { useMockedUser } from "src/hooks/use-mocked-user";
+import { useAuthContext } from 'src/auth/hooks';
 
-import { bgBlur } from "src/theme/css";
+import { bgBlur } from 'src/theme/css';
 
-import Scrollbar from "src/components/scrollbar";
-import { NavSectionHorizontal } from "src/components/nav-section";
+import Scrollbar from 'src/components/scrollbar';
+import { NavSectionHorizontal } from 'src/components/nav-section';
 
-import { HEADER } from "../config-layout";
-import { useNavData } from "./config-navigation";
-import HeaderShadow from "../common/header-shadow";
+import { HEADER } from '../config-layout';
+import { useNavData } from './config-navigation';
+import HeaderShadow from '../common/header-shadow';
 
 const NavHorizontal = () => {
   const theme = useTheme();
 
-  const { user } = useMockedUser();
+  const { user } = useAuthContext();
 
   const navData = useNavData();
 
@@ -38,8 +38,8 @@ const NavHorizontal = () => {
       >
         <Scrollbar
           sx={{
-            "& .simplebar-content": {
-              display: "flex",
+            '& .simplebar-content': {
+              display: 'flex',
             },
           }}
         >

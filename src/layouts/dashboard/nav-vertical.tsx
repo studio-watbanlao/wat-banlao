@@ -1,22 +1,23 @@
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
-import Box from "@mui/material/Box";
-import Stack from "@mui/material/Stack";
-import Drawer from "@mui/material/Drawer";
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
+import Drawer from '@mui/material/Drawer';
 
-import { usePathname } from "src/routes/hooks";
+import { usePathname } from 'src/routes/hooks';
 
-import { useResponsive } from "src/hooks/use-responsive";
-import { useMockedUser } from "src/hooks/use-mocked-user";
+import { useResponsive } from 'src/hooks/use-responsive';
+import { useAuthContext } from 'src/auth/hooks';
+import { paths } from 'src/routes/paths';
 
-import Logo from "src/components/logo";
-import Scrollbar from "src/components/scrollbar";
-import { NavSectionVertical } from "src/components/nav-section";
+import Logo from 'src/components/logo';
+import Scrollbar from 'src/components/scrollbar';
+import { NavSectionVertical } from 'src/components/nav-section';
 
-import { NAV } from "../config-layout";
-import NavUpgrade from "../common/nav-upgrade";
-import { useNavData } from "./config-navigation";
-import NavToggleButton from "../common/nav-toggle-button";
+import { NAV } from '../config-layout';
+import NavUpgrade from '../common/nav-upgrade';
+import { useNavData } from './config-navigation';
+import NavToggleButton from '../common/nav-toggle-button';
 
 type NavVerticalProps = {
   openNav: boolean;
@@ -24,11 +25,11 @@ type NavVerticalProps = {
 };
 
 const NavVertical = ({ openNav, onCloseNav }: NavVerticalProps) => {
-  const { user } = useMockedUser();
+  const { user } = useAuthContext();
 
   const pathname = usePathname();
 
-  const lgUp = useResponsive("up", "lg");
+  const lgUp = useResponsive('up', 'lg');
 
   const navData = useNavData();
 
@@ -43,14 +44,14 @@ const NavVertical = ({ openNav, onCloseNav }: NavVerticalProps) => {
     <Scrollbar
       sx={{
         height: 1,
-        "& .simplebar-content": {
+        '& .simplebar-content': {
           height: 1,
-          display: "flex",
-          flexDirection: "column",
+          display: 'flex',
+          flexDirection: 'column',
         },
       }}
     >
-      <Logo sx={{ mt: 3, ml: 4, mb: 1 }} />
+      <Logo href={paths.dashboard.root} sx={{ mt: 3, ml: 4, mb: 1 }} />
 
       <NavSectionVertical
         data={navData}
@@ -76,7 +77,7 @@ const NavVertical = ({ openNav, onCloseNav }: NavVerticalProps) => {
         <Stack
           sx={{
             height: 1,
-            position: "fixed",
+            position: 'fixed',
             width: NAV.W_VERTICAL,
             borderRight: (theme) => `dashed 1px ${theme.palette.divider}`,
           }}

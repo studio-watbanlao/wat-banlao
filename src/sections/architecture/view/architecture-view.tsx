@@ -31,7 +31,7 @@ const ArchitectureView = () => {
       {!isLoading && !isEmpty && (
         <Stack>
           <Grid container spacing={2}>
-            {data.map((item: any) => (
+            {data.map((item) => (
               <Grid item key={item.id} xs={12} sm={6} md={4}>
                 <ArchitectureItemCard data={item} />
               </Grid>

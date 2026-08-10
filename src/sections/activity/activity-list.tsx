@@ -30,7 +30,7 @@ const ActivityList = () => {
 
       {!isLoading && !isEmpty && (
         <Grid container spacing={3}>
-          {data.map((item: any) => (
+          {data.map((item) => (
             <Grid item key={item.id} xs={12} sm={6} md={4}>
               <ActivityItem data={item} />
             </Grid>

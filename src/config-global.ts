@@ -35,17 +35,7 @@ export const PATH_AFTER_LOGIN = paths.dashboard.root; // as '/dashboard'
 
 //
 export const CONFIG = {
-  image: 'https://lh3.googleusercontent.com/d/',
   websiteUrl: 'https://www.watbanlao.org',
-  activity: { sheet_id: '1FHH9HvMVDTvj7uSTs3RArzmKFA7TZKzHRI5sPG8Fzqs', sheet_name: 'activity' },
-  banner: { sheet_id: '1FHH9HvMVDTvj7uSTs3RArzmKFA7TZKzHRI5sPG8Fzqs', sheet_name: 'banner' },
-  blog: { sheet_id: '1FHH9HvMVDTvj7uSTs3RArzmKFA7TZKzHRI5sPG8Fzqs', sheet_name: 'blog' },
-  fastival: { sheet_id: '1FHH9HvMVDTvj7uSTs3RArzmKFA7TZKzHRI5sPG8Fzqs', sheet_name: 'fastival' },
-  sacred: { sheet_id: '1FHH9HvMVDTvj7uSTs3RArzmKFA7TZKzHRI5sPG8Fzqs', sheet_name: 'sacred' },
-  architecture: {
-    sheet_id: '1FHH9HvMVDTvj7uSTs3RArzmKFA7TZKzHRI5sPG8Fzqs',
-    sheet_name: 'architecture',
-  },
   emailjs: {
     puclicKey: 'IliaKH3QDLgw_-l30',
     serviceKey: 'service_kw96412',

@@ -1,8 +1,11 @@
+import { useEffect } from 'react';
 import Box from '@mui/material/Box';
 
+import { useAuthContext } from 'src/auth/hooks';
 import { SplashScreen } from 'src/components/loading-screen';
 import useRouteChangeLoader from 'src/hooks/use-route-change-loader';
-import { usePathname } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
+import { useRouter } from 'src/routes/hooks';
 import Footer from './footer';
 import Header from './header';
 
@@ -11,9 +14,15 @@ type MainLayoutProps = {
 };
 
 const MainLayout = ({ children }: MainLayoutProps) => {
-  const pathname = usePathname();
+  const router = useRouter();
+  const { loading: authLoading, user } = useAuthContext();
   const loading = useRouteChangeLoader();
-  const homePage = pathname === '/';
+
+  useEffect(() => {
+    if (['admin', 'super_admin'].includes(user?.role)) router.replace(paths.dashboard.root);
+  }, [router, user?.role]);
+
+  if (authLoading || ['admin', 'super_admin'].includes(user?.role)) return <SplashScreen />;
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: 1 }}>

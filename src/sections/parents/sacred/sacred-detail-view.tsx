@@ -25,7 +25,7 @@ const SacredDetailsView = () => {
 
   return (
     <>
-      <MataData data={data} />
+      <MataData data={data ?? undefined} />
       <CustomBreadcrumbs
         links={[
           {
@@ -73,7 +73,7 @@ const SacredDetailsView = () => {
                       sx={{ mr: 0.5, color: theme.palette.primary.main }}
                     />
                     <Typography variant="body1" color="primary">
-                      {fShortenNumber(data?.view)}
+                      {fShortenNumber(data?.view ?? 0)}
                     </Typography>
                   </Stack>
                 </Stack>
@@ -82,7 +82,7 @@ const SacredDetailsView = () => {
               <Box
                 component={'div'}
                 dangerouslySetInnerHTML={{
-                  __html: data?.content,
+                  __html: data?.content || '',
                 }}
               />
             </Stack>

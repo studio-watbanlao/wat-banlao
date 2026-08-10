@@ -82,8 +82,8 @@ export const paths = {
       forgotPassword: `${ROOTS.AUTH}/amplify/forgot-password`,
     },
     jwt: {
-      login: `${ROOTS.AUTH}/jwt/login`,
-      register: `${ROOTS.AUTH}/jwt/register`,
+      login: `${ROOTS.AUTH}/login`,
+      register: `${ROOTS.AUTH}/register`,
     },
     firebase: {
       login: `${ROOTS.AUTH}/firebase/login`,
@@ -115,6 +115,10 @@ export const paths = {
   dashboard: {
     root: ROOTS.DASHBOARD,
     activity: `${ROOTS.DASHBOARD}/activity`,
+    architectures: `${ROOTS.DASHBOARD}/architectures`,
+    banners: `${ROOTS.DASHBOARD}/banners`,
+    festivals: `${ROOTS.DASHBOARD}/festivals`,
     manageSacred: `${ROOTS.DASHBOARD}/manage-sacred`,
+    users: `${ROOTS.DASHBOARD}/users`,
   },
 };

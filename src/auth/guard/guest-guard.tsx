@@ -28,17 +28,19 @@ function Container({ children }: Props) {
 
   const returnTo = searchParams.get('returnTo') || paths.dashboard.root;
 
-  const { authenticated } = useAuthContext();
+  const { authenticated, user } = useAuthContext();
 
   const check = useCallback(() => {
     if (authenticated) {
-      router.replace(returnTo);
+      router.replace(user?.role === 'user' ? '/auth/pending-approval' : returnTo);
     }
-  }, [authenticated, returnTo, router]);
+  }, [authenticated, returnTo, router, user?.role]);
 
   useEffect(() => {
     check();
   }, [check]);
+
+  if (authenticated) return null;
 
   return <>{children}</>;
 }

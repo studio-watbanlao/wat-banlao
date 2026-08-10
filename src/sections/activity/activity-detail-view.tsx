@@ -31,7 +31,7 @@ const ActivityDetailsView = () => {
 
   return (
     <>
-      <MataData data={data} />
+      <MataData data={data ?? undefined} />
       <CustomBreadcrumbs
         links={[
           {
@@ -76,7 +76,7 @@ const ActivityDetailsView = () => {
                       sx={{ mr: 0.5, color: theme.palette.primary.main }}
                     />
                     <Typography variant="body1" color="primary">
-                      {fShortenNumber(data?.view)}
+                      {fShortenNumber(data?.view ?? 0)}
                     </Typography>
                   </Stack>
 
@@ -100,7 +100,7 @@ const ActivityDetailsView = () => {
               <Box
                 component={'div'}
                 dangerouslySetInnerHTML={{
-                  __html: data?.content,
+                  __html: data?.content || '',
                 }}
               />
             </Stack>

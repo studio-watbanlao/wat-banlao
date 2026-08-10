@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 
 import { HOST_API } from 'src/config-global';
+import { ApiClientError, getErrorMessage, getStatusErrorMessage } from './error-message';
 
 // ----------------------------------------------------------------------
 
@@ -8,7 +9,17 @@ const axiosInstance = axios.create({ baseURL: HOST_API });
 
 axiosInstance.interceptors.response.use(
   (res) => res,
-  (error) => Promise.reject((error.response && error.response.data) || 'Something went wrong')
+  (error) => {
+    const status = error.response?.status as number | undefined;
+    const responseData = error.response?.data;
+    const contentType = String(error.response?.headers?.['content-type'] || '');
+    const isHtmlResponse = contentType.includes('text/html');
+    const message = isHtmlResponse
+      ? getStatusErrorMessage(status)
+      : getErrorMessage(responseData || error, undefined, status);
+
+    return Promise.reject(new ApiClientError(message, status));
+  }
 );
 
 export default axiosInstance;
@@ -32,6 +43,8 @@ export const endpoints = {
   auth: {
     me: '/api/auth/me',
     login: '/api/auth/login',
+    googleToken: '/api/auth/google-token',
+    logout: '/api/auth/logout',
     register: '/api/auth/register',
   },
   mail: {

@@ -1,33 +1,21 @@
-import { useCallback } from 'react';
-
 import Box from '@mui/material/Box';
-import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
-import { alpha, SxProps, Theme, useTheme } from '@mui/material/styles';
-
-import { bgGradient } from 'src/theme/css';
+import { SxProps, Theme } from '@mui/material/styles';
+import NextImage, { ImageLoaderProps } from 'next/image';
 
 import Carousel, { CarouselDots, useCarousel } from 'src/components/carousel';
-import CustomPopover, { usePopover } from 'src/components/custom-popover';
-import Iconify from 'src/components/iconify';
-
-type ItemProps = {
-  id: string;
-  title: string;
-  imageUrl: string;
-};
+import type { BannerItem } from 'src/types/banner';
 
 type Props = {
-  list: ItemProps[];
+  list: BannerItem[];
   sx?: SxProps<Theme>;
 };
 
-const HomeBannerList = ({ list, sx }: Props) => {
-  const theme = useTheme();
+const passthroughLoader = ({ src }: ImageLoaderProps) => src;
 
+const HomeBannerList = ({ list, sx }: Props) => {
   const carousel = useCarousel({
     fade: true,
-    speed: 100,
+    speed: 500,
     autoplay: true,
     ...CarouselDots({
       sx: {
@@ -39,14 +27,14 @@ const HomeBannerList = ({ list, sx }: Props) => {
     }),
   });
 
+  if (!list.length) return null;
+
   return (
     <Box
       sx={{
         position: 'relative',
         color: 'common.white',
-        '.slick-slider, .slick-list, .slick-track, .slick-slide > div': {
-          height: 1,
-        },
+        '.slick-slider, .slick-list, .slick-track, .slick-slide > div': { height: 1 },
         '&:before, &:after': {
           left: 0,
           mx: 2.5,
@@ -60,106 +48,61 @@ const HomeBannerList = ({ list, sx }: Props) => {
           bgcolor: 'grey.400',
           position: 'absolute',
         },
-        '&:after': {
-          mx: 1,
-          bottom: -8,
-          opacity: 0.24,
-        },
+        '&:after': { mx: 1, bottom: -8, opacity: 0.24 },
         ...sx,
       }}
     >
       <Carousel {...carousel.carouselSettings}>
-        {list.map((card) => (
-          <Stack
-            sx={{
-              ...bgGradient({
-                color: alpha(theme.palette.grey[900], 0),
-                imgUrl: card.imageUrl,
-              }),
-              height: { xs: 200, md: 550 },
-              borderRadius: 2,
-            }}
-          >
-            <CardItem key={card.id} card={card} />
-          </Stack>
-        ))}
+        {list.map((banner, index) => {
+          const desktopImage = banner.desktopImageUrl || banner.imageUrl;
+          const mobileImage = banner.mobileImageUrl || desktopImage;
+
+          if (!desktopImage || !mobileImage) return null;
+
+          return (
+            <Box
+              key={banner.id}
+              component={banner.linkUrl ? 'a' : 'div'}
+              href={banner.linkUrl || undefined}
+              aria-label={banner.linkUrl ? banner.title : undefined}
+              sx={{
+                display: 'block',
+                position: 'relative',
+                overflow: 'hidden',
+                height: { xs: 280, md: 550 },
+                borderRadius: 2,
+                backgroundColor: 'grey.200',
+                textDecoration: 'none',
+              }}
+            >
+              <Box sx={{ position: 'absolute', inset: 0, display: { xs: 'block', md: 'none' } }}>
+                <NextImage
+                  loader={passthroughLoader}
+                  src={mobileImage}
+                  alt={banner.title}
+                  fill
+                  priority={index === 0}
+                  sizes="100vw"
+                  style={{ objectFit: 'cover' }}
+                />
+              </Box>
+              <Box sx={{ position: 'absolute', inset: 0, display: { xs: 'none', md: 'block' } }}>
+                <NextImage
+                  loader={passthroughLoader}
+                  src={desktopImage}
+                  alt={banner.title}
+                  fill
+                  priority={index === 0}
+                  sizes="(max-width: 1200px) 100vw, 1200px"
+                  style={{ objectFit: 'cover' }}
+                />
+              </Box>
+            </Box>
+          );
+        })}
       </Carousel>
     </Box>
   );
 };
 
 export default HomeBannerList;
-
-type CardItemProps = {
-  card: ItemProps;
-};
-
-function CardItem({ card }: CardItemProps) {
-  const { id } = card;
-
-  const popover = usePopover();
-
-  const handleDelete = useCallback(() => {
-    popover.onClose();
-    console.info('DELETE', id);
-  }, [id, popover]);
-
-  const handleEdit = useCallback(() => {
-    popover.onClose();
-    console.info('EDIT', id);
-  }, [id, popover]);
-
-  return (
-    <>
-      <Stack justifyContent="space-between" sx={{ height: 1, p: 3 }}>
-        {/* <IconButton
-          color="inherit"
-          onClick={popover.onOpen}
-          sx={{
-            top: 8,
-            right: 8,
-            zIndex: 9,
-            opacity: 0.48,
-            position: 'absolute',
-            ...(popover.open && {
-              opacity: 1,
-            }),
-          }}
-        >
-          <Iconify icon="eva:more-vertical-fill" />
-        </IconButton> */}
-
-        {/* <div>
-          <Typography sx={{ mb: 2, typography: 'subtitle2', opacity: 0.48 }}>HASTAG</Typography>
-
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <Typography sx={{ typography: 'h3' }}>TITLE</Typography>
-          </Stack>
-        </div> */}
-
-        {/* <Stack direction="row" spacing={5}>
-          <Stack spacing={1}>
-            <Typography sx={{ typography: 'caption', opacity: 0.48 }}>View</Typography>
-            <Typography sx={{ typography: 'subtitle1' }}>20K</Typography>
-          </Stack>
-          <Stack spacing={1}>
-            <Typography sx={{ typography: 'caption', opacity: 0.48 }}>Valid Dates</Typography>
-            <Typography sx={{ typography: 'subtitle1' }}>ss</Typography>
-          </Stack>
-        </Stack> */}
-      </Stack>
-
-      <CustomPopover open={popover.open} onClose={popover.onClose} sx={{ width: 140 }}>
-        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-          <Iconify icon="solar:trash-bin-trash-bold" />
-          Delete
-        </MenuItem>
-
-        <MenuItem onClick={handleEdit}>
-          <Iconify icon="solar:pen-bold" />
-          Edit
-        </MenuItem>
-      </CustomPopover>
-    </>
-  );
-}

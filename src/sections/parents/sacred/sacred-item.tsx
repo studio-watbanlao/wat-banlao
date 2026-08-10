@@ -10,9 +10,10 @@ import { Box, Button, Stack } from '@mui/material';
 import Iconify from 'src/components/iconify';
 import Image from 'src/components/image';
 import { TruncatedTypography } from 'src/components/typography';
+import type { SacredItem as SacredItemType } from 'src/types/sacred';
 
 type SacredItemProps = {
-  data: any;
+  data: SacredItemType;
   hide?: boolean;
 };
 

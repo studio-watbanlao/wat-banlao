@@ -5,17 +5,22 @@ import { alpha, styled, useTheme } from '@mui/material/styles';
 import Carousel, { CarouselArrowIndex, useCarousel } from 'src/components/carousel';
 import Image from 'src/components/image';
 import { bgGradient } from 'src/theme/css';
+import type { FestivalGalleryImage, FestivalItem } from 'src/types/festival';
 
 const THUMB_SIZE = 64;
 
 type FastivalImageCarouselProps = {
-  data: any;
+  data: FestivalItem;
 };
 
 const FastivalImageCarousel = ({ data }: FastivalImageCarouselProps) => {
   const theme = useTheme();
 
-  const slides = JSON.parse(data?.images);
+  const slides: FestivalGalleryImage[] = Array.isArray(data.images)
+    ? data.images
+    : data.images
+      ? JSON.parse(data.images)
+      : [];
 
   const carouselLarge = useCarousel({
     rtl: false,
@@ -59,7 +64,7 @@ const FastivalImageCarousel = ({ data }: FastivalImageCarouselProps) => {
           asNavFor={carouselThumb.nav}
           ref={carouselLarge.carouselRef}
         >
-          {slides?.map((slide: any) => (
+          {slides.map((slide) => (
             <Image
               key={slide.src}
               alt={slide.src}
@@ -84,7 +89,7 @@ const FastivalImageCarousel = ({ data }: FastivalImageCarouselProps) => {
           asNavFor={carouselLarge.nav}
           ref={carouselThumb.carouselRef}
         >
-          {slides?.map((item: any, index: any) => (
+          {slides.map((item, index) => (
             <Box key={item.src} sx={{ px: 0.5 }}>
               <Avatar
                 key={item.src}

@@ -3,13 +3,14 @@ import MataData from 'src/components/mata-data/mata-data';
 import MainLayout from 'src/layouts/main';
 import { useGetExample } from 'src/queries/example';
 import { HomeView } from 'src/sections/home/view';
+import { getErrorMessage } from 'src/utils/error-message';
 
 const HomePage = () => {
   const { data, error, isLoading } = useGetExample();
 
   if (isLoading) return <SplashScreen />;
 
-  if (error instanceof Error) return <div>Error: {error.message}</div>;
+  if (error) return <div>{getErrorMessage(error, 'ไม่สามารถโหลดหน้าเว็บไซต์ได้')}</div>;
 
   return (
     <MainLayout>

@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { getSafeApiError } from 'src/lib/api-error';
 
 import {
   CONTENT_RESOURCES,
@@ -44,10 +45,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.setHeader('Allow', ['GET', 'POST']);
     return res.status(405).json({ message: 'Method not allowed.' });
   } catch (error) {
-    const status = error instanceof SupabaseRequestError ? error.status : 500;
-    const message = error instanceof Error ? error.message : 'Unexpected server error.';
+    const { status, message } = getSafeApiError(error, 'Unexpected server error.');
 
     console.error(`[content-api] ${resource}`, error);
-    return res.status(status >= 400 && status < 600 ? status : 500).json({ message });
+    return res.status(status).json({ message });
   }
 }

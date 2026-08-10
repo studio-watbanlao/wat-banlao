@@ -5,17 +5,22 @@ import { alpha, styled, useTheme } from '@mui/material/styles';
 import Carousel, { CarouselArrowIndex, useCarousel } from 'src/components/carousel';
 import Image from 'src/components/image';
 import { bgGradient } from 'src/theme/css';
+import type { SacredGalleryImage, SacredItem } from 'src/types/sacred';
 
 const THUMB_SIZE = 64;
 
 type SacredImageCarousellProps = {
-  data: any;
+  data: SacredItem;
 };
 
 const SacredImageCarousel = ({ data }: SacredImageCarousellProps) => {
   const theme = useTheme();
 
-  const slides = data?.images && JSON.parse(data?.images);
+  const slides: SacredGalleryImage[] = Array.isArray(data.images)
+    ? data.images
+    : data.images
+      ? JSON.parse(data.images)
+      : [];
 
   const carouselLarge = useCarousel({
     rtl: false,
@@ -59,7 +64,7 @@ const SacredImageCarousel = ({ data }: SacredImageCarousellProps) => {
           asNavFor={carouselThumb.nav}
           ref={carouselLarge.carouselRef}
         >
-          {slides?.map((slide: any) => (
+          {slides.map((slide) => (
             <Image
               key={slide.src}
               alt={slide.src}
@@ -84,7 +89,7 @@ const SacredImageCarousel = ({ data }: SacredImageCarousellProps) => {
           asNavFor={carouselLarge.nav}
           ref={carouselThumb.carouselRef}
         >
-          {slides?.map((item: any, index: any) => (
+          {slides.map((item, index) => (
             <Box key={item.src} sx={{ px: 0.5 }}>
               <Avatar
                 key={item.src}
