@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  webkrub:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8082:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # volumes:
+    #   - ./logs:/app/logs  # ถ้าต้องการเก็บ logs
+
+networks:
+  default:
+    name: webkrub-network

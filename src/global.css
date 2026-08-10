@@ -1,0 +1,50 @@
+/* scrollbar */
+@import "simplebar-react/dist/simplebar.min.css";
+
+/* lazy image */
+@import "react-lazy-load-image-component/src/effects/blur.css";
+
+/* carousel */
+@import "slick-carousel/slick/slick.css";
+@import "slick-carousel/slick/slick-theme.css";
+
+/* lightbox */
+@import "yet-another-react-lightbox/styles.css";
+@import "yet-another-react-lightbox/plugins/captions.css";
+@import "yet-another-react-lightbox/plugins/thumbnails.css";
+
+html {
+  height: 100%;
+  -webkit-overflow-scrolling: touch;
+  font-family: "LINE Seed Sans TH";
+}
+body,
+#root,
+#root__layout {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 100%;
+  flex-direction: column;
+  font-family: "LINE Seed Sans TH";
+}
+img {
+  max-width: 100%;
+  vertical-align: middle;
+}
+ul {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: none;
+}
+input[type="number"]::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+input[type="number"]::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}

@@ -1,0 +1,28 @@
+# Development Dockerfile
+FROM node:20.9.0-alpine AS development
+
+WORKDIR /app
+
+# ติดตั้ง dependencies ที่จำเป็น
+RUN apk update && apk upgrade && \
+    apk add --no-cache git
+
+# คัดลอกและติดตั้ง dependencies
+COPY package.json yarn.lock* package-lock.json* ./
+
+# ใช้ npm เป็นหลัก แต่รองรับ yarn ด้วย
+RUN if [ -f yarn.lock ]; then yarn install; \
+    elif [ -f package-lock.json ]; then npm install; \
+    else npm install; fi
+
+# คัดลอก source ทั้งหมด
+COPY . .
+
+EXPOSE 3000
+
+ENV NODE_ENV=development
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# รัน development server
+CMD ["npm", "run", "dev"]
