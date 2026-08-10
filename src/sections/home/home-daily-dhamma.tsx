@@ -4,30 +4,27 @@ import { useMemo } from 'react';
 import { Avatar, Chip, Container, Skeleton, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import { useTheme } from '@mui/material/styles';
 
 import { MotionViewport, varFade } from 'src/components/animate';
 import { useGetDharma } from 'src/queries/article/dharma';
 import { fDateTime } from 'src/utils/format-time';
-import { getLabelByType } from 'src/utils/tranform-text';
 
 const HomeDailyDhamma = () => {
-  const theme = useTheme();
   const { data, isLoading } = useGetDharma();
 
   const list = useMemo(() => data?.pages?.flatMap((page) => page.items) ?? [], [data]);
 
-  const latestBlog = useMemo(() => {
+  const latestDharma = useMemo(() => {
     if (!list.length) return null;
 
     return [...list].sort(
-      (a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
+      (a, b) =>
+        new Date(b.createdDate || b.createdAt || 0).getTime() -
+        new Date(a.createdDate || a.createdAt || 0).getTime()
     )[0];
   }, [list]);
 
-  if (list?.length === 0) {
-    return;
-  }
+  if (!isLoading && list.length === 0) return null;
 
   return (
     <Container component={MotionViewport} sx={{ py: { xs: 10 } }}>
@@ -51,11 +48,7 @@ const HomeDailyDhamma = () => {
             <Skeleton variant="rectangular" width={300} height={200} />
           ) : (
             <>
-              <Chip
-                label={latestBlog?.type && getLabelByType(latestBlog?.type)}
-                color="secondary"
-                sx={{ mb: 2 }}
-              />
+              <Chip label="ธรรมะ" color="secondary" sx={{ mb: 2 }} />
 
               {/* <Stack component={m.div} variants={varFade().inUp} alignItems="center">
                 <Image
@@ -66,19 +59,19 @@ const HomeDailyDhamma = () => {
               </Stack> */}
 
               <Typography variant="h3" gutterBottom>
-                {latestBlog?.title || '-'}
+                {latestDharma?.title || '-'}
               </Typography>
 
               <Stack spacing={1} alignItems="center" mt={2}>
-                <Avatar alt={latestBlog?.author} src={latestBlog?.authorImageUrl}>
-                  {latestBlog?.author?.charAt(0)}
+                <Avatar alt={latestDharma?.author} src={latestDharma?.authorImageUrl}>
+                  {latestDharma?.author?.charAt(0)}
                 </Avatar>
 
-                <Typography variant="h6">{latestBlog?.author || 'Unknown'}</Typography>
+                <Typography variant="h6">{latestDharma?.author || 'ไม่ระบุผู้เขียน'}</Typography>
 
                 <Typography variant="body2" color="text.secondary">
-                  {latestBlog?.createdDate
-                    ? fDateTime(latestBlog.createdDate, 'dd/MM/yyyy HH:mm')
+                  {latestDharma?.createdDate
+                    ? fDateTime(latestDharma.createdDate, 'dd/MM/yyyy HH:mm')
                     : '-'}
                 </Typography>
               </Stack>

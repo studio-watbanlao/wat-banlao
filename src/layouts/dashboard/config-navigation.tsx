@@ -2,9 +2,6 @@ import { useMemo } from 'react';
 
 import { paths } from 'src/routes/paths';
 
-import { useTranslate } from 'src/locales';
-
-import Label from 'src/components/label';
 import SvgColor from 'src/components/svg-color';
 
 const icon = (name: string) => (
@@ -39,41 +36,57 @@ const ICONS = {
 };
 
 export const useNavData = () => {
-  const { t } = useTranslate();
-
   const data = useMemo(
     () => [
       {
-        subheader: t('overview'),
+        subheader: 'ภาพรวม',
         items: [
           {
-            title: t('app'),
+            title: 'หน้าหลัก',
             path: paths.dashboard.root,
             icon: ICONS.dashboard,
             roles: ['admin', 'super_admin'],
           },
           {
-            title: t('activity'),
+            title: 'จัดการกิจกรรม',
             path: paths.dashboard.activity,
             icon: ICONS.ecommerce,
             roles: ['admin', 'super_admin'],
           },
           {
-            title: 'จัดการสถาปัตย์',
+            title: 'จัดการสถาปัตย์และสิ่งสำคัญ',
             path: paths.dashboard.architectures,
             icon: ICONS.booking,
             roles: ['admin', 'super_admin'],
           },
           {
-            title: 'จัดการ Banner',
+            title: 'จัดการแบนเนอร์',
             path: paths.dashboard.banners,
             icon: ICONS.file,
             roles: ['admin', 'super_admin'],
           },
           {
-            title: 'จัดการ Festival',
+            title: 'จัดการงานประเพณี',
             path: paths.dashboard.festivals,
             icon: ICONS.calendar,
+            roles: ['admin', 'super_admin'],
+          },
+          {
+            title: 'จัดการบทความ',
+            path: paths.dashboard.blogs,
+            icon: ICONS.blog,
+            roles: ['admin', 'super_admin'],
+          },
+          {
+            title: 'จัดการธรรมะ',
+            path: paths.dashboard.dharmas,
+            icon: ICONS.menuItem,
+            roles: ['admin', 'super_admin'],
+          },
+          {
+            title: 'จัดการข้อความติดต่อ',
+            path: paths.dashboard.contacts,
+            icon: ICONS.mail,
             roles: ['admin', 'super_admin'],
           },
           // {
@@ -89,7 +102,7 @@ export const useNavData = () => {
           //   ],
           // },
           {
-            title: t('sacred'),
+            title: 'จัดการสิ่งศักดิ์สิทธิ์',
             path: paths.dashboard.manageSacred,
             icon: ICONS.folder,
             roles: ['admin', 'super_admin'],
@@ -109,7 +122,7 @@ export const useNavData = () => {
         ],
       },
     ],
-    [t]
+    []
   );
 
   return data;

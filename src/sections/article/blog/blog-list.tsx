@@ -10,7 +10,7 @@ import { useGetBlog } from 'src/queries/article/blog';
 import BlogItem from './blog-item';
 
 const BlogList = () => {
-  const { data, isLoading } = useGetBlog();
+  const { data, isLoading, isFetchingNextPage, fetchNextPage, hasNextPage } = useGetBlog();
 
   const list = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data]);
 
@@ -33,14 +33,14 @@ const BlogList = () => {
       {isEmpty && <EmptyContent title="ไม่พบข้อมูล" />}
 
       <Grid container spacing={3}>
-        {list?.map((post: any) => (
+        {list.map((post) => (
           <Grid item key={post.id} xs={12} sm={6} md={3}>
             <BlogItem data={post} />
           </Grid>
         ))}
       </Grid>
 
-      {list?.length > 8 && (
+      {hasNextPage && (
         <Stack
           alignItems="center"
           sx={{
@@ -51,9 +51,11 @@ const BlogList = () => {
           <Button
             size="large"
             variant="outlined"
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
             startIcon={<Iconify icon="svg-spinners:12-dots-scale-rotate" width={24} />}
           >
-            Load More
+            {isFetchingNextPage ? 'กำลังโหลด...' : 'โหลดเพิ่มเติม'}
           </Button>
         </Stack>
       )}

@@ -65,7 +65,7 @@ const DharmaList = () => {
       {/* ---------------- List ---------------- */}
       {!isLoading && !isEmpty && (
         <Grid container spacing={3}>
-          {list.map((post: any) => (
+          {list.map((post) => (
             <Grid item key={post.id ?? post.title} xs={12} sm={6} md={3}>
               <DharmaItem data={post} />
             </Grid>
@@ -83,7 +83,7 @@ const DharmaList = () => {
             disabled={isFetchingNextPage}
             startIcon={<Iconify icon="svg-spinners:12-dots-scale-rotate" width={24} />}
           >
-            {isFetchingNextPage ? 'Loading...' : 'Load More'}
+            {isFetchingNextPage ? 'กำลังโหลด...' : 'โหลดเพิ่มเติม'}
           </Button>
         </Stack>
       )}

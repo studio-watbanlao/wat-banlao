@@ -6,7 +6,7 @@ import MainLayout from 'src/layouts/main';
 import { BlogView } from 'src/sections/article/blog/view';
 
 export const metadata = {
-  title: 'Blog',
+  title: 'บทความ',
 };
 
 const BlogPage = () => {

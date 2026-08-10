@@ -5,7 +5,7 @@ type MataDataProps = {
   url?: string;
   data?: {
     title: string;
-    description: string;
+    description?: string;
     imageUrl?: string;
   };
 };

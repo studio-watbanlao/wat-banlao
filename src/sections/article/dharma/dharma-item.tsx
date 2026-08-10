@@ -16,10 +16,10 @@ import { AvatarShape } from 'src/assets/illustrations';
 import Image from 'src/components/image';
 import TextMaxLine from 'src/components/text-max-line';
 import { fDateTimeTH } from 'src/utils/format-time';
-import { getLabelByType } from 'src/utils/tranform-text';
+import type { EditorialItem } from 'src/types/editorial';
 
 type Props = {
-  data: any;
+  data: EditorialItem;
   index?: number;
 };
 
@@ -27,7 +27,7 @@ const DharmaItem = ({ data, index }: Props) => {
   const theme = useTheme();
   const mdUp = useResponsive('up', 'md');
 
-  const { imageUrl, title, author_name, createdAt, description, type, id, createdDate } = data;
+  const { imageUrl, title, author, id, createdDate } = data;
 
   const latestPost = index === 0 || index === 1 || index === 2;
 
@@ -35,8 +35,8 @@ const DharmaItem = ({ data, index }: Props) => {
     return (
       <Card>
         <Avatar
-          alt={author_name}
-          src={author_name}
+          alt={author || 'ผู้เขียน'}
+          src={data.authorImageUrl}
           sx={{
             top: 24,
             left: 24,
@@ -47,15 +47,7 @@ const DharmaItem = ({ data, index }: Props) => {
           B
         </Avatar>
 
-        <DharmaCard
-          title={title}
-          createdAt={createdAt}
-          index={index}
-          description={description}
-          type={type}
-          id={id}
-          createdDate={createdDate}
-        />
+        <DharmaCard title={title} index={index} id={id} createdDate={createdDate} />
 
         <Image
           alt={title}
@@ -85,8 +77,8 @@ const DharmaItem = ({ data, index }: Props) => {
         />
 
         <Avatar
-          alt={author_name}
-          src={'/logo/logo.png'}
+          alt={author || 'ผู้เขียน'}
+          src={data.authorImageUrl || '/logo/logo.png'}
           sx={{
             left: 24,
             zIndex: 9,
@@ -98,14 +90,7 @@ const DharmaItem = ({ data, index }: Props) => {
         <Image alt={title} src={imageUrl} ratio="4/3" />
       </Box>
 
-      <DharmaCard
-        title={title}
-        createdAt={createdAt}
-        description={description}
-        type={type}
-        id={id}
-        createdDate={createdDate}
-      />
+      <DharmaCard title={title} id={id} createdDate={createdDate} />
     </Card>
   );
 };
@@ -115,21 +100,11 @@ export default DharmaItem;
 type PostContentProps = {
   title: string;
   index?: number;
-  createdAt: Date | string | number;
-  description: string;
-  type: string;
   id: string;
-  createdDate: string;
+  createdDate?: string;
 };
 
-export const DharmaCard = ({
-  title,
-  index,
-  description,
-  type,
-  id,
-  createdDate,
-}: PostContentProps) => {
+export const DharmaCard = ({ title, index, id, createdDate }: PostContentProps) => {
   const mdUp = useResponsive('up', 'md');
 
   const linkTo = paths.article.dharma.details(id);
@@ -166,7 +141,7 @@ export const DharmaCard = ({
           }),
         }}
       >
-        {type ? getLabelByType(type) : '-'}
+        ธรรมะ
       </Typography>
 
       <Link color="inherit" component={RouterLink} href={linkTo}>

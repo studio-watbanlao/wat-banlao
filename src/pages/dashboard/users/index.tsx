@@ -1,3 +1,4 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
 import {
   Alert,
@@ -23,11 +24,14 @@ import {
   Typography,
 } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
 import { useAuthContext } from 'src/auth/hooks';
 import Layout from 'src/pages/dashboard/layout';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
+import { changeRoleFormSchema, createUserFormSchema } from 'src/schemas/user';
+import type { ChangeRoleFormValues, CreateUserFormValues } from 'src/schemas/user';
 import axios from 'src/utils/axios';
 import { getErrorMessage } from 'src/utils/error-message';
 
@@ -42,6 +46,8 @@ type ManagedUser = {
   createdAt?: string;
 };
 
+const EMPTY_CREATE_FORM: CreateUserFormValues = { email: '', password: '', role: 'user' };
+
 export default function UsersManagementPage() {
   const router = useRouter();
   const { user: currentUser } = useAuthContext();
@@ -50,11 +56,28 @@ export default function UsersManagementPage() {
   const [saving, setSaving] = useState(false);
   const [roleSaving, setRoleSaving] = useState(false);
   const [error, setError] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'user' | 'admin'>('user');
   const [roleDialogUser, setRoleDialogUser] = useState<ManagedUser | null>(null);
-  const [selectedRole, setSelectedRole] = useState<'user' | 'admin'>('user');
+
+  const {
+    control: createControl,
+    handleSubmit: handleCreateSubmit,
+    reset: resetCreateForm,
+    formState: { errors: createErrors, isValid: isCreateValid },
+  } = useForm<CreateUserFormValues>({
+    resolver: zodResolver(createUserFormSchema),
+    defaultValues: EMPTY_CREATE_FORM,
+    mode: 'onChange',
+  });
+
+  const {
+    control: roleControl,
+    handleSubmit: handleRoleSubmit,
+    reset: resetRoleForm,
+    watch: watchRole,
+  } = useForm<ChangeRoleFormValues>({
+    resolver: zodResolver(changeRoleFormSchema),
+    defaultValues: { role: 'user' },
+  });
 
   const loadUsers = useCallback(async () => {
     try {
@@ -78,32 +101,30 @@ export default function UsersManagementPage() {
     if (currentUser?.role === 'super_admin') loadUsers();
   }, [currentUser?.role, loadUsers, router]);
 
-  const createUser = async () => {
+  const createUser = handleCreateSubmit(async (form) => {
     try {
       setSaving(true);
       setError('');
-      await axios.post('/api/admin/users', { email, password, role });
-      setEmail('');
-      setPassword('');
-      setRole('user');
+      await axios.post('/api/admin/users', form);
+      resetCreateForm(EMPTY_CREATE_FORM);
       await loadUsers();
     } catch (requestError) {
       setError(getErrorMessage(requestError));
     } finally {
       setSaving(false);
     }
-  };
+  });
 
   const openRoleDialog = (managedUser: ManagedUser) => {
     setRoleDialogUser(managedUser);
-    setSelectedRole(managedUser.role === 'admin' ? 'admin' : 'user');
+    resetRoleForm({ role: managedUser.role === 'admin' ? 'admin' : 'user' });
   };
 
   const closeRoleDialog = () => {
     if (!roleSaving) setRoleDialogUser(null);
   };
 
-  const changeRole = async () => {
+  const changeRole = handleRoleSubmit(async (form) => {
     if (!roleDialogUser) return;
 
     try {
@@ -111,12 +132,10 @@ export default function UsersManagementPage() {
       setError('');
       await axios.patch('/api/admin/users', {
         userId: roleDialogUser.id,
-        role: selectedRole,
+        role: form.role,
       });
       setUsers((current) =>
-        current.map((item) =>
-          item.id === roleDialogUser.id ? { ...item, role: selectedRole } : item
-        )
+        current.map((item) => (item.id === roleDialogUser.id ? { ...item, role: form.role } : item))
       );
       setRoleDialogUser(null);
     } catch (requestError) {
@@ -124,7 +143,7 @@ export default function UsersManagementPage() {
     } finally {
       setRoleSaving(false);
     }
-  };
+  });
 
   const removeUser = async (managedUser: ManagedUser) => {
     if (!window.confirm(`ลบผู้ใช้ ${managedUser.email || managedUser.id} หรือไม่?`)) return;
@@ -137,6 +156,8 @@ export default function UsersManagementPage() {
       setError(getErrorMessage(requestError));
     }
   };
+
+  const selectedRole = watchRole('role');
 
   return (
     <Layout>
@@ -155,45 +176,56 @@ export default function UsersManagementPage() {
               autoComplete="off"
               direction={{ xs: 'column', md: 'row' }}
               spacing={2}
-              onSubmit={(event) => {
-                event.preventDefault();
-                createUser();
-              }}
+              onSubmit={createUser}
             >
-              <TextField
-                fullWidth
-                label="Email"
-                type="email"
-                name="new-user-email"
-                autoComplete="off"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
+              <Controller
+                name="email"
+                control={createControl}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    label="Email"
+                    type="email"
+                    autoComplete="off"
+                    error={!!createErrors.email}
+                    helperText={createErrors.email?.message}
+                  />
+                )}
               />
-              <TextField
-                fullWidth
-                label="Password"
-                type="password"
-                name="new-user-password"
-                autoComplete="new-password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
+              <Controller
+                name="password"
+                control={createControl}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    label="Password"
+                    type="password"
+                    autoComplete="new-password"
+                    error={!!createErrors.password}
+                    helperText={createErrors.password?.message}
+                  />
+                )}
               />
-              <FormControl sx={{ minWidth: 140 }}>
-                <InputLabel>Role</InputLabel>
-                <Select
-                  value={role}
-                  label="Role"
-                  onChange={(event) => setRole(event.target.value as 'user' | 'admin')}
-                >
-                  <MenuItem value="user">User</MenuItem>
-                  <MenuItem value="admin">Admin</MenuItem>
-                </Select>
-              </FormControl>
+              <Controller
+                name="role"
+                control={createControl}
+                render={({ field }) => (
+                  <FormControl sx={{ minWidth: 140 }}>
+                    <InputLabel>Role</InputLabel>
+                    <Select {...field} label="Role">
+                      <MenuItem value="user">User</MenuItem>
+                      <MenuItem value="admin">Admin</MenuItem>
+                    </Select>
+                  </FormControl>
+                )}
+              />
               <LoadingButton
                 type="submit"
                 variant="contained"
                 loading={saving}
-                disabled={!email || password.length < 8}
+                disabled={!isCreateValid}
               >
                 เพิ่มผู้ใช้
               </LoadingButton>
@@ -271,21 +303,23 @@ export default function UsersManagementPage() {
       <Dialog open={Boolean(roleDialogUser)} onClose={closeRoleDialog} fullWidth maxWidth="xs">
         <DialogTitle>เปลี่ยน Role ผู้ใช้งาน</DialogTitle>
         <DialogContent>
-          <Stack spacing={3} sx={{ pt: 1 }}>
+          <Stack spacing={3} sx={{ pt: 1 }} component="form" onSubmit={changeRole}>
             <Alert severity="info">
               กำลังเปลี่ยนสิทธิ์ของ {roleDialogUser?.displayName || roleDialogUser?.email}
             </Alert>
-            <FormControl fullWidth>
-              <InputLabel>Role</InputLabel>
-              <Select
-                value={selectedRole}
-                label="Role"
-                onChange={(event) => setSelectedRole(event.target.value as 'user' | 'admin')}
-              >
-                <MenuItem value="user">User — ยังเข้า Admin UI ไม่ได้</MenuItem>
-                <MenuItem value="admin">Admin — เข้า Admin UI ได้</MenuItem>
-              </Select>
-            </FormControl>
+            <Controller
+              name="role"
+              control={roleControl}
+              render={({ field }) => (
+                <FormControl fullWidth>
+                  <InputLabel>Role</InputLabel>
+                  <Select {...field} label="Role">
+                    <MenuItem value="user">User — ยังเข้า Admin UI ไม่ได้</MenuItem>
+                    <MenuItem value="admin">Admin — เข้า Admin UI ได้</MenuItem>
+                  </Select>
+                </FormControl>
+              )}
+            />
           </Stack>
         </DialogContent>
         <DialogActions>

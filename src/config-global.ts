@@ -36,11 +36,6 @@ export const PATH_AFTER_LOGIN = paths.dashboard.root; // as '/dashboard'
 //
 export const CONFIG = {
   websiteUrl: 'https://www.watbanlao.org',
-  emailjs: {
-    puclicKey: 'IliaKH3QDLgw_-l30',
-    serviceKey: 'service_kw96412',
-    templateKey: 'template_35i8lzf',
-  },
   layout: {
     HEIGHT_LAYOUT: 8,
     HEIGHT_LAYOUT_XS: 6,

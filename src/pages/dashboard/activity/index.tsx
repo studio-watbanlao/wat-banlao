@@ -1,3 +1,4 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
 import {
   Alert,
@@ -24,39 +25,29 @@ import {
 } from '@mui/material';
 import NextImage, { ImageLoaderProps } from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
 import Iconify from 'src/components/iconify';
 import Layout from 'src/pages/dashboard/layout';
+import { activityFormSchema, type ActivityFormValues } from 'src/schemas/activity';
 import type {
   ActivityGalleryImage,
   ActivityImagePayload,
   ActivityItem,
-  ActivityStatus,
   ActivityType,
 } from 'src/types/activity';
 import axios from 'src/utils/axios';
 import { getErrorMessage } from 'src/utils/error-message';
 
-type FormValue = {
-  title: string;
-  type: ActivityType;
-  description: string;
-  content: string;
-  status: ActivityStatus;
-  coverImage: File | null;
-  galleryImages: File[];
-  currentGallery: ActivityGalleryImage[];
-};
-
-const EMPTY_FORM: FormValue = {
+const EMPTY_FORM: ActivityFormValues = {
   title: '',
   type: 'temple',
   description: '',
   content: '',
   status: 'PUBLIC',
   coverImage: null,
+  currentImageUrl: '',
   galleryImages: [],
-  currentGallery: [],
 };
 const imageLoader = ({ src }: ImageLoaderProps) => src;
 const parseGallery = (images: ActivityItem['images']): ActivityGalleryImage[] => {
@@ -97,10 +88,12 @@ const usePreview = (file: File | null) => {
 function CoverInput({
   file,
   url,
+  error,
   onChange,
 }: {
   file: File | null;
   url?: string;
+  error?: string;
   onChange: (file: File | null) => void;
 }) {
   const preview = usePreview(file) || url;
@@ -140,6 +133,11 @@ function CoverInput({
           onChange={(event) => onChange(event.target.files?.[0] || null)}
         />
       </Button>
+      {error ? (
+        <Typography variant="caption" color="error">
+          {error}
+        </Typography>
+      ) : null}
     </Stack>
   );
 }
@@ -158,7 +156,19 @@ export default function ActivityManagementPage() {
   const [error, setError] = useState('');
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<ActivityItem | null>(null);
-  const [form, setForm] = useState<FormValue>(EMPTY_FORM);
+  const [currentGallery, setCurrentGallery] = useState<ActivityGalleryImage[]>([]);
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm<ActivityFormValues>({
+    resolver: zodResolver(activityFormSchema),
+    defaultValues: EMPTY_FORM,
+    mode: 'onChange',
+  });
 
   const loadActivities = useCallback(async () => {
     try {
@@ -178,25 +188,27 @@ export default function ActivityManagementPage() {
 
   const create = () => {
     setEditing(null);
-    setForm({ ...EMPTY_FORM, galleryImages: [], currentGallery: [] });
+    setCurrentGallery([]);
+    reset(EMPTY_FORM);
     setOpen(true);
   };
   const edit = (activity: ActivityItem) => {
     setEditing(activity);
-    setForm({
+    setCurrentGallery(parseGallery(activity.images));
+    reset({
       title: activity.title,
       type: activity.type || 'temple',
       description: activity.description || '',
       content: activity.content || '',
       status: activity.status === 'PUBLIC' ? 'PUBLIC' : 'DRAFT',
       coverImage: null,
+      currentImageUrl: activity.imageUrl || '',
       galleryImages: [],
-      currentGallery: parseGallery(activity.images),
     });
     setOpen(true);
   };
 
-  const save = async () => {
+  const save = handleSubmit(async (form) => {
     try {
       setSaving(true);
       setError('');
@@ -213,7 +225,7 @@ export default function ActivityManagementPage() {
         status: form.status,
         coverImage,
         galleryImages,
-        keptGallerySources: form.currentGallery.map((image) => image.src),
+        keptGallerySources: currentGallery.map((image) => image.src),
       };
       if (editing) await axios.patch('/api/admin/activities', payload);
       else await axios.post('/api/admin/activities', payload);
@@ -224,7 +236,7 @@ export default function ActivityManagementPage() {
     } finally {
       setSaving(false);
     }
-  };
+  });
 
   const remove = async (activity: ActivityItem) => {
     if (!window.confirm(`ลบกิจกรรม “${activity.title}” หรือไม่?`)) return;
@@ -239,6 +251,8 @@ export default function ActivityManagementPage() {
       setDeletingId('');
     }
   };
+
+  const coverImage = watch('coverImage');
 
   return (
     <Layout>
@@ -320,169 +334,172 @@ export default function ActivityManagementPage() {
       <Dialog open={open} onClose={() => !saving && setOpen(false)} fullWidth maxWidth="md">
         <DialogTitle>{editing ? 'แก้ไขกิจกรรม' : 'เพิ่มกิจกรรม'}</DialogTitle>
         <DialogContent>
-          <Stack spacing={3} sx={{ pt: 1 }}>
-            <TextField
-              required
-              label="ชื่อกิจกรรม"
-              value={form.title}
-              onChange={(event) => setForm((value) => ({ ...value, title: event.target.value }))}
+          <Stack spacing={3} sx={{ pt: 1 }} component="form" onSubmit={save}>
+            <Controller
+              name="title"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  required
+                  label="ชื่อกิจกรรม"
+                  error={!!errors.title}
+                  helperText={errors.title?.message}
+                />
+              )}
             />
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-              <FormControl fullWidth>
-                <InputLabel>ประเภท</InputLabel>
-                <Select
-                  value={form.type}
-                  label="ประเภท"
-                  onChange={(event) =>
-                    setForm((value) => ({ ...value, type: event.target.value as ActivityType }))
-                  }
-                >
-                  <MenuItem value="temple">วัด</MenuItem>
-                  <MenuItem value="community">ชุมชน</MenuItem>
-                  <MenuItem value="school">โรงเรียน</MenuItem>
-                </Select>
-              </FormControl>
-              <FormControl fullWidth>
-                <InputLabel>สถานะ</InputLabel>
-                <Select
-                  value={form.status}
-                  label="สถานะ"
-                  onChange={(event) =>
-                    setForm((value) => ({ ...value, status: event.target.value as ActivityStatus }))
-                  }
-                >
-                  <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
-                  <MenuItem value="DRAFT">แบบร่าง</MenuItem>
-                </Select>
-              </FormControl>
+              <Controller
+                name="type"
+                control={control}
+                render={({ field }) => (
+                  <FormControl fullWidth>
+                    <InputLabel>ประเภท</InputLabel>
+                    <Select {...field} label="ประเภท">
+                      <MenuItem value="temple">วัด</MenuItem>
+                      <MenuItem value="community">ชุมชน</MenuItem>
+                      <MenuItem value="school">โรงเรียน</MenuItem>
+                    </Select>
+                  </FormControl>
+                )}
+              />
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <FormControl fullWidth>
+                    <InputLabel>สถานะ</InputLabel>
+                    <Select {...field} label="สถานะ">
+                      <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
+                      <MenuItem value="DRAFT">แบบร่าง</MenuItem>
+                    </Select>
+                  </FormControl>
+                )}
+              />
             </Stack>
-            <TextField
-              multiline
-              minRows={2}
-              label="คำอธิบาย"
-              value={form.description}
-              onChange={(event) =>
-                setForm((value) => ({ ...value, description: event.target.value }))
-              }
+            <Controller
+              name="description"
+              control={control}
+              render={({ field }) => (
+                <TextField {...field} multiline minRows={2} label="คำอธิบาย" />
+              )}
             />
-            <TextField
-              multiline
-              minRows={6}
-              label="เนื้อหา (รองรับ HTML)"
-              value={form.content}
-              onChange={(event) => setForm((value) => ({ ...value, content: event.target.value }))}
+            <Controller
+              name="content"
+              control={control}
+              render={({ field }) => (
+                <TextField {...field} multiline minRows={6} label="เนื้อหา (รองรับ HTML)" />
+              )}
             />
-            <CoverInput
-              file={form.coverImage}
-              url={editing?.imageUrl}
-              onChange={(file) => setForm((value) => ({ ...value, coverImage: file }))}
-            />
-            <Stack spacing={1}>
-              <Typography variant="subtitle2">รูป Gallery (สูงสุด 8 รูป)</Typography>
-              <Grid container spacing={1}>
-                {form.currentGallery.map((image) => (
-                  <Grid item xs={4} sm={3} key={image.src}>
-                    <Box
-                      sx={{
-                        height: 110,
-                        position: 'relative',
-                        overflow: 'hidden',
-                        borderRadius: 1,
-                      }}
-                    >
-                      <NextImage
-                        loader={imageLoader}
-                        src={image.image}
-                        alt="Activity gallery"
-                        fill
-                        sizes="200px"
-                        style={{ objectFit: 'cover' }}
-                      />
-                      <IconButton
-                        size="small"
-                        onClick={() =>
-                          setForm((value) => ({
-                            ...value,
-                            currentGallery: value.currentGallery.filter(
-                              (current) => current.src !== image.src
-                            ),
-                          }))
-                        }
-                        sx={{
-                          position: 'absolute',
-                          top: 4,
-                          right: 4,
-                          color: 'white',
-                          bgcolor: 'rgba(0,0,0,.55)',
-                        }}
-                      >
-                        <Iconify icon="mingcute:close-line" />
-                      </IconButton>
-                    </Box>
-                  </Grid>
-                ))}
-                {form.galleryImages.map((file, index) => (
-                  <Grid item xs={4} sm={3} key={`${file.name}-${file.lastModified}`}>
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      sx={{ height: 110, px: 1, bgcolor: 'background.neutral' }}
-                    >
-                      <Typography variant="caption" noWrap>
-                        {file.name}
-                      </Typography>
-                      <IconButton
-                        size="small"
-                        onClick={() =>
-                          setForm((value) => ({
-                            ...value,
-                            galleryImages: value.galleryImages.filter((_, i) => i !== index),
-                          }))
-                        }
-                      >
-                        <Iconify icon="mingcute:close-line" />
-                      </IconButton>
-                    </Stack>
-                  </Grid>
-                ))}
-              </Grid>
-              <Button
-                component="label"
-                variant="outlined"
-                disabled={form.currentGallery.length + form.galleryImages.length >= 8}
-              >
-                เพิ่มรูป Gallery
-                <input
-                  hidden
-                  multiple
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={(event) => {
-                    const files = Array.from(event.target.files || []);
-                    setForm((value) => ({
-                      ...value,
-                      galleryImages: [...value.galleryImages, ...files].slice(
-                        0,
-                        8 - value.currentGallery.length
-                      ),
-                    }));
-                    event.target.value = '';
-                  }}
+            <Controller
+              name="coverImage"
+              control={control}
+              render={({ field }) => (
+                <CoverInput
+                  file={coverImage}
+                  url={editing?.imageUrl}
+                  error={errors.coverImage?.message}
+                  onChange={field.onChange}
                 />
-              </Button>
-            </Stack>
+              )}
+            />
+            <Controller
+              name="galleryImages"
+              control={control}
+              render={({ field }) => (
+                <Stack spacing={1}>
+                  <Typography variant="subtitle2">รูป Gallery (สูงสุด 8 รูป)</Typography>
+                  <Grid container spacing={1}>
+                    {currentGallery.map((image) => (
+                      <Grid item xs={4} sm={3} key={image.src}>
+                        <Box
+                          sx={{
+                            height: 110,
+                            position: 'relative',
+                            overflow: 'hidden',
+                            borderRadius: 1,
+                          }}
+                        >
+                          <NextImage
+                            loader={imageLoader}
+                            src={image.image}
+                            alt="Activity gallery"
+                            fill
+                            sizes="200px"
+                            style={{ objectFit: 'cover' }}
+                          />
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              setCurrentGallery((current) =>
+                                current.filter((c) => c.src !== image.src)
+                              )
+                            }
+                            sx={{
+                              position: 'absolute',
+                              top: 4,
+                              right: 4,
+                              color: 'white',
+                              bgcolor: 'rgba(0,0,0,.55)',
+                            }}
+                          >
+                            <Iconify icon="mingcute:close-line" />
+                          </IconButton>
+                        </Box>
+                      </Grid>
+                    ))}
+                    {field.value.map((file, index) => (
+                      <Grid item xs={4} sm={3} key={`${file.name}-${file.lastModified}`}>
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          sx={{ height: 110, px: 1, bgcolor: 'background.neutral' }}
+                        >
+                          <Typography variant="caption" noWrap>
+                            {file.name}
+                          </Typography>
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              field.onChange(field.value.filter((_, i) => i !== index))
+                            }
+                          >
+                            <Iconify icon="mingcute:close-line" />
+                          </IconButton>
+                        </Stack>
+                      </Grid>
+                    ))}
+                  </Grid>
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    disabled={currentGallery.length + field.value.length >= 8}
+                  >
+                    เพิ่มรูป Gallery
+                    <input
+                      hidden
+                      multiple
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={(event) => {
+                        const files = Array.from(event.target.files || []);
+                        field.onChange(
+                          [...field.value, ...files].slice(0, 8 - currentGallery.length)
+                        );
+                        event.target.value = '';
+                      }}
+                    />
+                  </Button>
+                </Stack>
+              )}
+            />
           </Stack>
         </DialogContent>
         <DialogActions>
           <Button color="inherit" disabled={saving} onClick={() => setOpen(false)}>
             ยกเลิก
           </Button>
-          <LoadingButton
-            variant="contained"
-            loading={saving}
-            disabled={!form.title.trim() || (!editing && !form.coverImage)}
-            onClick={save}
-          >
+          <LoadingButton variant="contained" loading={saving} onClick={save}>
             บันทึก
           </LoadingButton>
         </DialogActions>

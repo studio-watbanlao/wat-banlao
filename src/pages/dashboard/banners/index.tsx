@@ -1,3 +1,4 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
 import {
   Alert,
@@ -22,29 +23,24 @@ import {
   Typography,
 } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
 import Iconify from 'src/components/iconify';
 import Layout from 'src/pages/dashboard/layout';
-import type { BannerImagePayload, BannerItem, BannerStatus } from 'src/types/banner';
+import { bannerFormSchema, type BannerFormValues } from 'src/schemas/banner';
+import type { BannerImagePayload, BannerItem } from 'src/types/banner';
 import axios from 'src/utils/axios';
 import { getErrorMessage } from 'src/utils/error-message';
 
-type BannerForm = {
-  title: string;
-  linkUrl: string;
-  sortOrder: number;
-  status: BannerStatus;
-  desktopImage: File | null;
-  mobileImage: File | null;
-};
-
-const EMPTY_FORM: BannerForm = {
+const EMPTY_FORM: BannerFormValues = {
   title: '',
   linkUrl: '',
   sortOrder: 0,
   status: 'PUBLIC',
   desktopImage: null,
   mobileImage: null,
+  currentDesktopUrl: '',
+  currentMobileUrl: '',
 };
 
 const fileToPayload = (file: File): Promise<BannerImagePayload> =>
@@ -74,10 +70,11 @@ type ImageFieldProps = {
   hint: string;
   file: File | null;
   currentUrl?: string;
+  error?: string;
   onChange: (file: File | null) => void;
 };
 
-function ImageField({ label, hint, file, currentUrl, onChange }: ImageFieldProps) {
+function ImageField({ label, hint, file, currentUrl, error, onChange }: ImageFieldProps) {
   const preview = useFilePreview(file) || currentUrl;
 
   return (
@@ -109,8 +106,8 @@ function ImageField({ label, hint, file, currentUrl, onChange }: ImageFieldProps
           onChange={(event) => onChange(event.target.files?.[0] || null)}
         />
       </Button>
-      <Typography variant="caption" color="text.secondary">
-        {hint} · JPG, PNG หรือ WebP ไม่เกิน 8 MB
+      <Typography variant="caption" color={error ? 'error' : 'text.secondary'}>
+        {error || `${hint} · JPG, PNG หรือ WebP ไม่เกิน 8 MB`}
       </Typography>
     </Stack>
   );
@@ -124,7 +121,18 @@ export default function BannerManagementPage() {
   const [error, setError] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState<BannerItem | null>(null);
-  const [form, setForm] = useState<BannerForm>(EMPTY_FORM);
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm<BannerFormValues>({
+    resolver: zodResolver(bannerFormSchema),
+    defaultValues: EMPTY_FORM,
+    mode: 'onChange',
+  });
 
   const loadBanners = useCallback(async () => {
     try {
@@ -145,19 +153,21 @@ export default function BannerManagementPage() {
 
   const openCreate = () => {
     setEditingBanner(null);
-    setForm({ ...EMPTY_FORM, sortOrder: banners.length });
+    reset({ ...EMPTY_FORM, sortOrder: banners.length });
     setDialogOpen(true);
   };
 
   const openEdit = (banner: BannerItem) => {
     setEditingBanner(banner);
-    setForm({
+    reset({
       title: banner.title,
       linkUrl: banner.linkUrl || '',
       sortOrder: banner.sortOrder,
       status: banner.status,
       desktopImage: null,
       mobileImage: null,
+      currentDesktopUrl: banner.desktopImageUrl || banner.imageUrl || '',
+      currentMobileUrl: banner.mobileImageUrl || banner.desktopImageUrl || banner.imageUrl || '',
     });
     setDialogOpen(true);
   };
@@ -166,7 +176,7 @@ export default function BannerManagementPage() {
     if (!saving) setDialogOpen(false);
   };
 
-  const saveBanner = async () => {
+  const saveBanner = handleSubmit(async (form) => {
     try {
       setSaving(true);
       setError('');
@@ -194,7 +204,7 @@ export default function BannerManagementPage() {
     } finally {
       setSaving(false);
     }
-  };
+  });
 
   const removeBanner = async (banner: BannerItem) => {
     if (!window.confirm(`ลบ Banner “${banner.title}” หรือไม่?`)) return;
@@ -210,9 +220,8 @@ export default function BannerManagementPage() {
     }
   };
 
-  const validForm =
-    Boolean(form.title.trim()) &&
-    (Boolean(editingBanner) || (Boolean(form.desktopImage) && Boolean(form.mobileImage)));
+  const desktopImage = watch('desktopImage');
+  const mobileImage = watch('mobileImage');
 
   return (
     <Layout>
@@ -293,63 +302,96 @@ export default function BannerManagementPage() {
       <Dialog open={dialogOpen} onClose={closeDialog} fullWidth maxWidth="md">
         <DialogTitle>{editingBanner ? 'แก้ไข Banner' : 'เพิ่ม Banner'}</DialogTitle>
         <DialogContent>
-          <Stack spacing={3} sx={{ pt: 1 }}>
-            <TextField
-              fullWidth
-              required
-              label="ชื่อ Banner"
-              value={form.title}
-              onChange={(event) => setForm((value) => ({ ...value, title: event.target.value }))}
+          <Stack spacing={3} sx={{ pt: 1 }} component="form" onSubmit={saveBanner}>
+            <Controller
+              name="title"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  required
+                  label="ชื่อ Banner"
+                  error={!!errors.title}
+                  helperText={errors.title?.message}
+                />
+              )}
             />
-            <TextField
-              fullWidth
-              label="ลิงก์เมื่อคลิก (ไม่บังคับ)"
-              placeholder="https://... หรือ /activity"
-              value={form.linkUrl}
-              onChange={(event) => setForm((value) => ({ ...value, linkUrl: event.target.value }))}
+            <Controller
+              name="linkUrl"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  label="ลิงก์เมื่อคลิก (ไม่บังคับ)"
+                  placeholder="https://... หรือ /activity"
+                  error={!!errors.linkUrl}
+                  helperText={errors.linkUrl?.message}
+                />
+              )}
             />
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-              <TextField
-                fullWidth
-                label="ลำดับ"
-                type="number"
-                value={form.sortOrder}
-                onChange={(event) =>
-                  setForm((value) => ({ ...value, sortOrder: Number(event.target.value) }))
-                }
+              <Controller
+                name="sortOrder"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    label="ลำดับ"
+                    type="number"
+                    error={!!errors.sortOrder}
+                    helperText={errors.sortOrder?.message}
+                  />
+                )}
               />
-              <FormControl fullWidth>
-                <InputLabel>สถานะ</InputLabel>
-                <Select
-                  value={form.status}
-                  label="สถานะ"
-                  onChange={(event) =>
-                    setForm((value) => ({ ...value, status: event.target.value as BannerStatus }))
-                  }
-                >
-                  <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
-                  <MenuItem value="DRAFT">แบบร่าง</MenuItem>
-                </Select>
-              </FormControl>
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <FormControl fullWidth>
+                    <InputLabel>สถานะ</InputLabel>
+                    <Select {...field} label="สถานะ">
+                      <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
+                      <MenuItem value="DRAFT">แบบร่าง</MenuItem>
+                    </Select>
+                  </FormControl>
+                )}
+              />
             </Stack>
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-              <ImageField
-                label="รูป Desktop"
-                hint="แนะนำ 1920 × 720 px"
-                file={form.desktopImage}
-                currentUrl={editingBanner?.desktopImageUrl || editingBanner?.imageUrl}
-                onChange={(file) => setForm((value) => ({ ...value, desktopImage: file }))}
+              <Controller
+                name="desktopImage"
+                control={control}
+                render={({ field }) => (
+                  <ImageField
+                    label="รูป Desktop"
+                    hint="แนะนำ 1920 × 720 px"
+                    file={desktopImage}
+                    currentUrl={editingBanner?.desktopImageUrl || editingBanner?.imageUrl}
+                    error={errors.desktopImage?.message}
+                    onChange={field.onChange}
+                  />
+                )}
               />
-              <ImageField
-                label="รูป Mobile"
-                hint="แนะนำ 750 × 900 px"
-                file={form.mobileImage}
-                currentUrl={
-                  editingBanner?.mobileImageUrl ||
-                  editingBanner?.desktopImageUrl ||
-                  editingBanner?.imageUrl
-                }
-                onChange={(file) => setForm((value) => ({ ...value, mobileImage: file }))}
+              <Controller
+                name="mobileImage"
+                control={control}
+                render={({ field }) => (
+                  <ImageField
+                    label="รูป Mobile"
+                    hint="แนะนำ 750 × 900 px"
+                    file={mobileImage}
+                    currentUrl={
+                      editingBanner?.mobileImageUrl ||
+                      editingBanner?.desktopImageUrl ||
+                      editingBanner?.imageUrl
+                    }
+                    error={errors.mobileImage?.message}
+                    onChange={field.onChange}
+                  />
+                )}
               />
             </Stack>
           </Stack>
@@ -358,12 +400,7 @@ export default function BannerManagementPage() {
           <Button color="inherit" onClick={closeDialog} disabled={saving}>
             ยกเลิก
           </Button>
-          <LoadingButton
-            variant="contained"
-            loading={saving}
-            disabled={!validForm}
-            onClick={saveBanner}
-          >
+          <LoadingButton variant="contained" loading={saving} onClick={saveBanner}>
             บันทึก
           </LoadingButton>
         </DialogActions>

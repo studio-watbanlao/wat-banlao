@@ -1,3 +1,4 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
 import {
   Alert,
@@ -24,38 +25,24 @@ import {
 } from '@mui/material';
 import NextImage, { ImageLoaderProps } from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
 import Iconify from 'src/components/iconify';
 import Layout from 'src/pages/dashboard/layout';
-import type {
-  SacredGalleryImage,
-  SacredImagePayload,
-  SacredItem,
-  SacredStatus,
-} from 'src/types/sacred';
+import { sacredFormSchema, type SacredFormValues } from 'src/schemas/sacred';
+import type { SacredGalleryImage, SacredImagePayload, SacredItem } from 'src/types/sacred';
 import axios from 'src/utils/axios';
 import { getErrorMessage } from 'src/utils/error-message';
 
-type SacredForm = {
-  title: string;
-  year: string;
-  description: string;
-  content: string;
-  status: SacredStatus;
-  coverImage: File | null;
-  galleryImages: File[];
-  currentGallery: SacredGalleryImage[];
-};
-
-const EMPTY_FORM: SacredForm = {
+const EMPTY_FORM: SacredFormValues = {
   title: '',
   year: String(new Date().getFullYear() + 543),
   description: '',
   content: '',
   status: 'PUBLIC',
   coverImage: null,
+  currentImageUrl: '',
   galleryImages: [],
-  currentGallery: [],
 };
 
 const passthroughLoader = ({ src }: ImageLoaderProps) => src;
@@ -96,10 +83,12 @@ const useFilePreview = (file: File | null) => {
 function CoverField({
   file,
   url,
+  error,
   onChange,
 }: {
   file: File | null;
   url?: string;
+  error?: string;
   onChange: (file: File | null) => void;
 }) {
   const preview = useFilePreview(file) || url;
@@ -139,8 +128,8 @@ function CoverField({
           onChange={(event) => onChange(event.target.files?.[0] || null)}
         />
       </Button>
-      <Typography variant="caption" color="text.secondary">
-        แนะนำอัตราส่วน 3:4 · ไม่เกิน 8 MB
+      <Typography variant="caption" color={error ? 'error' : 'text.secondary'}>
+        {error || 'แนะนำอัตราส่วน 3:4 · ไม่เกิน 8 MB'}
       </Typography>
     </Stack>
   );
@@ -154,7 +143,19 @@ export default function ManageSacredPage() {
   const [error, setError] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<SacredItem | null>(null);
-  const [form, setForm] = useState<SacredForm>(EMPTY_FORM);
+  const [currentGallery, setCurrentGallery] = useState<SacredGalleryImage[]>([]);
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm<SacredFormValues>({
+    resolver: zodResolver(sacredFormSchema),
+    defaultValues: EMPTY_FORM,
+    mode: 'onChange',
+  });
 
   const loadItems = useCallback(async () => {
     try {
@@ -175,26 +176,28 @@ export default function ManageSacredPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ ...EMPTY_FORM, galleryImages: [], currentGallery: [] });
+    setCurrentGallery([]);
+    reset(EMPTY_FORM);
     setDialogOpen(true);
   };
 
   const openEdit = (item: SacredItem) => {
     setEditing(item);
-    setForm({
+    setCurrentGallery(parseGallery(item.images));
+    reset({
       title: item.title,
       year: item.year || '',
       description: item.description || '',
       content: item.content || '',
       status: item.status === 'PUBLIC' ? 'PUBLIC' : 'DRAFT',
       coverImage: null,
+      currentImageUrl: item.imageUrl || '',
       galleryImages: [],
-      currentGallery: parseGallery(item.images),
     });
     setDialogOpen(true);
   };
 
-  const saveItem = async () => {
+  const saveItem = handleSubmit(async (form) => {
     try {
       setSaving(true);
       setError('');
@@ -211,7 +214,7 @@ export default function ManageSacredPage() {
         status: form.status,
         coverImage,
         galleryImages,
-        keptGallerySources: form.currentGallery.map((image) => image.src),
+        keptGallerySources: currentGallery.map((image) => image.src),
       };
       if (editing) await axios.patch('/api/admin/sacred', payload);
       else await axios.post('/api/admin/sacred', payload);
@@ -222,7 +225,7 @@ export default function ManageSacredPage() {
     } finally {
       setSaving(false);
     }
-  };
+  });
 
   const removeItem = async (item: SacredItem) => {
     if (!window.confirm(`ลบ “${item.title}” หรือไม่?`)) return;
@@ -238,7 +241,7 @@ export default function ManageSacredPage() {
     }
   };
 
-  const validForm = Boolean(form.title.trim() && (editing || form.coverImage));
+  const coverImage = watch('coverImage');
 
   return (
     <Layout>
@@ -325,163 +328,163 @@ export default function ManageSacredPage() {
       >
         <DialogTitle>{editing ? 'แก้ไขวัตถุมงคล' : 'เพิ่มวัตถุมงคล'}</DialogTitle>
         <DialogContent>
-          <Stack spacing={3} sx={{ pt: 1 }}>
-            <TextField
-              required
-              label="ชื่อ"
-              value={form.title}
-              onChange={(event) => setForm((value) => ({ ...value, title: event.target.value }))}
+          <Stack spacing={3} sx={{ pt: 1 }} component="form" onSubmit={saveItem}>
+            <Controller
+              name="title"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  required
+                  label="ชื่อ"
+                  error={!!errors.title}
+                  helperText={errors.title?.message}
+                />
+              )}
             />
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-              <TextField
-                fullWidth
-                label="ปี"
-                value={form.year}
-                onChange={(event) => setForm((value) => ({ ...value, year: event.target.value }))}
+              <Controller
+                name="year"
+                control={control}
+                render={({ field }) => <TextField {...field} fullWidth label="ปี" />}
               />
-              <FormControl fullWidth>
-                <InputLabel>สถานะ</InputLabel>
-                <Select
-                  value={form.status}
-                  label="สถานะ"
-                  onChange={(event) =>
-                    setForm((value) => ({ ...value, status: event.target.value as SacredStatus }))
-                  }
-                >
-                  <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
-                  <MenuItem value="DRAFT">แบบร่าง</MenuItem>
-                </Select>
-              </FormControl>
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <FormControl fullWidth>
+                    <InputLabel>สถานะ</InputLabel>
+                    <Select {...field} label="สถานะ">
+                      <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
+                      <MenuItem value="DRAFT">แบบร่าง</MenuItem>
+                    </Select>
+                  </FormControl>
+                )}
+              />
             </Stack>
-            <TextField
-              multiline
-              minRows={2}
-              label="คำอธิบาย"
-              value={form.description}
-              onChange={(event) =>
-                setForm((value) => ({ ...value, description: event.target.value }))
-              }
+            <Controller
+              name="description"
+              control={control}
+              render={({ field }) => (
+                <TextField {...field} multiline minRows={2} label="คำอธิบาย" />
+              )}
             />
-            <TextField
-              multiline
-              minRows={6}
-              label="เนื้อหา (รองรับ HTML)"
-              value={form.content}
-              onChange={(event) => setForm((value) => ({ ...value, content: event.target.value }))}
+            <Controller
+              name="content"
+              control={control}
+              render={({ field }) => (
+                <TextField {...field} multiline minRows={6} label="เนื้อหา (รองรับ HTML)" />
+              )}
             />
-            <CoverField
-              file={form.coverImage}
-              url={editing?.imageUrl}
-              onChange={(file) => setForm((value) => ({ ...value, coverImage: file }))}
-            />
-            <Stack spacing={1}>
-              <Typography variant="subtitle2">รูป Gallery (สูงสุด 8 รูป)</Typography>
-              <Grid container spacing={1}>
-                {form.currentGallery.map((image) => (
-                  <Grid item xs={4} sm={3} key={image.src}>
-                    <Box
-                      sx={{
-                        height: 110,
-                        position: 'relative',
-                        overflow: 'hidden',
-                        borderRadius: 1,
-                      }}
-                    >
-                      <NextImage
-                        loader={passthroughLoader}
-                        src={image.image}
-                        alt="Sacred gallery"
-                        fill
-                        sizes="200px"
-                        style={{ objectFit: 'cover' }}
-                      />
-                      <IconButton
-                        size="small"
-                        onClick={() =>
-                          setForm((value) => ({
-                            ...value,
-                            currentGallery: value.currentGallery.filter(
-                              (current) => current.src !== image.src
-                            ),
-                          }))
-                        }
-                        sx={{
-                          position: 'absolute',
-                          top: 4,
-                          right: 4,
-                          color: 'white',
-                          bgcolor: 'rgba(0,0,0,.55)',
-                        }}
-                      >
-                        <Iconify icon="mingcute:close-line" />
-                      </IconButton>
-                    </Box>
-                  </Grid>
-                ))}
-                {form.galleryImages.map((file, index) => (
-                  <Grid item xs={4} sm={3} key={`${file.name}-${file.lastModified}`}>
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      sx={{ height: 110, borderRadius: 1, bgcolor: 'background.neutral', px: 1 }}
-                    >
-                      <Typography variant="caption" noWrap>
-                        {file.name}
-                      </Typography>
-                      <IconButton
-                        size="small"
-                        onClick={() =>
-                          setForm((value) => ({
-                            ...value,
-                            galleryImages: value.galleryImages.filter(
-                              (_, itemIndex) => itemIndex !== index
-                            ),
-                          }))
-                        }
-                      >
-                        <Iconify icon="mingcute:close-line" />
-                      </IconButton>
-                    </Stack>
-                  </Grid>
-                ))}
-              </Grid>
-              <Button
-                component="label"
-                variant="outlined"
-                disabled={form.currentGallery.length + form.galleryImages.length >= 8}
-              >
-                เพิ่มรูป Gallery
-                <input
-                  hidden
-                  multiple
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={(event) => {
-                    const files = Array.from(event.target.files || []);
-                    setForm((value) => ({
-                      ...value,
-                      galleryImages: [...value.galleryImages, ...files].slice(
-                        0,
-                        8 - value.currentGallery.length
-                      ),
-                    }));
-                    event.target.value = '';
-                  }}
+            <Controller
+              name="coverImage"
+              control={control}
+              render={({ field }) => (
+                <CoverField
+                  file={coverImage}
+                  url={editing?.imageUrl}
+                  error={errors.coverImage?.message}
+                  onChange={field.onChange}
                 />
-              </Button>
-            </Stack>
+              )}
+            />
+            <Controller
+              name="galleryImages"
+              control={control}
+              render={({ field }) => (
+                <Stack spacing={1}>
+                  <Typography variant="subtitle2">รูป Gallery (สูงสุด 8 รูป)</Typography>
+                  <Grid container spacing={1}>
+                    {currentGallery.map((image) => (
+                      <Grid item xs={4} sm={3} key={image.src}>
+                        <Box
+                          sx={{
+                            height: 110,
+                            position: 'relative',
+                            overflow: 'hidden',
+                            borderRadius: 1,
+                          }}
+                        >
+                          <NextImage
+                            loader={passthroughLoader}
+                            src={image.image}
+                            alt="Sacred gallery"
+                            fill
+                            sizes="200px"
+                            style={{ objectFit: 'cover' }}
+                          />
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              setCurrentGallery((current) =>
+                                current.filter((c) => c.src !== image.src)
+                              )
+                            }
+                            sx={{
+                              position: 'absolute',
+                              top: 4,
+                              right: 4,
+                              color: 'white',
+                              bgcolor: 'rgba(0,0,0,.55)',
+                            }}
+                          >
+                            <Iconify icon="mingcute:close-line" />
+                          </IconButton>
+                        </Box>
+                      </Grid>
+                    ))}
+                    {field.value.map((file, index) => (
+                      <Grid item xs={4} sm={3} key={`${file.name}-${file.lastModified}`}>
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          sx={{ height: 110, borderRadius: 1, bgcolor: 'background.neutral', px: 1 }}
+                        >
+                          <Typography variant="caption" noWrap>
+                            {file.name}
+                          </Typography>
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              field.onChange(field.value.filter((_, i) => i !== index))
+                            }
+                          >
+                            <Iconify icon="mingcute:close-line" />
+                          </IconButton>
+                        </Stack>
+                      </Grid>
+                    ))}
+                  </Grid>
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    disabled={currentGallery.length + field.value.length >= 8}
+                  >
+                    เพิ่มรูป Gallery
+                    <input
+                      hidden
+                      multiple
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={(event) => {
+                        const files = Array.from(event.target.files || []);
+                        field.onChange(
+                          [...field.value, ...files].slice(0, 8 - currentGallery.length)
+                        );
+                        event.target.value = '';
+                      }}
+                    />
+                  </Button>
+                </Stack>
+              )}
+            />
           </Stack>
         </DialogContent>
         <DialogActions>
           <Button color="inherit" disabled={saving} onClick={() => setDialogOpen(false)}>
             ยกเลิก
           </Button>
-          <LoadingButton
-            variant="contained"
-            loading={saving}
-            disabled={!validForm}
-            onClick={saveItem}
-          >
+          <LoadingButton variant="contained" loading={saving} onClick={saveItem}>
             บันทึก
           </LoadingButton>
         </DialogActions>

@@ -1,3 +1,4 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
 import {
   Alert,
@@ -24,35 +25,16 @@ import {
 } from '@mui/material';
 import NextImage, { ImageLoaderProps } from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
 import Iconify from 'src/components/iconify';
 import Layout from 'src/pages/dashboard/layout';
-import type {
-  FestivalGalleryImage,
-  FestivalImagePayload,
-  FestivalItem,
-  FestivalStatus,
-} from 'src/types/festival';
+import { festivalFormSchema, type FestivalFormValues } from 'src/schemas/festival';
+import type { FestivalGalleryImage, FestivalImagePayload, FestivalItem } from 'src/types/festival';
 import axios from 'src/utils/axios';
 import { getErrorMessage } from 'src/utils/error-message';
 
-type FestivalForm = {
-  title: string;
-  year: string;
-  no: string;
-  description: string;
-  content: string;
-  videoUrl: string;
-  openingUrl: string;
-  logoUrl: string;
-  status: FestivalStatus;
-  coverImage: File | null;
-  galleryImages: File[];
-  currentGallery: FestivalGalleryImage[];
-  removedGalleryPaths: string[];
-};
-
-const EMPTY_FORM: FestivalForm = {
+const EMPTY_FORM: FestivalFormValues = {
   title: '',
   year: String(new Date().getFullYear() + 543),
   no: '',
@@ -63,9 +45,8 @@ const EMPTY_FORM: FestivalForm = {
   logoUrl: '',
   status: 'PUBLIC',
   coverImage: null,
+  currentImageUrl: '',
   galleryImages: [],
-  currentGallery: [],
-  removedGalleryPaths: [],
 };
 
 const passthroughLoader = ({ src }: ImageLoaderProps) => src;
@@ -106,10 +87,12 @@ const useFilePreview = (file: File | null) => {
 function CoverField({
   file,
   currentUrl,
+  error,
   onChange,
 }: {
   file: File | null;
   currentUrl?: string;
+  error?: string;
   onChange: (file: File | null) => void;
 }) {
   const preview = useFilePreview(file) || currentUrl;
@@ -149,8 +132,8 @@ function CoverField({
           onChange={(event) => onChange(event.target.files?.[0] || null)}
         />
       </Button>
-      <Typography variant="caption" color="text.secondary">
-        แนะนำอัตราส่วน 4:3 · ไม่เกิน 8 MB
+      <Typography variant="caption" color={error ? 'error' : 'text.secondary'}>
+        {error || 'แนะนำอัตราส่วน 4:3 · ไม่เกิน 8 MB'}
       </Typography>
     </Stack>
   );
@@ -164,7 +147,20 @@ export default function FestivalManagementPage() {
   const [error, setError] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingFestival, setEditingFestival] = useState<FestivalItem | null>(null);
-  const [form, setForm] = useState<FestivalForm>(EMPTY_FORM);
+  const [currentGallery, setCurrentGallery] = useState<FestivalGalleryImage[]>([]);
+  const [removedGalleryPaths, setRemovedGalleryPaths] = useState<string[]>([]);
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm<FestivalFormValues>({
+    resolver: zodResolver(festivalFormSchema),
+    defaultValues: EMPTY_FORM,
+    mode: 'onChange',
+  });
 
   const loadFestivals = useCallback(async () => {
     try {
@@ -185,13 +181,17 @@ export default function FestivalManagementPage() {
 
   const openCreate = () => {
     setEditingFestival(null);
-    setForm({ ...EMPTY_FORM, galleryImages: [], currentGallery: [], removedGalleryPaths: [] });
+    setCurrentGallery([]);
+    setRemovedGalleryPaths([]);
+    reset(EMPTY_FORM);
     setDialogOpen(true);
   };
 
   const openEdit = (festival: FestivalItem) => {
     setEditingFestival(festival);
-    setForm({
+    setCurrentGallery(parseGallery(festival.images));
+    setRemovedGalleryPaths([]);
+    reset({
       title: festival.title,
       year: festival.year,
       no: festival.no || '',
@@ -202,24 +202,18 @@ export default function FestivalManagementPage() {
       logoUrl: festival.logoUrl || '',
       status: festival.status === 'PUBLIC' ? 'PUBLIC' : 'DRAFT',
       coverImage: null,
+      currentImageUrl: festival.imageUrl || '',
       galleryImages: [],
-      currentGallery: parseGallery(festival.images),
-      removedGalleryPaths: [],
     });
     setDialogOpen(true);
   };
 
   const removeCurrentGallery = (image: FestivalGalleryImage) => {
-    setForm((value) => ({
-      ...value,
-      currentGallery: value.currentGallery.filter((item) => item.src !== image.src),
-      removedGalleryPaths: image.storagePath
-        ? [...value.removedGalleryPaths, image.storagePath]
-        : value.removedGalleryPaths,
-    }));
+    setCurrentGallery((current) => current.filter((item) => item.src !== image.src));
+    if (image.storagePath) setRemovedGalleryPaths((current) => [...current, image.storagePath!]);
   };
 
-  const saveFestival = async () => {
+  const saveFestival = handleSubmit(async (form) => {
     try {
       setSaving(true);
       setError('');
@@ -240,8 +234,8 @@ export default function FestivalManagementPage() {
         status: form.status,
         coverImage,
         galleryImages,
-        keptGallerySources: form.currentGallery.map((image) => image.src),
-        removedGalleryPaths: form.removedGalleryPaths,
+        keptGallerySources: currentGallery.map((image) => image.src),
+        removedGalleryPaths,
       };
       if (editingFestival) await axios.patch('/api/admin/festivals', payload);
       else await axios.post('/api/admin/festivals', payload);
@@ -252,7 +246,7 @@ export default function FestivalManagementPage() {
     } finally {
       setSaving(false);
     }
-  };
+  });
 
   const removeFestival = async (festival: FestivalItem) => {
     if (!window.confirm(`ลบ Festival “${festival.title}” หรือไม่?`)) return;
@@ -268,9 +262,8 @@ export default function FestivalManagementPage() {
     }
   };
 
-  const validForm = Boolean(
-    form.title.trim() && form.year.trim() && (editingFestival || form.coverImage)
-  );
+  const coverImage = watch('coverImage');
+  const galleryImages = watch('galleryImages');
 
   return (
     <Layout>
@@ -357,174 +350,195 @@ export default function FestivalManagementPage() {
       >
         <DialogTitle>{editingFestival ? 'แก้ไข Festival' : 'เพิ่ม Festival'}</DialogTitle>
         <DialogContent>
-          <Stack spacing={3} sx={{ pt: 1 }}>
-            <TextField
-              required
-              label="ชื่อ Festival"
-              value={form.title}
-              onChange={(event) => setForm((value) => ({ ...value, title: event.target.value }))}
+          <Stack spacing={3} sx={{ pt: 1 }} component="form" onSubmit={saveFestival}>
+            <Controller
+              name="title"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  required
+                  label="ชื่อ Festival"
+                  error={!!errors.title}
+                  helperText={errors.title?.message}
+                />
+              )}
             />
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-              <TextField
-                fullWidth
-                required
-                label="ปี"
-                value={form.year}
-                onChange={(event) => setForm((value) => ({ ...value, year: event.target.value }))}
+              <Controller
+                name="year"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    required
+                    label="ปี"
+                    error={!!errors.year}
+                    helperText={errors.year?.message}
+                  />
+                )}
               />
-              <TextField
-                fullWidth
-                label="ครั้งที่"
-                value={form.no}
-                onChange={(event) => setForm((value) => ({ ...value, no: event.target.value }))}
+              <Controller
+                name="no"
+                control={control}
+                render={({ field }) => <TextField {...field} fullWidth label="ครั้งที่" />}
               />
-              <FormControl fullWidth>
-                <InputLabel>สถานะ</InputLabel>
-                <Select
-                  value={form.status}
-                  label="สถานะ"
-                  onChange={(event) =>
-                    setForm((value) => ({ ...value, status: event.target.value as FestivalStatus }))
-                  }
-                >
-                  <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
-                  <MenuItem value="DRAFT">แบบร่าง</MenuItem>
-                </Select>
-              </FormControl>
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <FormControl fullWidth>
+                    <InputLabel>สถานะ</InputLabel>
+                    <Select {...field} label="สถานะ">
+                      <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
+                      <MenuItem value="DRAFT">แบบร่าง</MenuItem>
+                    </Select>
+                  </FormControl>
+                )}
+              />
             </Stack>
-            <TextField
-              multiline
-              minRows={2}
-              label="คำอธิบาย"
-              value={form.description}
-              onChange={(event) =>
-                setForm((value) => ({ ...value, description: event.target.value }))
-              }
+            <Controller
+              name="description"
+              control={control}
+              render={({ field }) => (
+                <TextField {...field} multiline minRows={2} label="คำอธิบาย" />
+              )}
             />
-            <TextField
-              multiline
-              minRows={5}
-              label="เนื้อหา (รองรับ HTML)"
-              value={form.content}
-              onChange={(event) => setForm((value) => ({ ...value, content: event.target.value }))}
+            <Controller
+              name="content"
+              control={control}
+              render={({ field }) => (
+                <TextField {...field} multiline minRows={5} label="เนื้อหา (รองรับ HTML)" />
+              )}
             />
-            <CoverField
-              file={form.coverImage}
-              currentUrl={editingFestival?.imageUrl}
-              onChange={(file) => setForm((value) => ({ ...value, coverImage: file }))}
-            />
-            <Stack spacing={1}>
-              <Typography variant="subtitle2">รูป Gallery (สูงสุด 8 รูป)</Typography>
-              <Grid container spacing={1}>
-                {form.currentGallery.map((image) => (
-                  <Grid item xs={4} sm={3} key={image.src}>
-                    <Box
-                      sx={{
-                        height: 110,
-                        position: 'relative',
-                        overflow: 'hidden',
-                        borderRadius: 1,
-                      }}
-                    >
-                      <NextImage
-                        loader={passthroughLoader}
-                        src={image.image}
-                        alt="Festival gallery"
-                        fill
-                        sizes="200px"
-                        style={{ objectFit: 'cover' }}
-                      />
-                      <IconButton
-                        size="small"
-                        onClick={() => removeCurrentGallery(image)}
-                        sx={{
-                          position: 'absolute',
-                          top: 4,
-                          right: 4,
-                          color: 'white',
-                          bgcolor: 'rgba(0,0,0,.55)',
-                        }}
-                      >
-                        <Iconify icon="mingcute:close-line" />
-                      </IconButton>
-                    </Box>
-                  </Grid>
-                ))}
-                {form.galleryImages.map((file, index) => (
-                  <Grid item xs={4} sm={3} key={`${file.name}-${file.lastModified}`}>
-                    <Box
-                      sx={{
-                        height: 110,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: 1,
-                        bgcolor: 'background.neutral',
-                        px: 1,
-                      }}
-                    >
-                      <Typography variant="caption" noWrap>
-                        {file.name}
-                      </Typography>
-                      <IconButton
-                        size="small"
-                        onClick={() =>
-                          setForm((value) => ({
-                            ...value,
-                            galleryImages: value.galleryImages.filter(
-                              (_, itemIndex) => itemIndex !== index
-                            ),
-                          }))
-                        }
-                      >
-                        <Iconify icon="mingcute:close-line" />
-                      </IconButton>
-                    </Box>
-                  </Grid>
-                ))}
-              </Grid>
-              <Button
-                component="label"
-                variant="outlined"
-                disabled={form.currentGallery.length + form.galleryImages.length >= 8}
-              >
-                <Iconify icon="eva:upload-fill" sx={{ mr: 1 }} />
-                เพิ่มรูป Gallery
-                <input
-                  hidden
-                  multiple
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={(event) => {
-                    const files = Array.from(event.target.files || []);
-                    setForm((value) => ({
-                      ...value,
-                      galleryImages: [...value.galleryImages, ...files].slice(
-                        0,
-                        8 - value.currentGallery.length
-                      ),
-                    }));
-                    event.target.value = '';
-                  }}
+            <Controller
+              name="coverImage"
+              control={control}
+              render={({ field }) => (
+                <CoverField
+                  file={coverImage}
+                  currentUrl={editingFestival?.imageUrl}
+                  error={errors.coverImage?.message}
+                  onChange={field.onChange}
                 />
-              </Button>
-            </Stack>
-            <TextField
-              label="YouTube URL"
-              value={form.videoUrl}
-              onChange={(event) => setForm((value) => ({ ...value, videoUrl: event.target.value }))}
+              )}
             />
-            <TextField
-              label="วิดีโอเปิดงาน URL"
-              value={form.openingUrl}
-              onChange={(event) =>
-                setForm((value) => ({ ...value, openingUrl: event.target.value }))
-              }
+            <Controller
+              name="galleryImages"
+              control={control}
+              render={({ field }) => (
+                <Stack spacing={1}>
+                  <Typography variant="subtitle2">รูป Gallery (สูงสุด 8 รูป)</Typography>
+                  <Grid container spacing={1}>
+                    {currentGallery.map((image) => (
+                      <Grid item xs={4} sm={3} key={image.src}>
+                        <Box
+                          sx={{
+                            height: 110,
+                            position: 'relative',
+                            overflow: 'hidden',
+                            borderRadius: 1,
+                          }}
+                        >
+                          <NextImage
+                            loader={passthroughLoader}
+                            src={image.image}
+                            alt="Festival gallery"
+                            fill
+                            sizes="200px"
+                            style={{ objectFit: 'cover' }}
+                          />
+                          <IconButton
+                            size="small"
+                            onClick={() => removeCurrentGallery(image)}
+                            sx={{
+                              position: 'absolute',
+                              top: 4,
+                              right: 4,
+                              color: 'white',
+                              bgcolor: 'rgba(0,0,0,.55)',
+                            }}
+                          >
+                            <Iconify icon="mingcute:close-line" />
+                          </IconButton>
+                        </Box>
+                      </Grid>
+                    ))}
+                    {field.value.map((file, index) => (
+                      <Grid item xs={4} sm={3} key={`${file.name}-${file.lastModified}`}>
+                        <Box
+                          sx={{
+                            height: 110,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: 1,
+                            bgcolor: 'background.neutral',
+                            px: 1,
+                          }}
+                        >
+                          <Typography variant="caption" noWrap>
+                            {file.name}
+                          </Typography>
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              field.onChange(field.value.filter((_, i) => i !== index))
+                            }
+                          >
+                            <Iconify icon="mingcute:close-line" />
+                          </IconButton>
+                        </Box>
+                      </Grid>
+                    ))}
+                  </Grid>
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    disabled={currentGallery.length + field.value.length >= 8}
+                  >
+                    <Iconify icon="eva:upload-fill" sx={{ mr: 1 }} />
+                    เพิ่มรูป Gallery
+                    <input
+                      hidden
+                      multiple
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={(event) => {
+                        const files = Array.from(event.target.files || []);
+                        field.onChange(
+                          [...field.value, ...files].slice(0, 8 - currentGallery.length)
+                        );
+                        event.target.value = '';
+                      }}
+                    />
+                  </Button>
+                  {errors.galleryImages ? (
+                    <Typography variant="caption" color="error">
+                      {errors.galleryImages.message ||
+                        (Array.isArray(errors.galleryImages)
+                          ? errors.galleryImages.find((item) => item)?.message
+                          : '')}
+                    </Typography>
+                  ) : null}
+                </Stack>
+              )}
             />
-            <TextField
-              label="Logo URL"
-              value={form.logoUrl}
-              onChange={(event) => setForm((value) => ({ ...value, logoUrl: event.target.value }))}
+            <Controller
+              name="videoUrl"
+              control={control}
+              render={({ field }) => <TextField {...field} label="YouTube URL" />}
+            />
+            <Controller
+              name="openingUrl"
+              control={control}
+              render={({ field }) => <TextField {...field} label="วิดีโอเปิดงาน URL" />}
+            />
+            <Controller
+              name="logoUrl"
+              control={control}
+              render={({ field }) => <TextField {...field} label="Logo URL" />}
             />
           </Stack>
         </DialogContent>
@@ -532,12 +546,7 @@ export default function FestivalManagementPage() {
           <Button color="inherit" disabled={saving} onClick={() => setDialogOpen(false)}>
             ยกเลิก
           </Button>
-          <LoadingButton
-            variant="contained"
-            loading={saving}
-            disabled={!validForm}
-            onClick={saveFestival}
-          >
+          <LoadingButton variant="contained" loading={saving} onClick={saveFestival}>
             บันทึก
           </LoadingButton>
         </DialogActions>

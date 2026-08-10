@@ -6,7 +6,7 @@ import { ContactView } from 'src/sections/contact/view';
 // ----------------------------------------------------------------------
 
 export const metadata = {
-  title: 'Contact us',
+  title: 'ติดต่อเรา',
 };
 
 const ContactPage = () => {

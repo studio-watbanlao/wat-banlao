@@ -1,4 +1,4 @@
-import emailjs from '@emailjs/browser';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { m } from 'framer-motion';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -11,16 +11,11 @@ import Typography from '@mui/material/Typography';
 
 import { useSnackbar } from 'notistack';
 import { MotionViewport, varFade } from 'src/components/animate';
-import { CONFIG } from 'src/config-global';
+import { contactPublicFormSchema, type ContactPublicFormValues } from 'src/schemas/contact';
+import axios from 'src/utils/axios';
+import { getErrorMessage } from 'src/utils/error-message';
 
 // ----------------------------------------------------------------------
-
-type FormValues = {
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-};
 
 export default function ContactForm() {
   const { enqueueSnackbar } = useSnackbar();
@@ -31,32 +26,24 @@ export default function ContactForm() {
     handleSubmit,
     reset,
     formState: { errors, isValid },
-  } = useForm<FormValues>({
+  } = useForm<ContactPublicFormValues>({
+    resolver: zodResolver(contactPublicFormSchema),
     mode: 'onChange',
+    defaultValues: { name: '', email: '', subject: '', message: '', company: '' },
   });
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: ContactPublicFormValues) => {
     try {
       setLoading(true);
 
-      await emailjs.send(
-        CONFIG.emailjs.serviceKey,
-        CONFIG.emailjs.templateKey,
-        {
-          name: data.name,
-          email: data.email,
-          subject: data.subject || 'ติดต่อจากเว็บไซต์',
-          time: new Date(),
-          message: data.message,
-        },
-        CONFIG.emailjs.puclicKey
-      );
+      await axios.post('/api/contact', data);
 
       enqueueSnackbar('ส่งข้อความสำเร็จ', { variant: 'success' });
       reset();
     } catch (error) {
-      console.error(error);
-      enqueueSnackbar('ส่งไม่สำเร็จ', { variant: 'error' });
+      enqueueSnackbar(getErrorMessage(error, 'ส่งข้อความไม่สำเร็จ กรุณาลองใหม่อีกครั้ง'), {
+        variant: 'error',
+      });
     } finally {
       setLoading(false);
     }
@@ -72,22 +59,24 @@ export default function ContactForm() {
       </m.div>
 
       <Stack spacing={3} component="form" onSubmit={handleSubmit(onSubmit)}>
+        <input
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          {...register('company')}
+          style={{ display: 'none' }}
+        />
         <TextField
           label="ชื่อ"
-          {...register('name', { required: 'กรุณากรอกชื่อ' })}
+          {...register('name')}
           error={!!errors.name}
           helperText={errors.name?.message}
         />
 
         <TextField
           label="อีเมล"
-          {...register('email', {
-            required: 'กรุณากรอกอีเมล',
-            pattern: {
-              value: /^\S+@\S+\.\S+$/,
-              message: 'รูปแบบอีเมลไม่ถูกต้อง',
-            },
-          })}
+          {...register('email')}
           error={!!errors.email}
           helperText={errors.email?.message}
         />
@@ -98,9 +87,7 @@ export default function ContactForm() {
           label="ข้อความ"
           multiline
           rows={4}
-          {...register('message', {
-            required: 'กรุณากรอกข้อความ',
-          })}
+          {...register('message')}
           error={!!errors.message}
           helperText={errors.message?.message}
         />

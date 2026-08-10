@@ -7,20 +7,10 @@ import {
 
 import type { InfiniteData } from '@tanstack/react-query';
 import { fetchBlog, fetchBlogById } from 'src/api/blog';
+import type { EditorialItem } from 'src/types/editorial';
 import { ARRICLE_KEY } from '../../key';
 
-export interface IBlog {
-  id: string;
-  title: string;
-  content: string;
-  createdDate: string;
-  type: string;
-  imageUrl: string;
-  description: string;
-  authorImageUrl: string;
-  author: string;
-  view: string | undefined;
-}
+export type IBlog = EditorialItem;
 
 interface IBlogPage {
   items: IBlog[];
@@ -31,7 +21,7 @@ const PAGE_SIZE = 8;
 
 export const useGetBlog = (): UseInfiniteQueryResult<InfiniteData<IBlogPage>, Error> =>
   useInfiniteQuery<IBlogPage, Error>({
-    queryKey: [ARRICLE_KEY, 'dharma-list'],
+    queryKey: [ARRICLE_KEY, 'blog-list'],
     queryFn: async ({ pageParam = 1 }) => {
       const page = Number(pageParam);
 
@@ -53,11 +43,13 @@ export const useGetBlog = (): UseInfiniteQueryResult<InfiniteData<IBlogPage>, Er
 
 export const useGetBlogById = (id?: string): UseQueryResult<IBlog, Error> =>
   useQuery<IBlog, Error>({
-    queryKey: [ARRICLE_KEY, 'dharma-detail', id],
+    queryKey: [ARRICLE_KEY, 'blog-detail', id],
 
     queryFn: async () => {
       if (!id) throw new Error('ID is required');
-      return fetchBlogById(id);
+      const item = await fetchBlogById(id);
+      if (!item) throw new Error('ไม่พบบทความ');
+      return item;
     },
 
     enabled: Boolean(id),

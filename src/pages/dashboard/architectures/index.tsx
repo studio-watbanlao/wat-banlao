@@ -1,3 +1,4 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
 import {
   Alert,
@@ -24,32 +25,20 @@ import {
 } from '@mui/material';
 import NextImage, { ImageLoaderProps } from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
 import Iconify from 'src/components/iconify';
 import Layout from 'src/pages/dashboard/layout';
+import { architectureFormSchema, type ArchitectureFormValues } from 'src/schemas/architecture';
 import type {
   ArchitectureGalleryImage,
   ArchitectureImagePayload,
   ArchitectureItem,
-  ArchitectureStatus,
 } from 'src/types/architecture';
 import axios from 'src/utils/axios';
 import { getErrorMessage } from 'src/utils/error-message';
 
-type FormValue = {
-  title: string;
-  year: string;
-  description: string;
-  content: string;
-  videoUrl: string;
-  logoUrl: string;
-  openingUrl: string;
-  status: ArchitectureStatus;
-  coverImage: File | null;
-  galleryImages: File[];
-  currentGallery: ArchitectureGalleryImage[];
-};
-const EMPTY: FormValue = {
+const EMPTY: ArchitectureFormValues = {
   title: '',
   year: '',
   description: '',
@@ -59,8 +48,8 @@ const EMPTY: FormValue = {
   openingUrl: '',
   status: 'PUBLIC',
   coverImage: null,
+  currentImageUrl: '',
   galleryImages: [],
-  currentGallery: [],
 };
 const loader = ({ src }: ImageLoaderProps) => src;
 const parseGallery = (value: ArchitectureItem['images']): ArchitectureGalleryImage[] => {
@@ -99,10 +88,12 @@ const usePreview = (file: File | null) => {
 function Cover({
   file,
   url,
+  error,
   onChange,
 }: {
   file: File | null;
   url?: string;
+  error?: string;
   onChange: (file: File | null) => void;
 }) {
   const preview = usePreview(file) || url;
@@ -142,6 +133,11 @@ function Cover({
           onChange={(event) => onChange(event.target.files?.[0] || null)}
         />
       </Button>
+      {error ? (
+        <Typography variant="caption" color="error">
+          {error}
+        </Typography>
+      ) : null}
     </Stack>
   );
 }
@@ -154,7 +150,19 @@ export default function ArchitectureManagementPage() {
   const [error, setError] = useState('');
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<ArchitectureItem | null>(null);
-  const [form, setForm] = useState<FormValue>(EMPTY);
+  const [currentGallery, setCurrentGallery] = useState<ArchitectureGalleryImage[]>([]);
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm<ArchitectureFormValues>({
+    resolver: zodResolver(architectureFormSchema),
+    defaultValues: EMPTY,
+    mode: 'onChange',
+  });
 
   const load = useCallback(async () => {
     try {
@@ -173,12 +181,14 @@ export default function ArchitectureManagementPage() {
   }, [load]);
   const create = () => {
     setEditing(null);
-    setForm({ ...EMPTY, galleryImages: [], currentGallery: [] });
+    setCurrentGallery([]);
+    reset(EMPTY);
     setOpen(true);
   };
   const edit = (item: ArchitectureItem) => {
     setEditing(item);
-    setForm({
+    setCurrentGallery(parseGallery(item.images));
+    reset({
       title: item.title,
       year: item.year || '',
       description: item.description || '',
@@ -188,12 +198,12 @@ export default function ArchitectureManagementPage() {
       openingUrl: item.openingUrl || '',
       status: item.status === 'PUBLIC' ? 'PUBLIC' : 'DRAFT',
       coverImage: null,
+      currentImageUrl: item.imageUrl || '',
       galleryImages: [],
-      currentGallery: parseGallery(item.images),
     });
     setOpen(true);
   };
-  const save = async () => {
+  const save = handleSubmit(async (form) => {
     try {
       setSaving(true);
       setError('');
@@ -213,7 +223,7 @@ export default function ArchitectureManagementPage() {
         status: form.status,
         coverImage,
         galleryImages,
-        keptGallerySources: form.currentGallery.map((image) => image.src),
+        keptGallerySources: currentGallery.map((image) => image.src),
       };
       if (editing) await axios.patch('/api/admin/architectures', payload);
       else await axios.post('/api/admin/architectures', payload);
@@ -224,7 +234,7 @@ export default function ArchitectureManagementPage() {
     } finally {
       setSaving(false);
     }
-  };
+  });
   const remove = async (item: ArchitectureItem) => {
     if (!window.confirm(`ลบ “${item.title}” หรือไม่?`)) return;
     try {
@@ -238,6 +248,8 @@ export default function ArchitectureManagementPage() {
       setDeleting('');
     }
   };
+
+  const coverImage = watch('coverImage');
 
   return (
     <Layout>
@@ -315,161 +327,163 @@ export default function ArchitectureManagementPage() {
       <Dialog open={open} onClose={() => !saving && setOpen(false)} fullWidth maxWidth="md">
         <DialogTitle>{editing ? 'แก้ไขข้อมูล' : 'เพิ่มข้อมูลสถาปัตย์'}</DialogTitle>
         <DialogContent>
-          <Stack spacing={3} sx={{ pt: 1 }}>
-            <TextField
-              required
-              label="ชื่อ"
-              value={form.title}
-              onChange={(event) => setForm((value) => ({ ...value, title: event.target.value }))}
+          <Stack spacing={3} sx={{ pt: 1 }} component="form" onSubmit={save}>
+            <Controller
+              name="title"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  required
+                  label="ชื่อ"
+                  error={!!errors.title}
+                  helperText={errors.title?.message}
+                />
+              )}
             />
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-              <TextField
-                fullWidth
-                label="ปีที่สร้าง"
-                value={form.year}
-                onChange={(event) => setForm((value) => ({ ...value, year: event.target.value }))}
+              <Controller
+                name="year"
+                control={control}
+                render={({ field }) => <TextField {...field} fullWidth label="ปีที่สร้าง" />}
               />
-              <FormControl fullWidth>
-                <InputLabel>สถานะ</InputLabel>
-                <Select
-                  value={form.status}
-                  label="สถานะ"
-                  onChange={(event) =>
-                    setForm((value) => ({
-                      ...value,
-                      status: event.target.value as ArchitectureStatus,
-                    }))
-                  }
-                >
-                  <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
-                  <MenuItem value="DRAFT">แบบร่าง</MenuItem>
-                </Select>
-              </FormControl>
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <FormControl fullWidth>
+                    <InputLabel>สถานะ</InputLabel>
+                    <Select {...field} label="สถานะ">
+                      <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
+                      <MenuItem value="DRAFT">แบบร่าง</MenuItem>
+                    </Select>
+                  </FormControl>
+                )}
+              />
             </Stack>
-            <TextField
-              multiline
-              minRows={2}
-              label="คำอธิบาย"
-              value={form.description}
-              onChange={(event) =>
-                setForm((value) => ({ ...value, description: event.target.value }))
-              }
+            <Controller
+              name="description"
+              control={control}
+              render={({ field }) => (
+                <TextField {...field} multiline minRows={2} label="คำอธิบาย" />
+              )}
             />
-            <TextField
-              multiline
-              minRows={6}
-              label="เนื้อหา (รองรับ HTML)"
-              value={form.content}
-              onChange={(event) => setForm((value) => ({ ...value, content: event.target.value }))}
+            <Controller
+              name="content"
+              control={control}
+              render={({ field }) => (
+                <TextField {...field} multiline minRows={6} label="เนื้อหา (รองรับ HTML)" />
+              )}
             />
-            <Cover
-              file={form.coverImage}
-              url={editing?.imageUrl}
-              onChange={(file) => setForm((value) => ({ ...value, coverImage: file }))}
-            />
-            <Stack spacing={1}>
-              <Typography variant="subtitle2">รูป Gallery (สูงสุด 8 รูป)</Typography>
-              <Grid container spacing={1}>
-                {form.currentGallery.map((image) => (
-                  <Grid item xs={4} sm={3} key={image.src}>
-                    <Box sx={{ height: 110, position: 'relative', overflow: 'hidden' }}>
-                      <NextImage
-                        loader={loader}
-                        src={image.image}
-                        alt="Architecture gallery"
-                        fill
-                        sizes="200px"
-                        style={{ objectFit: 'cover' }}
-                      />
-                      <IconButton
-                        size="small"
-                        onClick={() =>
-                          setForm((value) => ({
-                            ...value,
-                            currentGallery: value.currentGallery.filter(
-                              (current) => current.src !== image.src
-                            ),
-                          }))
-                        }
-                        sx={{
-                          position: 'absolute',
-                          top: 4,
-                          right: 4,
-                          color: 'white',
-                          bgcolor: 'rgba(0,0,0,.55)',
-                        }}
-                      >
-                        <Iconify icon="mingcute:close-line" />
-                      </IconButton>
-                    </Box>
-                  </Grid>
-                ))}
-                {form.galleryImages.map((file, index) => (
-                  <Grid item xs={4} sm={3} key={`${file.name}-${file.lastModified}`}>
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      sx={{ height: 110, px: 1, bgcolor: 'background.neutral' }}
-                    >
-                      <Typography variant="caption" noWrap>
-                        {file.name}
-                      </Typography>
-                      <IconButton
-                        size="small"
-                        onClick={() =>
-                          setForm((value) => ({
-                            ...value,
-                            galleryImages: value.galleryImages.filter((_, i) => i !== index),
-                          }))
-                        }
-                      >
-                        <Iconify icon="mingcute:close-line" />
-                      </IconButton>
-                    </Stack>
-                  </Grid>
-                ))}
-              </Grid>
-              <Button
-                component="label"
-                variant="outlined"
-                disabled={form.currentGallery.length + form.galleryImages.length >= 8}
-              >
-                เพิ่มรูป Gallery
-                <input
-                  hidden
-                  multiple
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={(event) => {
-                    const files = Array.from(event.target.files || []);
-                    setForm((value) => ({
-                      ...value,
-                      galleryImages: [...value.galleryImages, ...files].slice(
-                        0,
-                        8 - value.currentGallery.length
-                      ),
-                    }));
-                    event.target.value = '';
-                  }}
+            <Controller
+              name="coverImage"
+              control={control}
+              render={({ field }) => (
+                <Cover
+                  file={coverImage}
+                  url={editing?.imageUrl}
+                  error={errors.coverImage?.message}
+                  onChange={field.onChange}
                 />
-              </Button>
-            </Stack>
-            <TextField
-              label="YouTube URL"
-              value={form.videoUrl}
-              onChange={(event) => setForm((value) => ({ ...value, videoUrl: event.target.value }))}
+              )}
             />
-            <TextField
-              label="Logo URL"
-              value={form.logoUrl}
-              onChange={(event) => setForm((value) => ({ ...value, logoUrl: event.target.value }))}
+            <Controller
+              name="galleryImages"
+              control={control}
+              render={({ field }) => (
+                <Stack spacing={1}>
+                  <Typography variant="subtitle2">รูป Gallery (สูงสุด 8 รูป)</Typography>
+                  <Grid container spacing={1}>
+                    {currentGallery.map((image) => (
+                      <Grid item xs={4} sm={3} key={image.src}>
+                        <Box sx={{ height: 110, position: 'relative', overflow: 'hidden' }}>
+                          <NextImage
+                            loader={loader}
+                            src={image.image}
+                            alt="Architecture gallery"
+                            fill
+                            sizes="200px"
+                            style={{ objectFit: 'cover' }}
+                          />
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              setCurrentGallery((current) =>
+                                current.filter((c) => c.src !== image.src)
+                              )
+                            }
+                            sx={{
+                              position: 'absolute',
+                              top: 4,
+                              right: 4,
+                              color: 'white',
+                              bgcolor: 'rgba(0,0,0,.55)',
+                            }}
+                          >
+                            <Iconify icon="mingcute:close-line" />
+                          </IconButton>
+                        </Box>
+                      </Grid>
+                    ))}
+                    {field.value.map((file, index) => (
+                      <Grid item xs={4} sm={3} key={`${file.name}-${file.lastModified}`}>
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          sx={{ height: 110, px: 1, bgcolor: 'background.neutral' }}
+                        >
+                          <Typography variant="caption" noWrap>
+                            {file.name}
+                          </Typography>
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              field.onChange(field.value.filter((_, i) => i !== index))
+                            }
+                          >
+                            <Iconify icon="mingcute:close-line" />
+                          </IconButton>
+                        </Stack>
+                      </Grid>
+                    ))}
+                  </Grid>
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    disabled={currentGallery.length + field.value.length >= 8}
+                  >
+                    เพิ่มรูป Gallery
+                    <input
+                      hidden
+                      multiple
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={(event) => {
+                        const files = Array.from(event.target.files || []);
+                        field.onChange(
+                          [...field.value, ...files].slice(0, 8 - currentGallery.length)
+                        );
+                        event.target.value = '';
+                      }}
+                    />
+                  </Button>
+                </Stack>
+              )}
             />
-            <TextField
-              label="วิดีโอเปิดงาน URL"
-              value={form.openingUrl}
-              onChange={(event) =>
-                setForm((value) => ({ ...value, openingUrl: event.target.value }))
-              }
+            <Controller
+              name="videoUrl"
+              control={control}
+              render={({ field }) => <TextField {...field} label="YouTube URL" />}
+            />
+            <Controller
+              name="logoUrl"
+              control={control}
+              render={({ field }) => <TextField {...field} label="Logo URL" />}
+            />
+            <Controller
+              name="openingUrl"
+              control={control}
+              render={({ field }) => <TextField {...field} label="วิดีโอเปิดงาน URL" />}
             />
           </Stack>
         </DialogContent>
@@ -477,12 +491,7 @@ export default function ArchitectureManagementPage() {
           <Button color="inherit" disabled={saving} onClick={() => setOpen(false)}>
             ยกเลิก
           </Button>
-          <LoadingButton
-            variant="contained"
-            loading={saving}
-            disabled={!form.title.trim() || (!editing && !form.coverImage)}
-            onClick={save}
-          >
+          <LoadingButton variant="contained" loading={saving} onClick={save}>
             บันทึก
           </LoadingButton>
         </DialogActions>

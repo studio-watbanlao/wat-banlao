@@ -1,8 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
-import { postBlogById } from 'src/api/blog';
+import { postDharmaById } from 'src/api/dharma';
 
-export const usePostBlog = () => {
+export const usePostDharma = () => {
   return useMutation({
-    mutationFn: (id: string) => postBlogById(id),
+    mutationFn: (id: string) => postDharmaById(id),
   });
 };

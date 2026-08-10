@@ -3,6 +3,8 @@ const FESTIVAL_BUCKET = 'festivals';
 const SACRED_BUCKET = 'sacred';
 const ACTIVITY_BUCKET = 'activities';
 const ARCHITECTURE_BUCKET = 'architecture';
+const BLOG_BUCKET = 'blogs';
+const DHARMA_BUCKET = 'dharmas';
 
 export class SupabaseStorageError extends Error {
   constructor(
@@ -124,3 +126,13 @@ export const uploadArchitectureImage = (path: string, buffer: Buffer, contentTyp
 
 export const deleteArchitectureImages = (paths: string[]) =>
   deletePublicImages(ARCHITECTURE_BUCKET, paths);
+
+export const uploadBlogImage = (path: string, buffer: Buffer, contentType: string) =>
+  uploadPublicImage(BLOG_BUCKET, path, buffer, contentType);
+
+export const deleteBlogImages = (paths: string[]) => deletePublicImages(BLOG_BUCKET, paths);
+
+export const uploadDharmaImage = (path: string, buffer: Buffer, contentType: string) =>
+  uploadPublicImage(DHARMA_BUCKET, path, buffer, contentType);
+
+export const deleteDharmaImages = (paths: string[]) => deletePublicImages(DHARMA_BUCKET, paths);

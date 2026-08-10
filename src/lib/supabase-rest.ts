@@ -3,6 +3,7 @@ export const CONTENT_RESOURCES = [
   'architecture',
   'banner',
   'blog',
+  'dharma',
   'fastival',
   'sacred',
 ] as const;
@@ -96,7 +97,32 @@ const RESOURCE_CONFIG: Record<ContentResource, ResourceConfig> = {
       createdDate: 'created_date',
     },
   },
-  blog: { table: 'blogs', jsonData: true },
+  blog: {
+    table: 'blogs',
+    columns: {
+      title: 'title',
+      description: 'description',
+      content: 'content',
+      imageUrl: 'image_url',
+      coverStoragePath: 'cover_storage_path',
+      author: 'author',
+      authorImageUrl: 'author_image_url',
+      createdDate: 'created_date',
+    },
+  },
+  dharma: {
+    table: 'dharmas',
+    columns: {
+      title: 'title',
+      description: 'description',
+      content: 'content',
+      imageUrl: 'image_url',
+      coverStoragePath: 'cover_storage_path',
+      author: 'author',
+      authorImageUrl: 'author_image_url',
+      createdDate: 'created_date',
+    },
+  },
 };
 
 export class SupabaseRequestError extends Error {
@@ -120,7 +146,7 @@ const getSupabaseConfig = () => {
   return { url: url.replace(/\/$/, ''), serviceRoleKey };
 };
 
-const supabaseRequest = async <T>(path: string, init?: RequestInit): Promise<T> => {
+export const supabaseRequest = async <T>(path: string, init?: RequestInit): Promise<T> => {
   const { url, serviceRoleKey } = getSupabaseConfig();
   const headers = new Headers(init?.headers);
   headers.set('apikey', serviceRoleKey);
