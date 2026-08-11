@@ -1,7 +1,7 @@
 import { Container } from '@mui/material';
 import { fetchArchitectureById } from 'src/api/architecture';
 import { CONFIG } from 'src/config-global';
-import MainLayout from 'src/layouts/main';
+import { MainLayout } from 'src/layouts/main';
 import ArchitectureDetailsView from 'src/sections/architecture/view/architecture-detail-view';
 
 export const dynamic = 'force-dynamic';

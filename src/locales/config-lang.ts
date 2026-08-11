@@ -8,15 +8,12 @@ import {
   zhCN as zhCNAdapter,
   arSA as arSAAdapter,
 } from 'date-fns/locale';
-
-// date-pickers
 import {
   enUS as enUSDate,
   frFR as frFRDate,
   viVN as viVNDate,
   zhCN as zhCNDate,
 } from '@mui/x-date-pickers/locales';
-// core
 import {
   enUS as enUSCore,
   frFR as frFRCore,
@@ -24,14 +21,13 @@ import {
   zhCN as zhCNCore,
   arSA as arSACore,
 } from '@mui/material/locale';
-// data-grid
 import {
   enUS as enUSDataGrid,
   frFR as frFRDataGrid,
   viVN as viVNDataGrid,
   zhCN as zhCNDataGrid,
   arSD as arSDDataGrid,
-} from '@mui/x-data-grid';
+} from '@mui/x-data-grid/locales';
 
 // PLEASE REMOVE `LOCAL STORAGE` WHEN YOU CHANGE SETTINGS.
 // ----------------------------------------------------------------------
@@ -43,6 +39,7 @@ export const allLangs = [
     systemValue: merge(enUSDate, enUSDataGrid, enUSCore),
     adapterLocale: enUSAdapter,
     icon: 'flagpack:gb-nir',
+    countryCode: 'GB',
   },
   {
     label: 'French',
@@ -50,6 +47,7 @@ export const allLangs = [
     systemValue: merge(frFRDate, frFRDataGrid, frFRCore),
     adapterLocale: frFRAdapter,
     icon: 'flagpack:fr',
+    countryCode: 'FR',
   },
   {
     label: 'Vietnamese',
@@ -57,6 +55,7 @@ export const allLangs = [
     systemValue: merge(viVNDate, viVNDataGrid, viVNCore),
     adapterLocale: viVNAdapter,
     icon: 'flagpack:vn',
+    countryCode: 'VN',
   },
   {
     label: 'Chinese',
@@ -64,6 +63,7 @@ export const allLangs = [
     systemValue: merge(zhCNDate, zhCNDataGrid, zhCNCore),
     adapterLocale: zhCNAdapter,
     icon: 'flagpack:cn',
+    countryCode: 'CN',
   },
   {
     label: 'Arabic',
@@ -71,10 +71,19 @@ export const allLangs = [
     systemValue: merge(arSDDataGrid, arSACore),
     adapterLocale: arSAAdapter,
     icon: 'flagpack:sa',
+    countryCode: 'SA',
   },
 ];
 
 export const defaultLang = allLangs[0]; // English
+
+export const languageOptions = allLangs.map(({ value, label, countryCode }) => ({
+  value,
+  label,
+  countryCode,
+}));
+
+export type LangCode = (typeof allLangs)[number]['value'];
 
 // GET MORE COUNTRY FLAGS
 // https://icon-sets.iconify.design/flagpack/

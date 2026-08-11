@@ -1,59 +1,58 @@
-import { StackProps } from "@mui/material/Stack";
-import { ListItemButtonProps } from "@mui/material/ListItemButton";
-import { SxProps, Theme } from "@mui/material";
+import type { Theme, SxProps } from '@mui/material/styles';
+import type { ButtonBaseProps } from '@mui/material/ButtonBase';
 
 // ----------------------------------------------------------------------
-export type SlotProps = {
-  gap?: number;
-  rootItem?: SxProps<Theme>;
-  subItem?: SxProps<Theme>;
-  subheader?: SxProps<Theme>;
-  currentRole?: string;
-};
 
+/**
+ * Item
+ */
 export type NavItemStateProps = {
   open?: boolean;
   active?: boolean;
+};
+
+export type NavItemOptionsProps = {
   subItem?: boolean;
   hasChild?: boolean;
   externalLink?: boolean;
-  currentRole?: string;
 };
 
-export type SubMenuItemProps = {
-  roles: string[];
-  title: string;
+export type NavItemDataProps = {
   path: string;
-};
-
-export type NavItemBaseProps = {
   title: string;
-  path: string;
-  icon?: React.ReactElement;
-  roles?: string[];
+  icon?: string | React.ReactNode;
+  deepMatch?: boolean;
+  activePaths?: string[];
+  featureKey?: string;
   children?: {
     subheader: string;
-    items: SubMenuItemProps[];
+    items: { title: string; path: string }[];
   }[];
 };
 
-export type NavItemProps = ListItemButtonProps &
+export type NavItemProps = ButtonBaseProps &
+  NavItemDataProps &
   NavItemStateProps &
-  NavItemBaseProps & {
-    slotProps?: SlotProps;
-  };
+  NavItemOptionsProps;
 
-export type NavListProps = {
-  data: NavItemBaseProps;
-  slotProps?: SlotProps;
+/**
+ * List
+ */
+export type NavListProps = React.ComponentProps<'li'> & {
+  sx?: SxProps<Theme>;
+  data: NavItemDataProps;
 };
 
-export type NavSubListProps = StackProps & {
-  data: NavItemBaseProps[];
+export type NavSubListProps = React.ComponentProps<'li'> & {
+  sx?: SxProps<Theme>;
   subheader: string;
+  data: NavItemDataProps[];
 };
 
-export type NavProps = {
-  data: NavItemBaseProps[];
-  slotProps?: SlotProps;
+/**
+ * Main
+ */
+export type NavMainProps = {
+  sx?: SxProps<Theme>;
+  data: NavItemDataProps[];
 };

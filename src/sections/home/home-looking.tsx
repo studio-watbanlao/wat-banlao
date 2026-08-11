@@ -2,7 +2,7 @@ import { m } from 'framer-motion';
 
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Unstable_Grid2';
+import Grid from '@mui/material/GridLegacy';
 
 import { useResponsive } from 'src/hooks/use-responsive';
 

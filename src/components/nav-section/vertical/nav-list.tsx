@@ -13,7 +13,7 @@ import NavItem from './nav-item';
 export default function NavList({ data, depth, slotProps }: NavListProps) {
   const pathname = usePathname();
 
-  const active = useActiveLink(data.path, !!data.children);
+  const active = useActiveLink(data.path, data.deep ?? !!data.children);
 
   const [openMenu, setOpenMenu] = useState(active);
 

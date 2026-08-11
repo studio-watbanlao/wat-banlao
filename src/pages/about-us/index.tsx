@@ -1,6 +1,6 @@
 import { Container } from '@mui/system';
 import { CONFIG } from 'src/config-global';
-import MainLayout from 'src/layouts/main';
+import { MainLayout } from 'src/layouts/main';
 import AboutUsView from 'src/sections/about-us/view/about-us-view';
 
 // ----------------------------------------------------------------------

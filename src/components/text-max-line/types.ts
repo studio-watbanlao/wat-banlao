@@ -1,6 +1,5 @@
 import { LinkProps } from '@mui/material/Link';
 import { TypographyProps } from '@mui/material/Typography';
-import { Variant } from '@mui/material/styles/createTypography';
 
 // ----------------------------------------------------------------------
 
@@ -11,5 +10,5 @@ export interface TextMaxLineProps extends IProps {
   asLink?: boolean;
   persistent?: boolean;
   children: React.ReactNode;
-  variant?: Variant;
+  variant?: NonNullable<TypographyProps['variant']>;
 }

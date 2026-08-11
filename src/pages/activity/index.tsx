@@ -2,7 +2,7 @@
 
 import { Container } from '@mui/material';
 import { CONFIG } from 'src/config-global';
-import MainLayout from 'src/layouts/main';
+import { MainLayout } from 'src/layouts/main';
 import { ActivityView } from 'src/sections/activity/view';
 
 export const metadata = {

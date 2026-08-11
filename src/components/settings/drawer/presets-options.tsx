@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import { alpha } from '@mui/material/styles';
 import ButtonBase from '@mui/material/ButtonBase';
 
-import { presetOptions } from 'src/theme/options/presets';
+import { primaryColorPresets } from 'src/theme/with-settings/color-presets';
 
 // ----------------------------------------------------------------------
 
@@ -12,6 +12,15 @@ type PresetsOptionsProps = {
 };
 
 export default function PresetsOptions({ value, onChange }: PresetsOptionsProps) {
+  const presetOptions = [
+    { name: 'default', value: primaryColorPresets.default.main },
+    { name: 'cyan', value: primaryColorPresets.preset1.main },
+    { name: 'purple', value: primaryColorPresets.preset2.main },
+    { name: 'blue', value: primaryColorPresets.preset3.main },
+    { name: 'orange', value: primaryColorPresets.preset4.main },
+    { name: 'red', value: primaryColorPresets.preset5.main },
+  ];
+
   return (
     <Box columnGap={2} rowGap={1.5} display="grid" gridTemplateColumns="repeat(3, 1fr)">
       {presetOptions.map((option) => {

@@ -50,7 +50,7 @@ const StyledMarkdown = styled('div')(({ theme }) => {
       fontFamily: 'Georgia, serif',
       padding: theme.spacing(3, 3, 3, 8),
       color: theme.palette.text.secondary,
-      borderRadius: theme.shape.borderRadius * 2,
+      borderRadius: Number(theme.shape.borderRadius) * 2,
       backgroundColor: theme.palette.background.neutral,
       [theme.breakpoints.up('md')]: {
         width: '80%',

@@ -1,5 +1,5 @@
 import { useTheme } from '@mui/material/styles';
-import { Variant } from '@mui/material/styles/createTypography';
+import type { TypographyProps } from '@mui/material/Typography';
 
 import { useWidth } from 'src/hooks/use-responsive';
 
@@ -9,7 +9,7 @@ function remToPx(value: string) {
   return Math.round(parseFloat(value) * 16);
 }
 
-export default function useTypography(variant: Variant) {
+export default function useTypography(variant: NonNullable<TypographyProps['variant']>) {
   const theme = useTheme();
 
   const breakpoints = useWidth();
@@ -24,16 +24,15 @@ export default function useTypography(variant: Variant) {
     variant === 'h5' ||
     variant === 'h6';
 
-  const getFont: any =
-    hasResponsive && theme.typography[variant][key]
-      ? theme.typography[variant][key]
-      : theme.typography[variant];
+  const typography = theme.typography as Record<string, any>;
+  const variantStyle = typography[variant];
+  const getFont: any = hasResponsive && variantStyle?.[key] ? variantStyle[key] : variantStyle;
 
   const fontSize = remToPx(getFont.fontSize);
 
-  const lineHeight = Number(theme.typography[variant].lineHeight) * fontSize;
+  const lineHeight = Number(variantStyle.lineHeight) * fontSize;
 
-  const { fontWeight, letterSpacing } = theme.typography[variant];
+  const { fontWeight, letterSpacing } = variantStyle;
 
   return { fontSize, lineHeight, fontWeight, letterSpacing };
 }

@@ -1,4 +1,5 @@
 import 'src/global.css';
+import 'src/components/editor/components/code-highlight-block.css';
 import 'src/locales/i18n';
 
 import Script from 'next/script';

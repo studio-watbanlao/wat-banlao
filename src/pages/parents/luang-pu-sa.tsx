@@ -1,6 +1,6 @@
 import { Container, Typography } from '@mui/material';
 import { CONFIG } from 'src/config-global';
-import MainLayout from 'src/layouts/main';
+import { MainLayout } from 'src/layouts/main';
 import LuangPuSaView from 'src/sections/parents/view/luang-pu-sa-view';
 
 export const metadata = {

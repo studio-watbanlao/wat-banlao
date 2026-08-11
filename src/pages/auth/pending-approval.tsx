@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import LoadingButton from '@mui/lab/LoadingButton';
+import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -32,12 +32,12 @@ export default function PendingApprovalPage() {
           Admin กำหนด role เป็น Admin
         </Alert>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} justifyContent="center">
-          <LoadingButton variant="contained" onClick={() => window.location.reload()}>
+          <Button variant="contained" onClick={() => window.location.reload()}>
             ตรวจสอบสิทธิ์อีกครั้ง
-          </LoadingButton>
-          <LoadingButton variant="outlined" color="inherit" onClick={handleLogout}>
+          </Button>
+          <Button variant="outlined" color="inherit" onClick={handleLogout}>
             ออกจากระบบ
-          </LoadingButton>
+          </Button>
         </Stack>
       </Stack>
     </AuthLayoutCompact>

@@ -11,13 +11,12 @@ const LuangPuSaView = () => {
       <Stack>
         <Grid container>
           <Grid
-            item
-            xs={12}
+            size={12}
             sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}
           >
             <Image sx={{ height: '600px' }} src="/assets/images/img-luang-pu-sa.png" alt="pha" />
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Typography variant="body2" component={'span'}>
               <strong> " หลวงปู่สาธุ์ สุขธมฺโม " </strong>
               เป็นหนึ่งในบูรพาจารย์แห่งวัดบ้าน
@@ -44,7 +43,7 @@ const LuangPuSaView = () => {
       </Stack>
 
       <Grid container spacing={3} mt={3}>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Typography variant="h5">ประวัติชาติภูมิหลวงปู่สาธุ์ สุขธมฺโม</Typography>
           <Typography variant="body2" mt={2}>
             นามเดิมของหลวงปู่ชื่อว่า สาธุ์นามสกุล สรรพสอน บิดา ของท่านชื่อ นายสอน สรรพสอน มารดาชื่อ
@@ -73,7 +72,7 @@ const LuangPuSaView = () => {
           </Typography>
         </Grid>
 
-        <Grid item xs={12} mt={3}>
+        <Grid size={12} mt={3}>
           <Typography variant="h5">การศึกษาเล่าเรียนของหลวงปู่สาธุ์</Typography>
           <Typography variant="body2" mt={2}>
             การศึกษาเล่าเรียนของหลวงปู่สาธุ์นั้น ท่านมีความอดทนสูงที่
@@ -141,7 +140,7 @@ const LuangPuSaView = () => {
           </Typography>
         </Grid>
 
-        <Grid item xs={12} mt={3}>
+        <Grid size={12} mt={3}>
           <Typography variant="h5">ด้านข้อวัตรปฏิปทาของหลวงปู่สาธุ์</Typography>
           <Typography variant="body2" mt={2}>
             ปฏิปทาของหลวงปู่สาธุ์นั้น นอกจากจะเป็นผู้ใคร่ในการศึกษา แล้วยังเป็นผู้ใคร่ในการปฏิบัติ
@@ -176,7 +175,7 @@ const LuangPuSaView = () => {
           </Typography>
         </Grid>
 
-        <Grid item xs={12} mt={3}>
+        <Grid size={12} mt={3}>
           <Typography variant="h5">ด้านการปกครองและการก่อสร้างเสนาสนะต่าง ๆ</Typography>
           <Typography variant="body2" mt={2}>
             เมื่อกล่าวถึงด้านการปกครอง ในฐานะที่หลวงปู่เป็นพระมหา เถระที่มีอายุกาลพรรษามาก
@@ -227,7 +226,7 @@ const LuangPuSaView = () => {
           </Typography>
         </Grid>
 
-        <Grid item xs={12} mt={3}>
+        <Grid size={12} mt={3}>
           <Typography variant="h5">ด้านการสงเคราะห์และอนุเคราะห์</Typography>
           <Typography variant="body2" mt={2}>
             ก่อนหน้านี้ได้เล่าถึงหลวงปู่สาธุ์ ว่าท่านมีปฏิปทาในการ สงเคราะห์และอนุเคราะห์โลก
@@ -287,7 +286,7 @@ const LuangPuSaView = () => {
           </Typography>
         </Grid>
 
-        <Grid item xs={12} mt={3}>
+        <Grid size={12} mt={3}>
           <Typography variant="h5">วาระสุดท้ายของหลวงปู่สาธุ์</Typography>
           <Typography variant="body2" mt={2}>
             ภารธุระทั้งหลายที่หลวงปู่ทำมาตลอดตั้งแต่ปฐมวัยจนถึง ปัจฉิมวัย

@@ -16,7 +16,7 @@ import { _socials } from 'src/_mock';
 import { ComingSoonIllustration } from 'src/assets/illustrations';
 
 import Iconify from 'src/components/iconify';
-import MainLayout from 'src/layouts/main';
+import { MainLayout } from 'src/layouts/main';
 
 // ----------------------------------------------------------------------
 

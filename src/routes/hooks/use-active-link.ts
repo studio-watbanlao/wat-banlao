@@ -12,5 +12,5 @@ export function useActiveLink(targetPath: string, deep = true): boolean {
   const current = normalize(pathname);
   const target = normalize(targetPath);
 
-  return deep ? current.startsWith(target) : current === target;
+  return current === target || (deep && current.startsWith(`${target}/`));
 }

@@ -1,4 +1,3 @@
-import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
 import {
   Alert,
@@ -27,8 +26,11 @@ import NextImage, { ImageLoaderProps } from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
+import { zodResolver } from 'src/utils/zod-resolver';
 import Iconify from 'src/components/iconify';
 import Layout from 'src/pages/dashboard/layout';
+import { useRouter } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
 import { activityFormSchema, type ActivityFormValues } from 'src/schemas/activity';
 import type {
   ActivityGalleryImage,
@@ -50,17 +52,6 @@ const EMPTY_FORM: ActivityFormValues = {
   galleryImages: [],
 };
 const imageLoader = ({ src }: ImageLoaderProps) => src;
-const parseGallery = (images: ActivityItem['images']): ActivityGalleryImage[] => {
-  if (Array.isArray(images)) return images;
-  if (!images) return [];
-  try {
-    const parsed = JSON.parse(images);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-};
-
 const toPayload = (file: File): Promise<ActivityImagePayload> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -149,19 +140,19 @@ const TYPE_LABEL: Record<ActivityType, string> = {
 };
 
 export default function ActivityManagementPage() {
+  const router = useRouter();
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState('');
   const [error, setError] = useState('');
   const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<ActivityItem | null>(null);
+  const [editing] = useState<ActivityItem | null>(null);
   const [currentGallery, setCurrentGallery] = useState<ActivityGalleryImage[]>([]);
 
   const {
     control,
     handleSubmit,
-    reset,
     watch,
     formState: { errors },
   } = useForm<ActivityFormValues>({
@@ -186,27 +177,8 @@ export default function ActivityManagementPage() {
     loadActivities();
   }, [loadActivities]);
 
-  const create = () => {
-    setEditing(null);
-    setCurrentGallery([]);
-    reset(EMPTY_FORM);
-    setOpen(true);
-  };
-  const edit = (activity: ActivityItem) => {
-    setEditing(activity);
-    setCurrentGallery(parseGallery(activity.images));
-    reset({
-      title: activity.title,
-      type: activity.type || 'temple',
-      description: activity.description || '',
-      content: activity.content || '',
-      status: activity.status === 'PUBLIC' ? 'PUBLIC' : 'DRAFT',
-      coverImage: null,
-      currentImageUrl: activity.imageUrl || '',
-      galleryImages: [],
-    });
-    setOpen(true);
-  };
+  const edit = (activity: ActivityItem) =>
+    router.push(paths.dashboard.activityEdit(activity.id));
 
   const save = handleSubmit(async (form) => {
     try {
@@ -268,7 +240,7 @@ export default function ActivityManagementPage() {
             <Button
               variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
-              onClick={create}
+              onClick={() => router.push(paths.dashboard.activityNew)}
             >
               เพิ่มกิจกรรม
             </Button>
@@ -277,7 +249,7 @@ export default function ActivityManagementPage() {
           {loading && <Typography color="text.secondary">กำลังโหลด...</Typography>}
           <Grid container spacing={3}>
             {activities.map((activity) => (
-              <Grid item xs={12} sm={6} md={4} key={activity.id}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={activity.id}>
                 <Card>
                   <Box sx={{ height: 230, position: 'relative', bgcolor: 'background.neutral' }}>
                     {activity.imageUrl && (
@@ -411,7 +383,7 @@ export default function ActivityManagementPage() {
                   <Typography variant="subtitle2">รูป Gallery (สูงสุด 8 รูป)</Typography>
                   <Grid container spacing={1}>
                     {currentGallery.map((image) => (
-                      <Grid item xs={4} sm={3} key={image.src}>
+                      <Grid size={{ xs: 4, sm: 3 }} key={image.src}>
                         <Box
                           sx={{
                             height: 110,
@@ -449,7 +421,7 @@ export default function ActivityManagementPage() {
                       </Grid>
                     ))}
                     {field.value.map((file, index) => (
-                      <Grid item xs={4} sm={3} key={`${file.name}-${file.lastModified}`}>
+                      <Grid size={{ xs: 4, sm: 3 }} key={`${file.name}-${file.lastModified}`}>
                         <Stack
                           direction="row"
                           alignItems="center"

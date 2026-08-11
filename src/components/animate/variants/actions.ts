@@ -1,6 +1,7 @@
 // ----------------------------------------------------------------------
 
-export const varHover = (hover = 1.09, tap = 0.97) => ({
-  hover: { scale: hover },
-  tap: { scale: tap },
-});
+export const varHover = (scale = 1.09) => ({ scale });
+
+export const varTap = (scale = 0.97) => ({ scale });
+
+export const transitionTap = (duration = 0.2) => ({ duration, ease: 'easeInOut' as const });

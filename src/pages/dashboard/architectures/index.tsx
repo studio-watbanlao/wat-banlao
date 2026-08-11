@@ -1,4 +1,3 @@
-import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
 import {
   Alert,
@@ -27,8 +26,11 @@ import NextImage, { ImageLoaderProps } from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
+import { zodResolver } from 'src/utils/zod-resolver';
 import Iconify from 'src/components/iconify';
 import Layout from 'src/pages/dashboard/layout';
+import { useRouter } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
 import { architectureFormSchema, type ArchitectureFormValues } from 'src/schemas/architecture';
 import type {
   ArchitectureGalleryImage,
@@ -52,16 +54,6 @@ const EMPTY: ArchitectureFormValues = {
   galleryImages: [],
 };
 const loader = ({ src }: ImageLoaderProps) => src;
-const parseGallery = (value: ArchitectureItem['images']): ArchitectureGalleryImage[] => {
-  if (Array.isArray(value)) return value;
-  if (!value) return [];
-  try {
-    const result = JSON.parse(value);
-    return Array.isArray(result) ? result : [];
-  } catch {
-    return [];
-  }
-};
 const filePayload = (file: File): Promise<ArchitectureImagePayload> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -143,19 +135,19 @@ function Cover({
 }
 
 export default function ArchitectureManagementPage() {
+  const router = useRouter();
   const [items, setItems] = useState<ArchitectureItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState('');
   const [error, setError] = useState('');
   const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<ArchitectureItem | null>(null);
+  const [editing] = useState<ArchitectureItem | null>(null);
   const [currentGallery, setCurrentGallery] = useState<ArchitectureGalleryImage[]>([]);
 
   const {
     control,
     handleSubmit,
-    reset,
     watch,
     formState: { errors },
   } = useForm<ArchitectureFormValues>({
@@ -179,30 +171,8 @@ export default function ArchitectureManagementPage() {
   useEffect(() => {
     load();
   }, [load]);
-  const create = () => {
-    setEditing(null);
-    setCurrentGallery([]);
-    reset(EMPTY);
-    setOpen(true);
-  };
-  const edit = (item: ArchitectureItem) => {
-    setEditing(item);
-    setCurrentGallery(parseGallery(item.images));
-    reset({
-      title: item.title,
-      year: item.year || '',
-      description: item.description || '',
-      content: item.content || '',
-      videoUrl: item.videoUrl || '',
-      logoUrl: item.logoUrl || '',
-      openingUrl: item.openingUrl || '',
-      status: item.status === 'PUBLIC' ? 'PUBLIC' : 'DRAFT',
-      coverImage: null,
-      currentImageUrl: item.imageUrl || '',
-      galleryImages: [],
-    });
-    setOpen(true);
-  };
+  const edit = (item: ArchitectureItem) =>
+    router.push(paths.dashboard.architectureEdit(item.id));
   const save = handleSubmit(async (form) => {
     try {
       setSaving(true);
@@ -265,7 +235,7 @@ export default function ArchitectureManagementPage() {
             <Button
               variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
-              onClick={create}
+              onClick={() => router.push(paths.dashboard.architectureNew)}
             >
               เพิ่มข้อมูล
             </Button>
@@ -274,7 +244,7 @@ export default function ArchitectureManagementPage() {
           {loading && <Typography color="text.secondary">กำลังโหลด...</Typography>}
           <Grid container spacing={3}>
             {items.map((item) => (
-              <Grid item xs={12} sm={6} md={4} key={item.id}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={item.id}>
                 <Card>
                   <Box sx={{ height: 230, position: 'relative', bgcolor: 'background.neutral' }}>
                     {item.imageUrl && (
@@ -395,7 +365,7 @@ export default function ArchitectureManagementPage() {
                   <Typography variant="subtitle2">รูป Gallery (สูงสุด 8 รูป)</Typography>
                   <Grid container spacing={1}>
                     {currentGallery.map((image) => (
-                      <Grid item xs={4} sm={3} key={image.src}>
+                      <Grid size={{ xs: 4, sm: 3 }} key={image.src}>
                         <Box sx={{ height: 110, position: 'relative', overflow: 'hidden' }}>
                           <NextImage
                             loader={loader}
@@ -426,7 +396,7 @@ export default function ArchitectureManagementPage() {
                       </Grid>
                     ))}
                     {field.value.map((file, index) => (
-                      <Grid item xs={4} sm={3} key={`${file.name}-${file.lastModified}`}>
+                      <Grid size={{ xs: 4, sm: 3 }} key={`${file.name}-${file.lastModified}`}>
                         <Stack
                           direction="row"
                           alignItems="center"

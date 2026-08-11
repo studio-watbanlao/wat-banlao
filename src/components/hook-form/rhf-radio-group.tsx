@@ -1,74 +1,98 @@
+import type { RadioProps } from '@mui/material/Radio';
+import type { FormLabelProps } from '@mui/material/FormLabel';
+import type { RadioGroupProps } from '@mui/material/RadioGroup';
+import type { FormControlProps } from '@mui/material/FormControl';
+import type { FormHelperTextProps } from '@mui/material/FormHelperText';
+
 import { Controller, useFormContext } from 'react-hook-form';
 
 import Radio from '@mui/material/Radio';
 import FormLabel from '@mui/material/FormLabel';
+import RadioGroup from '@mui/material/RadioGroup';
 import FormControl from '@mui/material/FormControl';
-import FormHelperText from '@mui/material/FormHelperText';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import RadioGroup, { RadioGroupProps } from '@mui/material/RadioGroup';
+
+import { HelperText } from './help-text';
 
 // ----------------------------------------------------------------------
 
-type Props = RadioGroupProps & {
+export type RHFRadioGroupProps = RadioGroupProps & {
   name: string;
-  options: { label: string; value: any }[];
   label?: string;
-  spacing?: number;
+  options: { label: string; value: string }[];
   helperText?: React.ReactNode;
+  slotProps?: {
+    wrapper?: FormControlProps;
+    radio?: RadioProps;
+    formLabel?: FormLabelProps;
+    helperText?: FormHelperTextProps;
+  };
 };
 
-export default function RHFRadioGroup({
-  row,
+export function RHFRadioGroup({
+  sx,
   name,
   label,
   options,
-  spacing,
   helperText,
+  slotProps,
   ...other
-}: Props) {
+}: RHFRadioGroupProps) {
   const { control } = useFormContext();
 
-  const labelledby = label ? `${name}-${label}` : '';
+  const labelledby = `${name}-radios`;
 
   return (
     <Controller
       name={name}
       control={control}
       render={({ field, fieldState: { error } }) => (
-        <FormControl component="fieldset">
+        <FormControl component="fieldset" {...slotProps?.wrapper}>
           {label && (
-            <FormLabel component="legend" id={labelledby} sx={{ typography: 'body2' }}>
+            <FormLabel
+              id={labelledby}
+              component="legend"
+              {...slotProps?.formLabel}
+              sx={[
+                { mb: 1, typography: 'body2' },
+                ...(Array.isArray(slotProps?.formLabel?.sx)
+                  ? slotProps.formLabel.sx
+                  : [slotProps?.formLabel?.sx]),
+              ]}
+            >
               {label}
             </FormLabel>
           )}
 
-          <RadioGroup {...field} aria-labelledby={labelledby} row={row} {...other}>
+          <RadioGroup {...field} aria-labelledby={labelledby} sx={sx} {...other}>
             {options.map((option) => (
               <FormControlLabel
                 key={option.value}
                 value={option.value}
-                control={<Radio />}
+                control={
+                  <Radio
+                    {...slotProps?.radio}
+                    slotProps={{
+                      ...slotProps?.radio?.slotProps,
+                      input: {
+                        id: `${option.label}-radio`,
+                        ...(!option.label && { 'aria-label': `${option.label} radio` }),
+                        ...slotProps?.radio?.slotProps?.input,
+                      },
+                    }}
+                  />
+                }
                 label={option.label}
-                sx={{
-                  '&:not(:last-of-type)': {
-                    mb: spacing || 0,
-                  },
-                  ...(row && {
-                    mr: 0,
-                    '&:not(:last-of-type)': {
-                      mr: spacing || 2,
-                    },
-                  }),
-                }}
               />
             ))}
           </RadioGroup>
 
-          {(!!error || helperText) && (
-            <FormHelperText error={!!error} sx={{ mx: 0 }}>
-              {error ? error?.message : helperText}
-            </FormHelperText>
-          )}
+          <HelperText
+            {...slotProps?.helperText}
+            disableGutters
+            errorMessage={error?.message}
+            helperText={helperText}
+          />
         </FormControl>
       )}
     />

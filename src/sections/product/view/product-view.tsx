@@ -53,7 +53,7 @@ const ProductView = () => {
       <Container maxWidth="xl" sx={{ p: 0 }}>
         <Grid container spacing={2}>
           {mdUp && (
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <Card>
                 <Stack>
                   <Stack sx={{ p: 2 }}>
@@ -133,7 +133,7 @@ const ProductView = () => {
             </Grid>
           )}
 
-          <Grid item xs={12} md={9}>
+          <Grid size={{ xs: 12, md: 9 }}>
             <Stack>
               <Stack
                 sx={{
@@ -168,7 +168,7 @@ const ProductView = () => {
               </Typography>
               <Grid container spacing={2} mt={2}>
                 {interestingProducts.map((product) => (
-                  <Grid item xs={6} sm={4} md={3} key={product.id}>
+                  <Grid size={{ xs: 6, sm: 4, md: 3 }} key={product.id}>
                     <ProductItem
                       id={product.id}
                       name={product.name}

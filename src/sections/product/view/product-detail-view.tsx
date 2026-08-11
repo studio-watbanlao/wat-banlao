@@ -11,11 +11,11 @@ const ActivityDetailsView = () => {
       {product && (
         <Stack>
           <Grid container spacing={4}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <ProductDetailsCarousel product={product} />
             </Grid>
 
-            <Grid item xs={12} md={6} lg={5}>
+            <Grid size={{ xs: 12, md: 6, lg: 5 }}>
               <ProductDetailsSummary product={product} />
             </Grid>
           </Grid>

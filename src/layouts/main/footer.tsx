@@ -1,174 +1,219 @@
+'use client';
+
+import type { Breakpoint } from '@mui/material/styles';
+import { varAlpha } from 'minimal-shared/utils';
 import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
-import Stack from '@mui/material/Stack';
-import { alpha } from '@mui/material/styles';
+import Divider from '@mui/material/Divider';
+import { styled } from '@mui/material/styles';
+import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Unstable_Grid2';
 
+import { MainSchoolLogo, useMainSchoolBrand } from './school-brand';
+
+import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
-import { usePathname } from 'src/routes/hooks';
+import { CONFIG } from 'src/config-global';
+import { useTranslate } from 'src/locales';
+import {
+  RiHome5Line,
+  RiMailLine,
+  RiArticleLine,
+  RiCalendarLine,
+} from 'src/components/remix-icon';
 
-import { _socials } from 'src/_mock';
 
-import { Container } from '@mui/material';
-import Iconify from 'src/components/iconify';
-import Logo from 'src/components/logo';
+// ----------------------------------------------------------------------
 
-const LINKS = [
-  {
-    headline: 'เมนู',
-    children: [
-      // { name: 'เกี่ยวกับเรา', href: paths.about },
-      { name: 'ข้อกำหนดและเงื่อนไข', href: '#' },
-      { name: 'นโยบายความเป็นส่วนตัว', href: '#' },
-      // { name: 'ติดต่อเรา', href: paths.contact },
-      // { name: 'คำถามที่พบบ่อย', href: paths.faqs },
-    ],
-  },
-  // {
-  //   headline: '',
-  //   children: [
-  //     { name: 'ข้อกำหนดและเงื่อนไข', href: '#' },
-  //     { name: 'นโยบายความเป็นส่วนตัว', href: '#' },
-  //   ],
-  // },
-  {
-    headline: 'ติดต่อสอบถาม',
-    children: [{ name: 'studio.watbanlao@gmail.com', href: '#' }],
-  },
-];
+const QUICK_LINKS = [
+  { label: 'หน้าหลัก', href: '/', icon: <RiHome5Line size={18} /> },
+  { label: 'ประวัติวัดบ้านเหล่า', href: paths.banlao.history, icon: <RiArticleLine size={18} /> },
+  { label: 'กิจกรรมต่าง ๆ', href: paths.activity.root, icon: <RiCalendarLine size={18} /> },
+  { label: 'ติดต่อสอบถาม', href: paths.contact, icon: <RiMailLine size={18} /> },
+] as const;
 
-const Footer = () => {
-  const pathname = usePathname();
+const FooterRoot = styled('footer')(({ theme }) => ({
+  marginTop: 'auto',
+  flexShrink: 0,
+  overflow: 'hidden',
+  position: 'relative',
+  backgroundColor: theme.vars.palette.background.default,
+}));
 
-  const homePage = pathname === '/';
+export type FooterProps = React.ComponentProps<typeof FooterRoot>;
 
-  const simpleFooter = (
-    <Box
-      component="footer"
-      sx={{
-        py: 5,
-        textAlign: 'center',
-        position: 'relative',
-        bgcolor: 'background.default',
-      }}
-    >
-      <Stack sx={{ px: '10%' }}>
-        <Logo sx={{ mb: 1, mx: 'auto' }} />
+export function Footer({
+  sx,
+  layoutQuery = 'md',
+  ...other
+}: FooterProps & { layoutQuery?: Breakpoint }) {
+  return (
+    <FooterRoot sx={sx} {...other}>
+      <Container sx={{ position: 'relative', py: { xs: 4, md: 5 } }}>
+        <Box
+          sx={(theme) => ({
+            gap: 3,
+            display: 'flex',
+            textAlign: 'center',
+            alignItems: 'center',
+            flexDirection: 'column',
+            [theme.breakpoints.up(layoutQuery)]: {
+              textAlign: 'left',
+              alignItems: 'flex-start',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+            },
+          })}
+        >
+          <BrandSummary />
+          <QuickLinks layoutQuery={layoutQuery} />
+        </Box>
 
-        <Typography variant="caption" component="div">
-          © สงวนลิขสิทธิ์ทั้งหมด
-          <br /> จัดทำโดย
-          <Typography variant="caption"> วัดบ้านเหล่า สุขธัมมาราม</Typography>
-        </Typography>
-      </Stack>
-    </Box>
+        <FooterBottom />
+      </Container>
+    </FooterRoot>
   );
+}
 
-  const mainFooter = (
-    <Box
-      component="footer"
-      sx={{
-        position: 'relative',
-        bgcolor: 'background.default',
-      }}
-    >
-      <Divider />
+// ----------------------------------------------------------------------
 
-      <Container
-        sx={{
-          py: 5,
-          alignItems: { xs: 'center', md: 'unset' },
-          textAlign: { xs: 'center', md: 'unset' },
-        }}
-      >
-        <Logo sx={{ mb: 3 }} />
-
-        <Grid
-          container
-          justifyContent={{
-            xs: 'center',
-            md: 'space-between',
+export function HomeFooter({ sx, ...other }: FooterProps) {
+  return (
+    <FooterRoot sx={sx} {...other}>
+      <Container sx={{ position: 'relative', py: { xs: 3.5, md: 4.5 } }}>
+        <Box
+          sx={{
+            gap: 3,
+            display: 'flex',
+            textAlign: { xs: 'center', md: 'left' },
+            alignItems: { xs: 'center', md: 'flex-start' },
+            flexDirection: { xs: 'column', md: 'row' },
+            justifyContent: 'space-between',
           }}
         >
-          <Grid xs={8} md={5}>
-            <Typography
-              variant="body2"
-              sx={{
-                maxWidth: 300,
-                mx: { xs: 'auto', md: 'unset' },
-              }}
-            >
-              <strong> " วัดบ้านเหล่า สุขธัมมาราม" </strong>
-              <br /> ปัจจุบันตั้งอยู่เลขที่ 114 บ้านเหล่า หมู่ 3 ตำบลเม็กดำ อำเภอพยัคฆภูมิพิสัย
-              จังหวัด มหาสารคาม สังกัดคณะสงฆ์มหานิกาย
-            </Typography>
+          <BrandSummary />
+          <QuickLinks layoutQuery="md" />
+        </Box>
 
-            <Stack
-              direction="row"
-              justifyContent={{ xs: 'center', md: 'flex-start' }}
-              sx={{
-                mt: 3,
-                mb: { xs: 5, md: 0 },
-              }}
-            >
-              {_socials.map((social) => (
-                <IconButton
-                  key={social.name}
-                  href={social.path}
-                  target="_blank"
-                  sx={{
-                    '&:hover': {
-                      bgcolor: alpha(social.color, 0.08),
-                    },
-                  }}
-                >
-                  <Iconify color={social.color} icon={social.icon} />
-                </IconButton>
-              ))}
-            </Stack>
-          </Grid>
-
-          <Grid xs={12} md={7}>
-            <Stack spacing={5} direction={{ xs: 'column', md: 'row' }}>
-              {LINKS.map((list) => (
-                <Stack
-                  key={list.headline}
-                  spacing={2}
-                  alignItems={{ xs: 'center', md: 'flex-start' }}
-                  sx={{ width: 1 }}
-                >
-                  <Typography component="div" variant="overline">
-                    {list.headline}
-                  </Typography>
-
-                  {list.children.map((link) => (
-                    <Link
-                      key={link.name}
-                      component={RouterLink}
-                      href={link.href}
-                      color="inherit"
-                      variant="body2"
-                    >
-                      {link.name}
-                    </Link>
-                  ))}
-                </Stack>
-              ))}
-            </Stack>
-          </Grid>
-        </Grid>
-
-        <Typography variant="body2" sx={{ mt: 10 }}>
-          © ๒๕๖๙ วัดบ้านเหล่า สุขธัมมาราม สงวนลิขสิทธิ์
-        </Typography>
+        <FooterBottom />
       </Container>
+    </FooterRoot>
+  );
+}
+
+function BrandSummary() {
+  const { school } = useMainSchoolBrand();
+
+  return (
+    <Box sx={{ maxWidth: 390 }}>
+      <Box
+        sx={{
+          gap: 1.25,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: { xs: 'center', md: 'flex-start' },
+        }}
+      >
+        <MainSchoolLogo size={48} />
+        <Box>
+          <Typography variant="subtitle1" sx={{ lineHeight: 1.2 }}>
+            {school?.name ?? 'วัดบ้านเหล่า'}
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 700 }}>
+            วัดบ้านเหล่า - สุขธัมมาราม
+          </Typography>
+        </Box>
+      </Box>
+      <Typography variant="body2" sx={{ mt: 1.75, color: 'text.secondary', lineHeight: 1.75 }}>
+        ศูนย์รวมศรัทธา ประเพณี และวัฒนธรรมของชุมชนบ้านเหล่า จังหวัดมหาสารคาม
+      </Typography>
     </Box>
   );
+}
 
-  return homePage ? simpleFooter : mainFooter;
-};
+function QuickLinks({ layoutQuery }: { layoutQuery: Breakpoint }) {
+  const { t } = useTranslate('navbar');
+  const { t: tCommon } = useTranslate();
 
-export default Footer;
+  return (
+    <Box component="nav" aria-label={tCommon('navigation.footerLinks')}>
+      <Typography variant="overline" sx={{ color: 'text.secondary', letterSpacing: 0.8 }}>
+        {t('ทางลัด')}
+      </Typography>
+      <Box
+        sx={(theme) => ({
+          gap: 1,
+          mt: 1,
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+          [theme.breakpoints.up(layoutQuery)]: { minWidth: 340 },
+        })}
+      >
+        {QUICK_LINKS.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            component={RouterLink}
+            underline="none"
+            sx={(theme) => ({
+              gap: 0.75,
+              px: 1.5,
+              py: 1,
+              display: 'flex',
+              borderRadius: 1.5,
+              color: 'text.secondary',
+              alignItems: 'center',
+              typography: 'body2',
+              border: `1px solid ${theme.vars.palette.divider}`,
+              bgcolor: varAlpha(theme.vars.palette.background.paperChannel, 0.72),
+              transition: theme.transitions.create(['color', 'border-color', 'background-color']),
+              '&:hover': {
+                color: 'primary.darker',
+                borderColor: 'primary.main',
+                bgcolor: 'primary.lighter',
+              },
+            })}
+          >
+            {item.icon}
+            {t(item.label, { defaultValue: item.label })}
+          </Link>
+        ))}
+      </Box>
+    </Box>
+  );
+}
+
+function FooterBottom() {
+  const year = new Date().getFullYear();
+
+  return (
+    <>
+      <Divider
+        sx={{
+          my: 3,
+          left: '50%',
+          width: '100vw',
+          position: 'relative',
+          transform: 'translateX(-50%)',
+        }}
+      />
+      <Box
+        sx={{
+          gap: 1,
+          display: 'flex',
+          alignItems: 'center',
+          color: 'text.secondary',
+          flexDirection: { xs: 'column', sm: 'row' },
+          justifyContent: 'space-between',
+        }}
+      >
+        <Typography variant="caption">
+          © {year} วัดบ้านเหล่า - สุขธัมมาราม
+        </Typography>
+        <Typography variant="caption">
+          เวอร์ชัน {CONFIG.appVersion}
+        </Typography>
+      </Box>
+    </>
+  );
+}

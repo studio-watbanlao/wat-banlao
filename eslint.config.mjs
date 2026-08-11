@@ -60,5 +60,6 @@ export default [
   eslintJs.configs.recommended,
   ...eslintTs.configs.recommended,
   reactPlugin.configs.flat.recommended,
+  reactPlugin.configs.flat['jsx-runtime'],
   customConfig,
 ];

@@ -1,6 +1,6 @@
 import { Container } from '@mui/material';
 import { CONFIG } from 'src/config-global';
-import MainLayout from 'src/layouts/main';
+import { MainLayout } from 'src/layouts/main';
 import BlogDetailsView from 'src/sections/article/blog/blog-detail-view';
 
 const BlogDetailPage = () => {

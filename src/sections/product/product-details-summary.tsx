@@ -13,7 +13,7 @@ import { formHelperTextClasses } from "@mui/material/FormHelperText";
 import { fCurrency } from "src/utils/format-number";
 
 import Iconify from "src/components/iconify";
-import FormProvider, { RHFSelect } from "src/components/hook-form";
+import { Form, RHFSelect } from "src/components/hook-form";
 import IncrementerButton from "./common/incrementer-button";
 
 type Props = {
@@ -200,7 +200,7 @@ const ProductDetailsSummary = ({
   );
 
   return (
-    <FormProvider methods={methods} onSubmit={onSubmit}>
+    <Form methods={methods} onSubmit={onSubmit}>
       <Stack spacing={3} sx={{ pt: 3 }} {...other}>
         <Stack spacing={2} alignItems="flex-start">
           {renderInventoryType}
@@ -222,7 +222,7 @@ const ProductDetailsSummary = ({
 
         {renderActions}
       </Stack>
-    </FormProvider>
+    </Form>
   );
 };
 

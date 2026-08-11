@@ -1,19 +1,50 @@
+import type { BoxProps } from '@mui/material/Box';
+import type { UploadProps } from '../upload';
+
 import { Controller, useFormContext } from 'react-hook-form';
 
-import FormHelperText from '@mui/material/FormHelperText';
+import Box from '@mui/material/Box';
 
-import { Upload, UploadBox, UploadProps, UploadAvatar } from '../upload';
+import { HelperText } from './help-text';
+import { Upload, UploadBox, UploadAvatar } from '../upload';
 
 // ----------------------------------------------------------------------
 
-interface Props extends Omit<UploadProps, 'file'> {
+export type RHFUploadProps = UploadProps & {
   name: string;
-  multiple?: boolean;
+  slotProps?: {
+    wrapper?: BoxProps;
+  };
+};
+
+export function RHFUploadAvatar({ name, slotProps, ...other }: RHFUploadProps) {
+  const { control, setValue } = useFormContext();
+
+  return (
+    <Controller
+      name={name}
+      control={control}
+      render={({ field, fieldState: { error } }) => {
+        const onDrop = (acceptedFiles: File[]) => {
+          const value = acceptedFiles[0];
+
+          setValue(name, value, { shouldValidate: true });
+        };
+
+        return (
+          <Box {...slotProps?.wrapper}>
+            <UploadAvatar file={field.value} error={!!error} onDrop={onDrop} {...other} />
+            <HelperText errorMessage={error?.message} sx={{ justifyContent: 'center' }} />
+          </Box>
+        );
+      }}
+    />
+  );
 }
 
 // ----------------------------------------------------------------------
 
-export function RHFUploadAvatar({ name, ...other }: Props) {
+export function RHFUploadBox({ name, ...other }: RHFUploadProps) {
   const { control } = useFormContext();
 
   return (
@@ -21,15 +52,7 @@ export function RHFUploadAvatar({ name, ...other }: Props) {
       name={name}
       control={control}
       render={({ field, fieldState: { error } }) => (
-        <div>
-          <UploadAvatar error={!!error} file={field.value} {...other} />
-
-          {!!error && (
-            <FormHelperText error sx={{ px: 2, textAlign: 'center' }}>
-              {error.message}
-            </FormHelperText>
-          )}
-        </div>
+        <UploadBox error={!!error} {...other} />
       )}
     />
   );
@@ -37,61 +60,37 @@ export function RHFUploadAvatar({ name, ...other }: Props) {
 
 // ----------------------------------------------------------------------
 
-export function RHFUploadBox({ name, ...other }: Props) {
-  const { control } = useFormContext();
+export function RHFUpload({ name, multiple, helperText, ...other }: RHFUploadProps) {
+  const { control, setValue } = useFormContext();
 
   return (
     <Controller
       name={name}
       control={control}
-      render={({ field, fieldState: { error } }) => (
-        <UploadBox files={field.value} error={!!error} {...other} />
-      )}
-    />
-  );
-}
+      render={({ field, fieldState: { error } }) => {
+        const uploadProps = {
+          multiple,
+          accept: { 'image/*': [] },
+          error: !!error,
+          helperText: error?.message ?? helperText,
+        };
 
-// ----------------------------------------------------------------------
+        const onDrop = (acceptedFiles: File[]) => {
+          const value = multiple ? [...field.value, ...acceptedFiles] : acceptedFiles[0];
 
-export function RHFUpload({ name, multiple, helperText, ...other }: Props) {
-  const { control } = useFormContext();
+          setValue(name, value, { shouldValidate: true });
+        };
 
-  return (
-    <Controller
-      name={name}
-      control={control}
-      render={({ field, fieldState: { error } }) =>
-        multiple ? (
+        return (
           <Upload
-            multiple
-            accept={{ 'image/*': [] }}
-            files={field.value}
-            error={!!error}
-            helperText={
-              (!!error || helperText) && (
-                <FormHelperText error={!!error} sx={{ px: 2 }}>
-                  {error ? error?.message : helperText}
-                </FormHelperText>
-              )
-            }
+            {...uploadProps}
+            file={multiple ? null : field.value}
+            files={multiple ? field.value : undefined}
+            onDrop={onDrop}
             {...other}
           />
-        ) : (
-          <Upload
-            accept={{ 'image/*': [] }}
-            file={field.value}
-            error={!!error}
-            helperText={
-              (!!error || helperText) && (
-                <FormHelperText error={!!error} sx={{ px: 2 }}>
-                  {error ? error?.message : helperText}
-                </FormHelperText>
-              )
-            }
-            {...other}
-          />
-        )
-      }
+        );
+      }}
     />
   );
 }

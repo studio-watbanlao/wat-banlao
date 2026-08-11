@@ -1,4 +1,3 @@
-import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
 import {
   Alert,
@@ -24,6 +23,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
+import { zodResolver } from 'src/utils/zod-resolver';
 import Iconify from 'src/components/iconify';
 import Layout from 'src/pages/dashboard/layout';
 import { contactAdminFormSchema, type ContactAdminFormValues } from 'src/schemas/contact';
@@ -185,7 +185,7 @@ export default function ContactManagementPage() {
             {filteredContacts.map((contact) => {
               const status = STATUS_META[contact.status];
               return (
-                <Grid item xs={12} md={6} lg={4} key={contact.id}>
+                <Grid size={{ xs: 12, md: 6, lg: 4 }} key={contact.id}>
                   <Card sx={{ height: 1, display: 'flex', flexDirection: 'column' }}>
                     <CardContent sx={{ flexGrow: 1 }}>
                       <Stack direction="row" justifyContent="space-between" spacing={2}>

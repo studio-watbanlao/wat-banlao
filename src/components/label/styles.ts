@@ -1,20 +1,18 @@
 import Box from '@mui/material/Box';
-import { alpha, Theme, styled } from '@mui/material/styles';
+import { alpha, styled } from '@mui/material/styles';
 
 import { LabelColor, LabelVariant } from './types';
 
 // ----------------------------------------------------------------------
 
-export const StyledLabel = styled(Box)(({
-  theme,
-  ownerState,
-}: {
-  theme: Theme;
+type StyledLabelProps = {
   ownerState: {
     color: LabelColor;
     variant: LabelVariant;
   };
-}) => {
+};
+
+export const StyledLabel = styled(Box)<StyledLabelProps>(({ theme, ownerState }) => {
   const lightMode = theme.palette.mode === 'light';
 
   const filledVariant = ownerState.variant === 'filled';

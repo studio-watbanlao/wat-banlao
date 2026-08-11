@@ -1,104 +1,233 @@
-import { useEffect } from 'react';
-
+import type { Breakpoint } from '@mui/material/styles';
+import { varAlpha, mergeClasses } from 'minimal-shared/utils';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import Drawer from '@mui/material/Drawer';
+import Avatar from '@mui/material/Avatar';
+import Skeleton from '@mui/material/Skeleton';
+import { styled } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 
-import { usePathname } from 'src/routes/hooks';
+import { layoutClasses } from '../core';
+import { NavToggleButton } from '../components/nav-toggle-button';
 
-import { useResponsive } from 'src/hooks/use-responsive';
-import { useAuthContext } from 'src/auth/hooks';
-import { paths } from 'src/routes/paths';
+import { useTranslate } from 'src/locales';
+import { Logo } from 'src/components/logo';
+import { Scrollbar } from 'src/components/scrollbar';
+import { NavSectionMini, NavSectionVertical } from 'src/components/nav-section';
+import type { NavSectionProps } from 'src/components/nav-section';
 
-import Logo from 'src/components/logo';
-import Scrollbar from 'src/components/scrollbar';
-import { NavSectionVertical } from 'src/components/nav-section';
+// ----------------------------------------------------------------------
 
-import { NAV } from '../config-layout';
-import NavUpgrade from '../common/nav-upgrade';
-import { useNavData } from './config-navigation';
-import NavToggleButton from '../common/nav-toggle-button';
+export type NavVerticalProps = React.ComponentProps<'div'> &
+  NavSectionProps & {
+    isNavMini: boolean;
+    layoutQuery?: Breakpoint;
+    onToggleNav: () => void;
+    slots?: {
+      topArea?: React.ReactNode;
+      bottomArea?: React.ReactNode;
+    };
+  };
 
-type NavVerticalProps = {
-  openNav: boolean;
-  onCloseNav: VoidFunction;
-};
+export function NavVertical({
+  sx,
+  data,
+  slots,
+  cssVars,
+  className,
+  slotProps,
+  isNavMini,
+  onToggleNav,
+  checkPermissions,
+  layoutQuery = 'md',
+  ...other
+}: NavVerticalProps) {
+  const isMasterAdmin = false;
+  const isLoading = false;
+  const school = { name: 'วัดบ้านเหล่า', code: 'Wat Ban Lao', logo_url: '/logo/logo.png' };
 
-const NavVertical = ({ openNav, onCloseNav }: NavVerticalProps) => {
-  const { user } = useAuthContext();
+  const renderNavVertical = () => (
+    <>
+      {slots?.topArea ??
+        (isMasterAdmin ? (
+          <ProductIdentity />
+        ) : school ? (
+          <Box display="flex" alignItems="center" sx={{ pl: 3.5, pt: 2.5, pb: 1 }}>
+            <Avatar
+              src={school.logo_url ?? undefined}
+              alt={school.name}
+              variant="rounded"
+              sx={{
+                width: 50,
+                height: 50,
+                flexShrink: 0,
+                fontSize: 28,
+                color: 'primary.main',
+              }}
+            >
+              {school.name.charAt(0)}
+            </Avatar>
+            <Stack ml={2} sx={{ width: '70%' }}>
+              <Typography variant="subtitle1" noWrap>
+                {school.name}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                {school.code}
+              </Typography>
+            </Stack>
+          </Box>
+        ) : isLoading ? (
+          <SchoolIdentitySkeleton />
+        ) : (
+          <SchoolIdentityFallback />
+        ))}
 
-  const pathname = usePathname();
+      <Scrollbar fillContent>
+        <NavSectionVertical
+          data={data}
+          cssVars={cssVars}
+          slotProps={slotProps}
+          checkPermissions={checkPermissions}
+          sx={{ px: 2, pb: 2, flex: '1 1 auto' }}
+        />
 
-  const lgUp = useResponsive('up', 'lg');
+        {slots?.bottomArea}
+      </Scrollbar>
+    </>
+  );
 
-  const navData = useNavData();
+  const renderNavMini = () => (
+    <>
+      {slots?.topArea ?? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 2.5 }}>
+          {!isMasterAdmin && school ? (
+            <Avatar
+              src={school.logo_url ?? undefined}
+              alt={school.name}
+              variant="rounded"
+              sx={{ width: 40, height: 40, color: 'primary.main' }}
+            >
+              {school.name.charAt(0)}
+            </Avatar>
+          ) : (
+            <Logo />
+          )}
+        </Box>
+      )}
 
-  useEffect(() => {
-    if (openNav) {
-      onCloseNav();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
-
-  const renderContent = (
-    <Scrollbar
-      sx={{
-        height: 1,
-        '& .simplebar-content': {
-          height: 1,
-          display: 'flex',
-          flexDirection: 'column',
-        },
-      }}
-    >
-      <Logo href={paths.dashboard.root} sx={{ mt: 3, ml: 4, mb: 1 }} />
-
-      <NavSectionVertical
-        data={navData}
-        slotProps={{
-          currentRole: user?.role,
-        }}
+      <NavSectionMini
+        data={data}
+        cssVars={cssVars}
+        slotProps={slotProps}
+        checkPermissions={checkPermissions}
+        sx={[
+          (theme) => ({
+            ...theme.mixins.hideScrollY,
+            pb: 2,
+            px: 0.5,
+            flex: '1 1 auto',
+            overflowY: 'auto',
+          }),
+        ]}
       />
 
-      <Box sx={{ flexGrow: 1 }} />
-    </Scrollbar>
+      {slots?.bottomArea}
+    </>
   );
 
   return (
-    <Box
-      sx={{
-        flexShrink: { lg: 0 },
-        width: { lg: NAV.W_VERTICAL },
-      }}
+    <NavRoot
+      isNavMini={isNavMini}
+      layoutQuery={layoutQuery}
+      className={mergeClasses([layoutClasses.nav.root, layoutClasses.nav.vertical, className])}
+      sx={sx}
+      {...other}
     >
-      <NavToggleButton />
+      <NavToggleButton
+        isNavMini={isNavMini}
+        onClick={onToggleNav}
+        sx={[
+          (theme) => ({
+            display: 'none',
+            [theme.breakpoints.up(layoutQuery)]: { display: 'inline-flex' },
+          }),
+        ]}
+      />
+      {isNavMini ? renderNavMini() : renderNavVertical()}
+    </NavRoot>
+  );
+}
 
-      {lgUp ? (
-        <Stack
-          sx={{
-            height: 1,
-            position: 'fixed',
-            width: NAV.W_VERTICAL,
-            borderRight: (theme) => `dashed 1px ${theme.palette.divider}`,
-          }}
-        >
-          {renderContent}
-        </Stack>
-      ) : (
-        <Drawer
-          open={openNav}
-          onClose={onCloseNav}
-          PaperProps={{
-            sx: {
-              width: NAV.W_VERTICAL,
-            },
-          }}
-        >
-          {renderContent}
-        </Drawer>
-      )}
+// ----------------------------------------------------------------------
+
+function ProductIdentity() {
+  const { t } = useTranslate();
+
+  return (
+    <Box display="flex" alignItems="center" sx={{ pl: 3.5, pt: 2.5, pb: 1 }}>
+      <Logo />
+      <Stack ml={2} sx={{ minWidth: 0 }}>
+        <Typography variant="subtitle1" noWrap>
+          E-KRU
+        </Typography>
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          {t('brand.scoreSystem')}
+        </Typography>
+      </Stack>
     </Box>
   );
-};
+}
 
-export default NavVertical;
+function SchoolIdentitySkeleton() {
+  return (
+    <Box display="flex" alignItems="center" sx={{ pl: 3.5, pt: 2.5, pb: 1 }}>
+      <Skeleton variant="rounded" width={50} height={50} />
+      <Stack ml={2} spacing={0.75} sx={{ flex: 1, pr: 3 }}>
+        <Skeleton width="85%" height={22} />
+        <Skeleton width="45%" height={18} />
+      </Stack>
+    </Box>
+  );
+}
+
+function SchoolIdentityFallback() {
+  const { t } = useTranslate();
+
+  return (
+    <Box display="flex" alignItems="center" sx={{ pl: 3.5, pt: 2.5, pb: 1 }}>
+      <Avatar variant="rounded" sx={{ width: 50, height: 50, color: 'primary.main' }}>
+        ร
+      </Avatar>
+      <Stack ml={2} sx={{ minWidth: 0 }}>
+        <Typography variant="subtitle1">{t('school.information')}</Typography>
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          {t('errors.loadData')}
+        </Typography>
+      </Stack>
+    </Box>
+  );
+}
+
+// ----------------------------------------------------------------------
+
+const NavRoot = styled('div', {
+  shouldForwardProp: (prop: string) => !['isNavMini', 'layoutQuery', 'sx'].includes(prop),
+})<Pick<NavVerticalProps, 'isNavMini' | 'layoutQuery'>>(
+  ({ isNavMini, layoutQuery = 'md', theme }) => ({
+    top: 0,
+    left: 0,
+    height: '100%',
+    display: 'none',
+    position: 'fixed',
+    flexDirection: 'column',
+    zIndex: 'var(--layout-nav-zIndex)',
+    backgroundColor: 'var(--layout-nav-bg)',
+    width: isNavMini ? 'var(--layout-nav-mini-width)' : 'var(--layout-nav-vertical-width)',
+    borderRight: `1px solid var(--layout-nav-border-color, ${varAlpha(theme.vars.palette.grey['500Channel'], 0.12)})`,
+    transition: theme.transitions.create(['width'], {
+      easing: 'var(--layout-transition-easing)',
+      duration: 'var(--layout-transition-duration)',
+    }),
+    [theme.breakpoints.up(layoutQuery)]: { display: 'flex' },
+  })
+);

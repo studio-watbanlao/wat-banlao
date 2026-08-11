@@ -55,7 +55,7 @@ export default function EditorialDetailContent({
         sx={{ mb: 3 }}
       />
       <Grid container spacing={4}>
-        <Grid item xs={12} md={9}>
+        <Grid size={{ xs: 12, md: 9 }}>
           <Stack spacing={2}>
             <Typography variant="h4" color="primary">
               {data.title}

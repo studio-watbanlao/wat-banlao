@@ -15,7 +15,7 @@ const ContactView = () => {
   return (
     <Stack>
       <Grid container>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <ContactHero />
         </Grid>
       </Grid>
@@ -33,10 +33,10 @@ const ContactView = () => {
       </Stack>
 
       <Grid container spacing={5} mt={3}>
-        <Grid item xs={12} md={7}>
+        <Grid size={{ xs: 12, md: 7 }}>
           <ContactForm />
         </Grid>
-        <Grid item xs={12} md={5}>
+        <Grid size={{ xs: 12, md: 5 }}>
           <Stack component={MotionViewport}>
             <Stack
               alignItems="center"

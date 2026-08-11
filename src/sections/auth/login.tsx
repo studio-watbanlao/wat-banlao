@@ -25,7 +25,7 @@ import { PATH_AFTER_LOGIN } from 'src/config-global';
 import { getErrorMessage } from 'src/utils/error-message';
 
 import Iconify from 'src/components/iconify';
-import FormProvider, { RHFTextField } from 'src/components/hook-form';
+import { Form, RHFTextField } from 'src/components/hook-form';
 import GoogleSignInButton from './google-sign-in-button';
 
 // ----------------------------------------------------------------------
@@ -92,7 +92,7 @@ const LoginView = () => {
 
   return (
     <Stack sx={{ minWidth: '320px' }}>
-      <FormProvider methods={methods} onSubmit={onSubmit}>
+      <Form methods={methods} onSubmit={onSubmit}>
         <Stack spacing={2} sx={{ mb: 5 }}>
           <Typography variant="h4">Sign in to Wat Ban lao</Typography>
         </Stack>
@@ -136,7 +136,7 @@ const LoginView = () => {
 
           <GoogleSignInButton onCredential={handleGoogleCredential} />
         </Stack>
-      </FormProvider>
+      </Form>
     </Stack>
   );
 };

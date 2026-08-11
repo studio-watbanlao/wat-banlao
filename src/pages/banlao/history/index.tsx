@@ -1,6 +1,6 @@
 import { Container, Typography, useTheme } from '@mui/material';
 import { CONFIG } from 'src/config-global';
-import MainLayout from 'src/layouts/main';
+import { MainLayout } from 'src/layouts/main';
 import { HistoryView } from 'src/sections/history/view';
 
 export const metadata = {

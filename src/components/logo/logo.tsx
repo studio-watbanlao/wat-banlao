@@ -7,10 +7,11 @@ import { RouterLink } from 'src/routes/components';
 export type LogoProps = BoxProps & {
   disabledLink?: boolean;
   href?: string;
+  isSingle?: boolean;
 };
 
 const Logo = forwardRef<HTMLImageElement, LogoProps>(
-  ({ disabledLink = false, href = '/', sx, ...other }, ref) => {
+  ({ disabledLink = false, href = '/', isSingle: _isSingle, sx, ...other }, ref) => {
     const logo = (
       <Box
         ref={ref}

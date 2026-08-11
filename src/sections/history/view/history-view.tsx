@@ -9,7 +9,7 @@ const HistoryView = () => {
   return (
     <Stack>
       <Grid container spacing={2}>
-        <Grid item xs={12} sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+        <Grid size={12} sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
           <Image
             ratio="21/9"
             sx={{ height: '450px', borderRadius: 2 }}
@@ -17,7 +17,7 @@ const HistoryView = () => {
             alt="pha"
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Typography variant="body2">
             " วัดบ้านเหล่า " เป็นวัดอีกแห่งหนึ่งในจังหวัดมหาสารคาม ที่มีความเก่าแก่ อายุประมาณ 227
             ปี ปัจจุบันตั้งอยู่เลขที่ 114 บ้านเหล่า หมู่ 3 ตำบลเม็กดำ อำเภอพยัคฆภูมิพิสัย จังหวัด
@@ -31,7 +31,7 @@ const HistoryView = () => {
       </Grid>
 
       <Grid container spacing={3} mt={3}>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Typography variant="h5">ประวัติชาติภูมิหลวงปู่สาธุ์ สุขธมฺโม</Typography>
           <Typography variant="body2" mt={2}>
             วัดบ้านเหล่าถูกสร้างขึ้นเมื่อประมาณปี พ.ศ. 2339
@@ -48,7 +48,7 @@ const HistoryView = () => {
           </Typography>
         </Grid>
 
-        <Grid item xs={12} mt={3}>
+        <Grid size={12} mt={3}>
           <Typography variant="h5">สิ่งปลูกสร้างเสนาสนะ</Typography>
           <Typography variant="body2" mt={2}>
               ในส่วนสิ่งปลูกสร้างเสนาสนะภายในวัดนั้น สภาพตั้งแต่อดีต จนถึงปัจจุบัน
@@ -80,7 +80,7 @@ const HistoryView = () => {
           </Typography>
         </Grid>
 
-        <Grid item xs={12} mt={3}>
+        <Grid size={12} mt={3}>
           <Typography variant="h5">วัตถุโบราณสมบัติของวัด</Typography>
           <Typography variant="body2" mt={2}>
              วัดบ้านเหล่าถือเป็นวัดที่เก่าแก่อีกวันหนึ่งในพระพุทธศาสนา และในจังหวัดมหาสารคาม
@@ -114,7 +114,7 @@ const HistoryView = () => {
           </Typography>
         </Grid>
 
-        <Grid item xs={12} mt={3}>
+        <Grid size={12} mt={3}>
           <Typography variant="h5">การบริหารและการปกครอง</Typography>
           <Typography variant="body2" mt={2}>
             นับตั้งแต่วัดบ้านเหล่าได้ก่อตั้งขึ้นตามที่ปรากฏในหลักฐาน เมื่อปี พ.ศ. 2339
@@ -132,12 +132,12 @@ const HistoryView = () => {
           </Typography>
         </Grid>
 
-        <Grid item xs={12} mt={3}>
+        <Grid size={12} mt={3}>
           <Typography variant="h5">ลำดับรายนามเจ้าอาวาสวัดบ้านเหล่าอดีต-ปัจจุบัน</Typography>
           ลำดับ
         </Grid>
 
-        <Grid item xs={12} mt={3}>
+        <Grid size={12} mt={3}>
           <Typography variant="h5">ชื่อเรียกวัดบ้านเหล่า</Typography>
           <Typography variant="body2" mt={2}>
              วัดบ้านเหล่ามีชื่อเรียกอีกนามหนึ่งที่ใช้เรียกกันในกลุ่มชุมชน บ้านเหล่าว่า “ วัดใต้ ”

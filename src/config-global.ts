@@ -36,6 +36,8 @@ export const PATH_AFTER_LOGIN = paths.dashboard.root; // as '/dashboard'
 //
 export const CONFIG = {
   websiteUrl: 'https://www.watbanlao.org',
+  assetsDir: '',
+  appVersion: process.env.npm_package_version ?? '0.1.0',
   layout: {
     HEIGHT_LAYOUT: 8,
     HEIGHT_LAYOUT_XS: 6,

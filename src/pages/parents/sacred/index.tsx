@@ -2,7 +2,7 @@
 
 import { Container } from '@mui/material';
 import { CONFIG } from 'src/config-global';
-import MainLayout from 'src/layouts/main';
+import { MainLayout } from 'src/layouts/main';
 import SacredView from 'src/sections/parents/sacred/view/sacred-view';
 
 export const metadata = {

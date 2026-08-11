@@ -24,7 +24,7 @@ import { PATH_AFTER_LOGIN } from 'src/config-global';
 import { getErrorMessage } from 'src/utils/error-message';
 
 import Iconify from 'src/components/iconify';
-import FormProvider, { RHFTextField } from 'src/components/hook-form';
+import { Form, RHFTextField } from 'src/components/hook-form';
 
 // ----------------------------------------------------------------------
 
@@ -115,7 +115,7 @@ const RegisterView = () => {
   );
 
   const renderForm = (
-    <FormProvider methods={methods} onSubmit={onSubmit}>
+    <Form methods={methods} onSubmit={onSubmit}>
       <Stack spacing={2.5}>
         {!!errorMsg && <Alert severity="error">{errorMsg}</Alert>}
 
@@ -152,7 +152,7 @@ const RegisterView = () => {
           Create account
         </LoadingButton>
       </Stack>
-    </FormProvider>
+    </Form>
   );
 
   return (

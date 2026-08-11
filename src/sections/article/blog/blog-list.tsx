@@ -22,7 +22,7 @@ const BlogList = () => {
       {isLoading && (
         <Grid container spacing={3}>
           {Array.from({ length: 6 }).map((_, index) => (
-            <Grid item key={index} xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
               <Skeleton variant="rounded" height={280} />
             </Grid>
           ))}
@@ -34,7 +34,7 @@ const BlogList = () => {
 
       <Grid container spacing={3}>
         {list.map((post) => (
-          <Grid item key={post.id} xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }} key={post.id}>
             <BlogItem data={post} />
           </Grid>
         ))}

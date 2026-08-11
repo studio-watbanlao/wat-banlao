@@ -3,12 +3,13 @@
 import isEqual from 'lodash/isEqual';
 import { useMemo, useState, useEffect, useCallback } from 'react';
 
-import { useLocalStorage } from 'src/hooks/use-local-storage';
+import { SettingsValueProps } from '../types';
 
+import { SettingsContext } from './settings-context';
+
+import { useLocalStorage } from 'src/hooks/use-local-storage';
 import { localStorageGetItem } from 'src/utils/storage-available';
 
-import { SettingsValueProps } from '../types';
-import { SettingsContext } from './settings-context';
 
 // ----------------------------------------------------------------------
 
@@ -52,9 +53,25 @@ export function SettingsProvider({ children, defaultSettings }: SettingsProvider
 
   const canReset = !isEqual(state, defaultSettings);
 
+  const modernState = {
+    navLayout: state.themeLayout,
+    navColor: 'integrate' as const,
+    compactLayout: state.themeStretch,
+  };
+
+  const setField = useCallback(
+    (name: 'navLayout' | 'navColor' | 'compactLayout', value: string | boolean) => {
+      if (name === 'navLayout') update('themeLayout', value);
+      if (name === 'compactLayout') update('themeStretch', value);
+    },
+    [update]
+  );
+
   const memoizedValue = useMemo(
     () => ({
       ...state,
+      state: modernState,
+      setField,
       onUpdate: update,
       // Direction
       onChangeDirectionByLang,
@@ -64,12 +81,14 @@ export function SettingsProvider({ children, defaultSettings }: SettingsProvider
       // Drawer
       open: openDrawer,
       onToggle: onToggleDrawer,
+      onToggleDrawer,
       onClose: onCloseDrawer,
     }),
     [
       reset,
       update,
       state,
+      setField,
       canReset,
       openDrawer,
       onCloseDrawer,

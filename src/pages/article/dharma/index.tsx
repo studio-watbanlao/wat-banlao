@@ -1,6 +1,6 @@
 import { Container } from '@mui/material';
 import { CONFIG } from 'src/config-global';
-import MainLayout from 'src/layouts/main';
+import { MainLayout } from 'src/layouts/main';
 import DharmaView from 'src/sections/article/dharma/view/dharma-view';
 
 export const metadata = {

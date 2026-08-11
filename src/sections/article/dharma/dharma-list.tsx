@@ -52,7 +52,7 @@ const DharmaList = () => {
       {isLoading && (
         <Grid container spacing={3}>
           {Array.from({ length: SKELETON_COUNT }).map((_, index) => (
-            <Grid item key={index} xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
               <Skeleton variant="rounded" height={280} />
             </Grid>
           ))}
@@ -66,7 +66,7 @@ const DharmaList = () => {
       {!isLoading && !isEmpty && (
         <Grid container spacing={3}>
           {list.map((post) => (
-            <Grid item key={post.id ?? post.title} xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={post.id ?? post.title}>
               <DharmaItem data={post} />
             </Grid>
           ))}

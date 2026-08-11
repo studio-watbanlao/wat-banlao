@@ -31,7 +31,7 @@ const ProductHorizontalItem: React.FC<ProductHorizontalItemProps> = ({
   return (
     <Stack onClick={handleClickItem}>
       <Grid container spacing={3}>
-        <Grid item xs={2}>
+        <Grid size={2}>
           <Image
             alt={title}
             src={imageUrl}
@@ -39,7 +39,7 @@ const ProductHorizontalItem: React.FC<ProductHorizontalItemProps> = ({
           />
         </Grid>
 
-        <Grid item xs={10}>
+        <Grid size={10}>
           <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
             <Box sx={{ width: "80%" }}>
               <Typography color="primary" noWrap>

@@ -46,7 +46,7 @@ const ActivityDetailsView = () => {
       />
       <Stack>
         <Grid container spacing={4}>
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <Stack spacing={2}>
               <Typography variant="h4" color="primary">
                 {data?.title}
@@ -106,7 +106,7 @@ const ActivityDetailsView = () => {
             </Stack>
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Banking
               price="$50"
               title={`Invite friends \n and earn`}

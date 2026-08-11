@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import { alpha } from '@mui/material/styles';
 import ButtonBase from '@mui/material/ButtonBase';
 
-import SvgColor from '../../svg-color';
+import Iconify from '../../iconify';
 
 // ----------------------------------------------------------------------
 
@@ -35,18 +35,10 @@ export default function FullScreenOption() {
           ...(fullscreen && {
             color: 'text.primary',
           }),
-          '& .svg-color': {
-            background: (theme) =>
-              `linear-gradient(135deg, ${theme.palette.grey[500]} 0%, ${theme.palette.grey[600]} 100%)`,
-            ...(fullscreen && {
-              background: (theme) =>
-                `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`,
-            }),
-          },
         }}
       >
-        <SvgColor
-          src={`/assets/icons/setting/${fullscreen ? 'ic_exit_full_screen' : 'ic_full_screen'}.svg`}
+        <Iconify
+          icon={fullscreen ? 'ri:fullscreen-exit-line' : 'ri:fullscreen-line'}
           sx={{ width: 16, height: 16, mr: 1 }}
         />
 

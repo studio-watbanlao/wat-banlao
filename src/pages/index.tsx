@@ -1,6 +1,6 @@
 import { SplashScreen } from 'src/components/loading-screen';
 import MataData from 'src/components/mata-data/mata-data';
-import MainLayout from 'src/layouts/main';
+import { MainLayout } from 'src/layouts/main';
 import { useGetExample } from 'src/queries/example';
 import { HomeView } from 'src/sections/home/view';
 import { getErrorMessage } from 'src/utils/error-message';

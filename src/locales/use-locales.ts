@@ -1,13 +1,14 @@
 'use client';
 
+import type { Namespace } from 'i18next';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { localStorageGetItem } from 'src/utils/storage-available';
+import { allLangs, defaultLang } from './config-lang';
 
+import { localStorageGetItem } from 'src/utils/storage-available';
 import { useSettingsContext } from 'src/components/settings';
 
-import { allLangs, defaultLang } from './config-lang';
 
 // ----------------------------------------------------------------------
 
@@ -24,8 +25,8 @@ export function useLocales() {
 
 // ----------------------------------------------------------------------
 
-export function useTranslate() {
-  const { t, i18n, ready } = useTranslation();
+export function useTranslate(namespace?: Namespace) {
+  const { t, i18n, ready } = useTranslation(namespace);
 
   const settings = useSettingsContext();
 
@@ -41,6 +42,15 @@ export function useTranslate() {
     t,
     i18n,
     ready,
+    currentLang: allLangs.find((lang) => lang.value === i18n.language) || defaultLang,
     onChangeLang,
   };
+}
+
+export function useTranslatedNavSections<T>(data: T): T {
+  return data;
+}
+
+export function useTranslatedMainNav<T>(data: T): T {
+  return data;
 }

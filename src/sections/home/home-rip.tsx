@@ -1,7 +1,7 @@
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Unstable_Grid2';
+import Grid from '@mui/material/GridLegacy';
 import { m } from 'framer-motion';
 
 import { paths } from 'src/routes/paths';

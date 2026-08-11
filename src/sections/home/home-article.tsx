@@ -45,7 +45,7 @@ const HomeArticle = () => {
 
         <Grid container spacing={3}>
           {displayItems.map((item: any) => (
-            <Grid key={item.id} item xs={12} sm={6} md={4}>
+            <Grid key={item.id} size={{ xs: 12, sm: 6, md: 4 }}>
               <ActivityItem data={item} />
             </Grid>
           ))}

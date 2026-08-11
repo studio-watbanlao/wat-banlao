@@ -15,7 +15,7 @@ const SacredList = () => {
       {isLoading && (
         <Grid container spacing={3}>
           {Array.from({ length: 4 }).map((_, index) => (
-            <Grid item key={index} xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
               <Skeleton variant="rounded" height={280} />
             </Grid>
           ))}
@@ -28,7 +28,7 @@ const SacredList = () => {
       {!isLoading && !isEmpty && (
         <Grid container spacing={3}>
           {data.map((item) => (
-            <Grid item key={item.id} xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={item.id}>
               <SacredItem data={item} />
             </Grid>
           ))}

@@ -68,7 +68,7 @@ export default function SettingsDrawer() {
         value={settings.themeMode}
         onChange={(newValue: string) => settings.onUpdate('themeMode', newValue)}
         options={['light', 'dark']}
-        icons={['sun', 'moon']}
+        icons={['ri:sun-fill', 'ri:moon-fill']}
       />
     </div>
   );
@@ -83,7 +83,7 @@ export default function SettingsDrawer() {
         value={settings.themeContrast}
         onChange={(newValue: string) => settings.onUpdate('themeContrast', newValue)}
         options={['default', 'bold']}
-        icons={['contrast', 'contrast_bold']}
+        icons={['ri:contrast-drop-line', 'ri:contrast-drop-fill']}
       />
     </div>
   );
@@ -98,7 +98,7 @@ export default function SettingsDrawer() {
         value={settings.themeDirection}
         onChange={(newValue: string) => settings.onUpdate('themeDirection', newValue)}
         options={['ltr', 'rtl']}
-        icons={['align_left', 'align_right']}
+        icons={['ri:align-left', 'ri:align-right']}
       />
     </div>
   );

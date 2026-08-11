@@ -17,7 +17,7 @@ const ArchitectureView = () => {
       {isLoading && (
         <Grid container spacing={3}>
           {Array.from({ length: 6 }).map((_, index) => (
-            <Grid item key={index} xs={12} sm={6} md={4}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
               <Skeleton variant="rounded" height={280} />
             </Grid>
           ))}
@@ -32,7 +32,7 @@ const ArchitectureView = () => {
         <Stack>
           <Grid container spacing={2}>
             {data.map((item) => (
-              <Grid item key={item.id} xs={12} sm={6} md={4}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={item.id}>
                 <ArchitectureItemCard data={item} />
               </Grid>
             ))}

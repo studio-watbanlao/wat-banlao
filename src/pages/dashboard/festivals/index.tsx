@@ -1,4 +1,3 @@
-import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
 import {
   Alert,
@@ -27,8 +26,11 @@ import NextImage, { ImageLoaderProps } from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
+import { zodResolver } from 'src/utils/zod-resolver';
 import Iconify from 'src/components/iconify';
 import Layout from 'src/pages/dashboard/layout';
+import { RouterLink } from 'src/routes/components';
+import { paths } from 'src/routes/paths';
 import { festivalFormSchema, type FestivalFormValues } from 'src/schemas/festival';
 import type { FestivalGalleryImage, FestivalImagePayload, FestivalItem } from 'src/types/festival';
 import axios from 'src/utils/axios';
@@ -50,17 +52,6 @@ const EMPTY_FORM: FestivalFormValues = {
 };
 
 const passthroughLoader = ({ src }: ImageLoaderProps) => src;
-
-const parseGallery = (images: FestivalItem['images']): FestivalGalleryImage[] => {
-  if (Array.isArray(images)) return images;
-  if (!images) return [];
-  try {
-    const value = JSON.parse(images);
-    return Array.isArray(value) ? value : [];
-  } catch {
-    return [];
-  }
-};
 
 const fileToPayload = (file: File): Promise<FestivalImagePayload> =>
   new Promise((resolve, reject) => {
@@ -146,14 +137,13 @@ export default function FestivalManagementPage() {
   const [deletingId, setDeletingId] = useState('');
   const [error, setError] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingFestival, setEditingFestival] = useState<FestivalItem | null>(null);
+  const [editingFestival] = useState<FestivalItem | null>(null);
   const [currentGallery, setCurrentGallery] = useState<FestivalGalleryImage[]>([]);
   const [removedGalleryPaths, setRemovedGalleryPaths] = useState<string[]>([]);
 
   const {
     control,
     handleSubmit,
-    reset,
     watch,
     formState: { errors },
   } = useForm<FestivalFormValues>({
@@ -178,35 +168,6 @@ export default function FestivalManagementPage() {
   useEffect(() => {
     loadFestivals();
   }, [loadFestivals]);
-
-  const openCreate = () => {
-    setEditingFestival(null);
-    setCurrentGallery([]);
-    setRemovedGalleryPaths([]);
-    reset(EMPTY_FORM);
-    setDialogOpen(true);
-  };
-
-  const openEdit = (festival: FestivalItem) => {
-    setEditingFestival(festival);
-    setCurrentGallery(parseGallery(festival.images));
-    setRemovedGalleryPaths([]);
-    reset({
-      title: festival.title,
-      year: festival.year,
-      no: festival.no || '',
-      description: festival.description || '',
-      content: festival.content || '',
-      videoUrl: festival.videoUrl || '',
-      openingUrl: festival.openingUrl || '',
-      logoUrl: festival.logoUrl || '',
-      status: festival.status === 'PUBLIC' ? 'PUBLIC' : 'DRAFT',
-      coverImage: null,
-      currentImageUrl: festival.imageUrl || '',
-      galleryImages: [],
-    });
-    setDialogOpen(true);
-  };
 
   const removeCurrentGallery = (image: FestivalGalleryImage) => {
     setCurrentGallery((current) => current.filter((item) => item.src !== image.src));
@@ -263,7 +224,6 @@ export default function FestivalManagementPage() {
   };
 
   const coverImage = watch('coverImage');
-  const galleryImages = watch('galleryImages');
 
   return (
     <Layout>
@@ -277,9 +237,10 @@ export default function FestivalManagementPage() {
               </Typography>
             </div>
             <Button
+              component={RouterLink}
+              href={paths.dashboard.festivalNew}
               variant="contained"
-              startIcon={<Iconify icon="mingcute:add-line" />}
-              onClick={openCreate}
+              startIcon={<Iconify icon="ri:add-line" />}
             >
               เพิ่ม Festival
             </Button>
@@ -288,7 +249,7 @@ export default function FestivalManagementPage() {
           {loading && <Typography color="text.secondary">กำลังโหลด...</Typography>}
           <Grid container spacing={3}>
             {festivals.map((festival) => (
-              <Grid item xs={12} md={6} lg={4} key={festival.id}>
+              <Grid size={{ xs: 12, md: 6, lg: 4 }} key={festival.id}>
                 <Card>
                   <Box sx={{ height: 220, position: 'relative', bgcolor: 'background.neutral' }}>
                     {festival.imageUrl && (
@@ -318,7 +279,12 @@ export default function FestivalManagementPage() {
                     </Stack>
                   </CardContent>
                   <CardActions sx={{ justifyContent: 'flex-end' }}>
-                    <Button onClick={() => openEdit(festival)}>แก้ไข</Button>
+                    <Button
+                      component={RouterLink}
+                      href={paths.dashboard.festivalEdit(festival.id)}
+                    >
+                      แก้ไข
+                    </Button>
                     <LoadingButton
                       color="error"
                       loading={deletingId === festival.id}
@@ -432,7 +398,7 @@ export default function FestivalManagementPage() {
                   <Typography variant="subtitle2">รูป Gallery (สูงสุด 8 รูป)</Typography>
                   <Grid container spacing={1}>
                     {currentGallery.map((image) => (
-                      <Grid item xs={4} sm={3} key={image.src}>
+                      <Grid size={{ xs: 4, sm: 3 }} key={image.src}>
                         <Box
                           sx={{
                             height: 110,
@@ -466,7 +432,7 @@ export default function FestivalManagementPage() {
                       </Grid>
                     ))}
                     {field.value.map((file, index) => (
-                      <Grid item xs={4} sm={3} key={`${file.name}-${file.lastModified}`}>
+                      <Grid size={{ xs: 4, sm: 3 }} key={`${file.name}-${file.lastModified}`}>
                         <Box
                           sx={{
                             height: 110,

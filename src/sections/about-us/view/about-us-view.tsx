@@ -9,7 +9,7 @@ const AboutUsView = () => {
   return (
     <Stack>
       <Grid container spacing={5}>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <ContactHero />
         </Grid>
       </Grid>

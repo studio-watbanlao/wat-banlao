@@ -1,15 +1,14 @@
-import { zodResolver } from '@hookform/resolvers/zod';
 import { m } from 'framer-motion';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-
 import { useSnackbar } from 'notistack';
+
+import { zodResolver } from 'src/utils/zod-resolver';
 import { MotionViewport, varFade } from 'src/components/animate';
 import { contactPublicFormSchema, type ContactPublicFormValues } from 'src/schemas/contact';
 import axios from 'src/utils/axios';

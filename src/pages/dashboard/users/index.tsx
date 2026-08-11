@@ -1,4 +1,3 @@
-import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
 import {
   Alert,
@@ -26,6 +25,7 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
+import { zodResolver } from 'src/utils/zod-resolver';
 import { useAuthContext } from 'src/auth/hooks';
 import Layout from 'src/pages/dashboard/layout';
 import { useRouter } from 'src/routes/hooks';

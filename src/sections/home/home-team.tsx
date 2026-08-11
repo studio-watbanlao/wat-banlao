@@ -72,7 +72,7 @@ export default function HomeTeam() {
       {/* Carousel */}
       <Grid container spacing={3} mt={2}>
         {displayItems.map((item: any) => (
-          <Grid key={item.id} item xs={12} sm={6} md={3}>
+          <Grid key={item.id} size={{ xs: 12, sm: 6, md: 3 }}>
             <SacredItem data={item} />
           </Grid>
         ))}

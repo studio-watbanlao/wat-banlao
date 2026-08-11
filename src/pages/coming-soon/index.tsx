@@ -1,4 +1,4 @@
-import MainLayout from 'src/layouts/main';
+import { MainLayout } from 'src/layouts/main';
 import ComingSoonView from 'src/sections/coming-soon/view';
 
 // ----------------------------------------------------------------------

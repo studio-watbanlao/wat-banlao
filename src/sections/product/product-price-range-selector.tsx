@@ -27,7 +27,7 @@ const PriceRangeSelector = () => {
   return (
     <Box mt={1}>
       <Grid container spacing={2}>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <TextField
             value={minInput}
             onChange={handleMinInputChange}
@@ -39,7 +39,7 @@ const PriceRangeSelector = () => {
             size="small"
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <TextField
             value={maxInput}
             onChange={handleMaxInputChange}

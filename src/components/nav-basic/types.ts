@@ -42,3 +42,5 @@ export type NavProps = StackProps & {
   data: NavItemBaseProps[];
   slotProps?: SlotProps;
 };
+
+export type NavBasicProps = NavProps;

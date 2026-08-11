@@ -2,7 +2,7 @@ import Stack from '@mui/material/Stack';
 import { alpha } from '@mui/material/styles';
 import ButtonBase from '@mui/material/ButtonBase';
 
-import SvgColor from '../../svg-color';
+import Iconify from '../../iconify';
 
 // ----------------------------------------------------------------------
 
@@ -38,17 +38,10 @@ export default function BaseOptions({ icons, options, value, onChange }: Props) 
                     0.08
                   )}`,
               }),
-              '& .svg-color': {
-                background: (theme) =>
-                  `linear-gradient(135deg, ${theme.palette.grey[500]} 0%, ${theme.palette.grey[600]} 100%)`,
-                ...(selected && {
-                  background: (theme) =>
-                    `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`,
-                }),
-              },
+              color: selected ? 'primary.main' : 'text.disabled',
             }}
           >
-            <SvgColor src={`/assets/icons/setting/ic_${index === 0 ? icons[0] : icons[1]}.svg`} />
+            <Iconify icon={icons[index]} width={28} />
           </ButtonBase>
         );
       })}

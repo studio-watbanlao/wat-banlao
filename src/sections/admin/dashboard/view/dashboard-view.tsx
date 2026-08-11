@@ -1,23 +1,15 @@
-"use client";
+'use client';
 
-import { useTheme } from "@mui/material/styles";
-import Container from "@mui/material/Container";
-import Grid from "@mui/material/Unstable_Grid2";
+import Container from '@mui/material/Container';
+import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
 
-import {
-  _bankingContacts,
-  _bankingCreditCard,
-  _bankingRecentTransitions,
-  _bookings,
-  _mock,
-} from "src/_mock";
+import BankingCurrentBalance from '../banking-current-balance';
+import BookingDetails from '../booking-details';
+import BookingWidgetSummary from '../booking-widget-summary';
 
-import { useSettingsContext } from "src/components/settings";
-import BankingCurrentBalance from "../banking-current-balance";
-import BookingWidgetSummary from "../booking-widget-summary";
-import BookingIllustration from "src/assets/illustrations/booking-illustration";
-import BookingDetails from "../booking-details";
-import { Stack } from "@mui/material";
+import { _bookings, _mock } from 'src/_mock';
+import BookingIllustration from 'src/assets/illustrations/booking-illustration';
 
 const _carouselsExample = [...Array(5)].map((_, index) => ({
   id: _mock.id(index),
@@ -27,58 +19,44 @@ const _carouselsExample = [...Array(5)].map((_, index) => ({
 }));
 
 export default function OverviewBankingView() {
-  const theme = useTheme();
-
-  const settings = useSettingsContext();
-
   return (
-    <Stack mt={2}>
-      <Grid container spacing={3}>
-        <Grid xs={12}>
-          <BankingCurrentBalance list={_carouselsExample} />
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Stack>
+        <Grid container spacing={3}>
+          <Grid size={12}>
+            <BankingCurrentBalance list={_carouselsExample} />
+          </Grid>
         </Grid>
-      </Grid>
-      <Grid container spacing={3} mt={4}>
-        <Grid xs={12} md={4}>
-          <BookingWidgetSummary
-            title="บทความ"
-            total={714000}
-            icon={<BookingIllustration />}
-          />
-        </Grid>
+        <Grid container spacing={3} mt={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
+            <BookingWidgetSummary title="บทความ" total={714000} icon={<BookingIllustration />} />
+          </Grid>
 
-        <Grid xs={12} md={4}>
-          <BookingWidgetSummary
-            title="กิจกรรม"
-            total={311000}
-            icon={<BookingIllustration />}
-          />
-        </Grid>
+          <Grid size={{ xs: 12, md: 4 }}>
+            <BookingWidgetSummary title="กิจกรรม" total={311000} icon={<BookingIllustration />} />
+          </Grid>
 
-        <Grid xs={12} md={4}>
-          <BookingWidgetSummary
-            title="Canceled"
-            total={124000}
-            icon={<BookingIllustration />}
-          />
+          <Grid size={{ xs: 12, md: 4 }}>
+            <BookingWidgetSummary title="Canceled" total={124000} icon={<BookingIllustration />} />
+          </Grid>
         </Grid>
-      </Grid>
-      <Grid container spacing={3} mt={4}>
-        <Grid xs={12}>
-          <BookingDetails
-            title="Banner Management"
-            tableData={_bookings}
-            tableLabels={[
-              { id: "destination", label: "Destination" },
-              { id: "customer", label: "Customer" },
-              { id: "checkIn", label: "Check In" },
-              { id: "checkOut", label: "Check Out" },
-              { id: "status", label: "Status" },
-              { id: "" },
-            ]}
-          />
+        <Grid container spacing={3} mt={4}>
+          <Grid size={12}>
+            <BookingDetails
+              title="Banner Management"
+              tableData={_bookings}
+              tableLabels={[
+                { id: 'destination', label: 'Destination' },
+                { id: 'customer', label: 'Customer' },
+                { id: 'checkIn', label: 'Check In' },
+                { id: 'checkOut', label: 'Check Out' },
+                { id: 'status', label: 'Status' },
+                { id: '' },
+              ]}
+            />
+          </Grid>
         </Grid>
-      </Grid>
-    </Stack>
+      </Stack>
+    </Container>
   );
 }

@@ -1,5 +1,5 @@
 import { StackProps } from '@mui/material/Stack';
-import { Theme, SxProps } from '@mui/material/styles';
+import { Theme, SxProps, CSSObject } from '@mui/material/styles';
 import { ListItemButtonProps } from '@mui/material/ListItemButton';
 
 // ----------------------------------------------------------------------
@@ -28,8 +28,16 @@ export type NavItemBaseProps = {
   info?: React.ReactElement;
   caption?: string;
   disabled?: boolean;
+  deep?: boolean;
   roles?: string[];
-  children?: any;
+  allowedRoles?: string[];
+  deepMatch?: boolean;
+  activePaths?: string[];
+  featureKey?: string;
+  requiresDepartmentPermission?: string;
+  requiresDepartment?: boolean;
+  requiresSchoolDirector?: boolean;
+  children?: NavItemBaseProps[];
 };
 
 export type NavItemProps = ListItemButtonProps &
@@ -62,4 +70,9 @@ export type NavProps = StackProps & {
     items: NavItemBaseProps[];
   }[];
   slotProps?: SlotProps;
+  cssVars?: CSSObject;
+  checkPermissions?: (allowedRoles?: string[]) => boolean;
 };
+
+export type NavItemDataProps = NavItemBaseProps;
+export type NavSectionProps = NavProps;

@@ -1,6 +1,6 @@
 import { Container, Typography } from '@mui/material';
 import { CONFIG } from 'src/config-global';
-import MainLayout from 'src/layouts/main';
+import { MainLayout } from 'src/layouts/main';
 import ArchitectureView from 'src/sections/architecture/view/architecture-view';
 
 export const metadata = {
