@@ -237,7 +237,10 @@ export default function PublicTemplatesPage() {
         templeId: temple.id,
         templateKey: selected[temple.id],
       });
-      await queryClient.invalidateQueries({ queryKey: PUBLIC_TEMPLE_QUERY_KEY });
+      await queryClient.invalidateQueries({
+        queryKey: PUBLIC_TEMPLE_QUERY_KEY,
+        refetchType: 'all',
+      });
       setTemples((current) =>
         current.map((item) =>
           item.id === temple.id
@@ -245,7 +248,9 @@ export default function PublicTemplatesPage() {
             : item
         )
       );
-      setSuccess(`เปลี่ยน Template ของ ${temple.name} แล้ว`);
+      setSuccess(
+        `เปลี่ยน Template ของ ${temple.name} แล้ว — หน้าเว็บของวัดจะใช้ธีมใหม่ทันที`
+      );
     } catch (requestError) {
       setError(getErrorMessage(requestError));
     } finally {
@@ -379,7 +384,7 @@ export default function PublicTemplatesPage() {
                   <TableRow>
                     <TableCell>วัด</TableCell>
                     <TableCell>Template ที่ใช้งาน</TableCell>
-                    <TableCell align="right">บันทึก</TableCell>
+                    <TableCell align="right">จัดการ</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -436,20 +441,35 @@ export default function PublicTemplatesPage() {
                             </Select>
                           </TableCell>
                           <TableCell align="right">
-                            <Button
-                              variant={changed ? 'contained' : 'outlined'}
-                              disabled={!changed || Boolean(savingId)}
-                              startIcon={
-                                savingId === temple.id ? (
-                                  <CircularProgress size={16} />
-                                ) : (
-                                  <Iconify icon="solar:diskette-bold" />
-                                )
-                              }
-                              onClick={() => save(temple)}
-                            >
-                              บันทึก
-                            </Button>
+                            <Stack direction="row" spacing={1} justifyContent="flex-end">
+                              <Button
+                                component="a"
+                                href={`${paths.dashboard.templates}/preview?${new URLSearchParams({
+                                  templeId: temple.id,
+                                  template: selected[temple.id] || original,
+                                }).toString()}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                variant="outlined"
+                                startIcon={<Iconify icon="solar:eye-bold" />}
+                              >
+                                ดูหน้าเว็บ
+                              </Button>
+                              <Button
+                                variant={changed ? 'contained' : 'outlined'}
+                                disabled={!changed || Boolean(savingId)}
+                                startIcon={
+                                  savingId === temple.id ? (
+                                    <CircularProgress size={16} />
+                                  ) : (
+                                    <Iconify icon="solar:diskette-bold" />
+                                  )
+                                }
+                                onClick={() => save(temple)}
+                              >
+                                บันทึก
+                              </Button>
+                            </Stack>
                           </TableCell>
                         </TableRow>
                       );

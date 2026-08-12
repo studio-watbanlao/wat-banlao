@@ -4,6 +4,7 @@ import type { Theme, CSSObject, Breakpoint } from '@mui/material/styles';
 import { merge } from 'es-toolkit';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
+import { alpha } from '@mui/material/styles';
 
 import type { MainSectionProps, HeaderSectionProps, LayoutSectionProps } from '../core';
 import { LanguagePopover } from '../components/language-popover';
@@ -15,6 +16,7 @@ import type { AuthCenteredContentProps } from './content';
 import { Logo } from 'src/components/logo';
 import { languageOptions } from 'src/locales';
 import { CONFIG } from 'src/config-global';
+import { usePublicTemple } from 'src/public-templates/use-public-temple';
 
 // ----------------------------------------------------------------------
 
@@ -36,6 +38,11 @@ export function AuthCenteredLayout({
   slotProps,
   layoutQuery = 'md',
 }: AuthCenteredLayoutProps) {
+  const { data: temple, isLoading: isTempleLoading } = usePublicTemple();
+  const loginBackgroundUrl = isTempleLoading
+    ? ''
+    : temple?.branding.loginBackgroundUrl || `${CONFIG.assetsDir}/assets/images/watbanlao.png`;
+
   const renderHeader = () => {
     const headerSlotProps: HeaderSectionProps['slotProps'] = {
       container: {
@@ -130,7 +137,7 @@ export function AuthCenteredLayout({
       sx={[
         (theme) => ({
           position: 'relative',
-          '&::before': backgroundStyles(theme),
+          '&::before': backgroundStyles(theme, loginBackgroundUrl),
         }),
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
@@ -142,17 +149,29 @@ export function AuthCenteredLayout({
 
 // ----------------------------------------------------------------------
 
-const backgroundStyles = (theme: Theme): CSSObject => ({
-  ...theme.mixins.bgGradient({
-    images: [`url(${CONFIG.assetsDir}/assets/background/bg-images.png)`],
-  }),
+const backgroundStyles = (theme: Theme, imageUrl: string): CSSObject => ({
+  backgroundColor: theme.palette.primary.lighter,
+  backgroundImage: imageUrl
+    ? `linear-gradient(135deg, ${alpha(theme.palette.common.white, 0.76)}, ${alpha(
+        theme.palette.primary.lighter,
+        0.5
+      )}), url(${imageUrl})`
+    : `linear-gradient(135deg, ${theme.palette.common.white}, ${theme.palette.primary.lighter})`,
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
   zIndex: 1,
-  opacity: 0.24,
   width: '100%',
   height: '100%',
   content: "''",
-  position: 'absolute',
+  position: 'fixed',
+  inset: 0,
   ...theme.applyStyles('dark', {
-    opacity: 0.08,
+    backgroundImage: imageUrl
+      ? `linear-gradient(135deg, ${alpha(theme.palette.grey[900], 0.82)}, ${alpha(
+          theme.palette.primary.darker,
+          0.72
+        )}), url(${imageUrl})`
+      : `linear-gradient(135deg, ${theme.palette.grey[900]}, ${theme.palette.primary.darker})`,
   }),
 });

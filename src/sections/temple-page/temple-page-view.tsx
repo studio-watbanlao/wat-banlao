@@ -13,6 +13,7 @@ import type { TemplePage } from 'src/types/temple-page';
 import axios from 'src/utils/axios';
 import { resolvePublicTemplateKey } from 'src/public-templates/catalog';
 import { usePublicTemple } from 'src/public-templates/use-public-temple';
+import { usePublicTenantKey } from 'src/public-templates/use-public-tenant-key';
 
 const SerenePageContent = dynamic(() =>
   import('src/public-templates/serene/serene-page-content').then(
@@ -100,8 +101,9 @@ export function ManagedPageOverride({
   pageKey: string;
   children: React.ReactNode;
 }) {
+  const tenantKey = usePublicTenantKey();
   const { data } = useQuery({
-    queryKey: ['managed-page', pageKey],
+    queryKey: ['managed-page', tenantKey, pageKey],
     queryFn: () => fetchPage({ pageKey }),
     retry: false,
     staleTime: 5 * 60 * 1000,
@@ -112,8 +114,9 @@ export function ManagedPageOverride({
 }
 
 export function DynamicTemplePage({ slug }: { slug: string }) {
+  const tenantKey = usePublicTenantKey();
   const { data, isLoading, error } = useQuery({
-    queryKey: ['managed-page-slug', slug],
+    queryKey: ['managed-page-slug', tenantKey, slug],
     queryFn: () => fetchPage({ slug }),
     enabled: Boolean(slug),
     retry: false,

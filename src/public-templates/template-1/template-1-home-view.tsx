@@ -1,54 +1,61 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import ReactPlayer from 'react-player';
 import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import { useTheme } from '@mui/material/styles';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
 import DialogContent from '@mui/material/DialogContent';
+import IconButton from '@mui/material/IconButton';
+import Skeleton from '@mui/material/Skeleton';
+import Stack from '@mui/material/Stack';
+import { useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+import { useEffect, useState } from 'react';
 
-import { CONFIG } from 'src/config-global';
-import Image from 'src/components/image';
 import Iconify from 'src/components/iconify';
+import Image from 'src/components/image';
+import { usePublicTemple } from 'src/public-templates/use-public-temple';
+import { useGetArchitecture } from 'src/queries/architecture';
+import { useGetBanner } from 'src/queries/banner';
+import { paths } from 'src/routes/paths';
 import HomeArticle from 'src/sections/home/home-article';
+import { usePublicTempleDirectory } from 'src/sections/monks/use-public-temple-directory';
+import type { BannerItem } from 'src/types/banner';
 
 // ----------------------------------------------------------------------
 
-const HERO_IMAGE = [
-  '/assets/akhahas-sri/hero-1.jpg',
-  '/assets/akhahas-sri/hero-2.jpg',
-  '/assets/akhahas-sri/hero-3.png',
-  '/assets/akhahas-sri/hero-5.jpeg',
-  '/assets/akhahas-sri/bg-1.jpg',
-  '/assets/akhahas-sri/ac-1.png',
-  '/assets/akhahas-sri/logo-full.png',
-].slice(0, 7);
-const SCENES_IMAGE = '/assets/akhahas-sri/hero-2.jpg';
+const DEFAULT_HERO_IMAGE = '/assets/images/overlay_4.jpg';
 const MEMORIAL_IMAGE = '/assets/akhahas-sri/rip-1.jpeg';
-const KRU_IMAGE = '/assets/akhahas-sri/bg-1.jpg';
 
 const SCENES_1_IMAGE = '/assets/akhahas-sri/hero-5.jpeg';
 
 const highlights = [
   {
     icon: '99',
-    title: 'ผลงานการแสดง',
-    body: 'การแสดงดนตรีพื้นบ้านอีสานและกิจกรรมทางวัฒนธรรมในหลากหลายเวที',
+    title: 'ศูนย์รวมแห่งศรัทธา',
+    body: 'พื้นที่สืบสานพระพุทธศาสนาและเป็นศูนย์รวมจิตใจของชุมชน',
   },
   {
     icon: '99',
-    title: 'สมาชิกวง',
-    body: 'นักดนตรี นักแสดง และทีมสร้างสรรค์ที่ร่วมสืบสานศิลปวัฒนธรรมอีสาน',
+    title: 'กิจกรรมและข่าวสาร',
+    body: 'ติดตามกิจกรรม งานบุญ และข่าวสารสำคัญของวัดได้ในที่เดียว',
   },
   {
     icon: '99',
-    title: 'รางวัลและเวทีประกวด',
-    body: 'ประสบการณ์จากการแสดงและการแข่งขันดนตรีพื้นบ้านระดับภูมิภาคและระดับประเทศ',
+    title: 'พระธรรมและชุมชน',
+    body: 'ร่วมเรียนรู้หลักธรรมและสืบสานวัฒนธรรมที่ดีงามของชุมชน',
   },
 ];
+
+const contactText = (contact: Record<string, unknown> | undefined, key: string) => {
+  const value = contact?.[key];
+  return typeof value === 'string' ? value.trim() : '';
+};
+
+const bannerImage = (banner: BannerItem, mobile = false) =>
+  (mobile ? banner.mobileImageUrl : banner.desktopImageUrl) ||
+  banner.desktopImageUrl ||
+  banner.imageUrl ||
+  DEFAULT_HERO_IMAGE;
 
 const ROYAL_IMAGE_ITEMS = [
   {
@@ -69,79 +76,48 @@ const ROYAL_IMAGE_ITEMS = [
   },
 ];
 
-const VIDEO_ITEMS = [
-  {
-    title: 'เทิดพระเกียรติ | วงโปงลางอรรคฮาตสี การประกวดวงโปงลางกรมพลศึกษา 65',
-    src: 'https://www.youtube.com/watch?v=hZB0LIYLSgM&list=RDhZB0LIYLSgM&start_radio=1',
-    cover: 'https://img.youtube.com/vi/hZB0LIYLSgM/maxresdefault.jpg',
-  },
-  {
-    title: 'วงโปงลางอรรคฮาตสี | การประกวดวงโปงลางกรมพลศึกษา 66',
-    src: 'https://www.youtube.com/watch?v=S1twzNXRbCY&list=RDS1twzNXRbCY&start_radio=1&t=1076s',
-    cover: 'https://img.youtube.com/vi/S1twzNXRbCY/maxresdefault.jpg',
-  },
-  {
-    title: 'เทิดพระเกียรติ - วงโปงลางอรรคฮาตสี | การประกวดวงโปงลางกรมพลศึกษา 67',
-    src: 'https://www.youtube.com/watch?v=gxiq1n3JOT8&list=RDgxiq1n3JOT8&start_radio=1',
-    cover: 'https://img.youtube.com/vi/gxiq1n3JOT8/maxresdefault.jpg',
-  },
-  {
-    title: 'อรรคฮาตสีลาแฟน | วงโปงลางอรรคฮาตสี [Official MV]',
-    src: 'https://www.youtube.com/watch?v=Zr1H0ultIQ8',
-    cover: 'https://img.youtube.com/vi/Zr1H0ultIQ8/maxresdefault.jpg',
-  },
-];
-
-function PlayButton({ small = false }: { small?: boolean }) {
-  const theme = useTheme();
-  return (
-    <Box
-      component="span"
-      sx={{
-        width: small ? 34 : 48,
-        height: small ? 34 : 48,
-        display: 'grid',
-        borderRadius: '50%',
-        color: theme.palette.secondary.main,
-        placeItems: 'center',
-        border: '2px solid rgba(234,215,161,0.88)',
-        backgroundColor: 'rgba(9, 47, 33, 0.42)',
-        boxShadow: '0 18px 40px rgba(0,0,0,0.34), 0 0 20px rgba(217,181,109,0.14)',
-        '&::before': {
-          content: '""',
-          width: 0,
-          height: 0,
-          ml: '3px',
-          borderTop: `${small ? 6 : 8}px solid transparent`,
-          borderBottom: `${small ? 6 : 8}px solid transparent`,
-          borderLeft: `${small ? 9 : 13}px solid currentColor`,
-        },
-      }}
-    />
-  );
-}
-
 export function Template1HomeView() {
   const theme = useTheme();
+  const { data: temple } = usePublicTemple();
+  const { data: bannerData = [], isLoading: isBannerLoading } = useGetBanner();
+  const { data: directoryEntries = [], isLoading: isAbbotLoading } = usePublicTempleDirectory();
+  const { data: architectureData = [], isLoading: isArchitectureLoading } = useGetArchitecture();
   const [heroIndex, setHeroIndex] = useState(0);
-  const [videoPreviewKey, setVideoPreviewKey] = useState(0);
-  const [selectedVideo, setSelectedVideo] = useState<(typeof VIDEO_ITEMS)[number] | null>(null);
   const [selectedImage, setSelectedImage] = useState<(typeof ROYAL_IMAGE_ITEMS)[number] | null>(
     null
   );
+  const heroBanners: BannerItem[] = bannerData.length
+    ? bannerData
+    : [
+        {
+          id: 'default-hero',
+          title: temple?.name || 'เว็บไซต์วัด',
+          desktopImageUrl: DEFAULT_HERO_IMAGE,
+          mobileImageUrl: DEFAULT_HERO_IMAGE,
+          sortOrder: 0,
+          status: 'PUBLIC',
+        },
+      ];
+  const contact = temple?.branding.contact;
+  const templeName = temple?.name || 'เว็บไซต์วัด';
+  const templeNameEnglish = contactText(contact, 'nameEnglish');
+  const templeAddress = contactText(contact, 'address');
+  const templeLogo = temple?.branding.logoUrl;
+  const currentAbbot = directoryEntries.find((entry) => entry.entryType === 'CURRENT_ABBOT');
+  const featuredArchitectures = architectureData.slice(0, 4);
 
   useEffect(() => {
+    if (heroBanners.length <= 1) return undefined;
     const timer = window.setInterval(
-      () => setHeroIndex((current) => (current + 1) % HERO_IMAGE.length),
+      () => setHeroIndex((current) => (current + 1) % heroBanners.length),
       5000
     );
     return () => window.clearInterval(timer);
-  }, []);
+  }, [heroBanners.length]);
 
-  const handleCloseVideo = () => {
-    setSelectedVideo(null);
-    setVideoPreviewKey((prev) => prev + 1);
-  };
+  useEffect(() => {
+    setHeroIndex((current) => (current < heroBanners.length ? current : 0));
+  }, [heroBanners.length]);
 
   return (
     <Box
@@ -174,22 +150,48 @@ export function Template1HomeView() {
             position: 'absolute',
           }}
         >
-          {HERO_IMAGE.map((src, index) => (
-            <Image
-              key={src}
-              alt={`Akhahas'sri hero ${index + 1}`}
-              src={src}
-              visibleByDefault
-              sx={{
-                inset: 0,
-                width: 1,
-                height: 1,
-                position: 'absolute',
-                opacity: index === heroIndex ? 1 : 0,
-                transition: 'opacity 900ms ease',
-              }}
+          {isBannerLoading ? (
+            <Skeleton
+              variant="rectangular"
+              animation="wave"
+              sx={{ width: 1, height: 1, bgcolor: 'rgba(255,255,255,0.08)' }}
             />
-          ))}
+          ) : (
+            heroBanners.map((banner, index) => (
+              <Box key={banner.id} sx={{ position: 'absolute', inset: 0 }}>
+                <Image
+                  alt={banner.title || `${templeName} Banner ${index + 1}`}
+                  src={bannerImage(banner, true)}
+                  visibleByDefault
+                  sx={{
+                    inset: 0,
+                    width: 1,
+                    height: 1,
+                    display: { xs: 'block', md: 'none' },
+                    position: 'absolute',
+                    opacity: index === heroIndex ? 1 : 0,
+                    transition: 'opacity 900ms ease',
+                    '& img': { objectFit: 'cover' },
+                  }}
+                />
+                <Image
+                  alt={banner.title || `${templeName} Banner ${index + 1}`}
+                  src={bannerImage(banner)}
+                  visibleByDefault
+                  sx={{
+                    inset: 0,
+                    width: 1,
+                    height: 1,
+                    display: { xs: 'none', md: 'block' },
+                    position: 'absolute',
+                    opacity: index === heroIndex ? 1 : 0,
+                    transition: 'opacity 900ms ease',
+                    '& img': { objectFit: 'cover' },
+                  }}
+                />
+              </Box>
+            ))
+          )}
         </Box>
 
         <Box
@@ -206,28 +208,39 @@ export function Template1HomeView() {
           }}
         />
 
-        <Box sx={{ mx: 'auto', maxWidth: 1280, position: 'relative', zIndex: 2 }}>
+        <Box sx={{ mx: 'auto', maxWidth: 1440, position: 'relative', zIndex: 2 }}>
           <Box sx={{ maxWidth: 610 }}>
-            <Image
-              alt="Single logo"
-              sx={{ width: 200 }}
-              src={`${CONFIG.assetsDir}/assets/akhahas-sri/logo-full.png`}
-            />
+            {templeLogo ? (
+              <Image
+                alt={`โลโก้${templeName}`}
+                src={templeLogo}
+                ratio="1/1"
+                sx={{ width: { xs: 96, md: 132 }, '& img': { objectFit: 'contain' } }}
+              />
+            ) : null}
+            {templeNameEnglish ? (
+              <Typography
+                sx={{
+                  mt: templeLogo ? 2 : 0,
+                  color: theme.palette.secondary.main,
+                  fontSize: { xs: 32, sm: 48, md: 62 },
+                  fontWeight: 800,
+                  lineHeight: 1,
+                  textTransform: 'uppercase',
+                }}
+              >
+                {templeNameEnglish}
+              </Typography>
+            ) : null}
             <Typography
-              sx={{
-                mt: 2,
-                color: theme.palette.secondary.main,
-                fontSize: { xs: 47, sm: 68, md: 82 },
-                fontWeight: 800,
-                lineHeight: 0.92,
-                textTransform: 'uppercase',
-              }}
+              component="h1"
+              variant="h1"
+              sx={{ mt: templeNameEnglish ? 1 : templeLogo ? 2 : 0 }}
             >
-              AKHAHAS&apos;SRI
+              {templeName}
             </Typography>
-            <Typography variant="h1">อรรคฮาตสี</Typography>
 
-            <Typography variant="h5">บ้านขามเรียง มหาสารคาม</Typography>
+            {templeAddress ? <Typography variant="h5">{templeAddress}</Typography> : null}
           </Box>
 
           <Stack
@@ -241,9 +254,9 @@ export function Template1HomeView() {
               alignItems: 'flex-end',
             }}
           >
-            {HERO_IMAGE.map((_, index) => (
+            {heroBanners.map((banner, index) => (
               <Stack
-                key={index}
+                key={banner.id}
                 direction="row"
                 spacing={1.3}
                 alignItems="center"
@@ -503,18 +516,11 @@ export function Template1HomeView() {
           py: { xs: 8, md: 12 },
           minHeight: 670,
           backgroundImage: `
-            linear-gradient(180deg, ${theme.palette.primary.main} 0%, rgba(9,47,33,0.64) 32%, ${theme.palette.primary.main} 100%),
-            linear-gradient(90deg, rgba(5,37,24,0.94) 0%, rgba(18,61,43,0.48) 52%, rgba(5,37,24,0.9) 100%),
-            linear-gradient(0deg, rgba(217,181,109,0.1), rgba(217,181,109,0.1)),
-            url(${KRU_IMAGE})
+            radial-gradient(circle at 15% 20%, rgba(246,237,219,0.14), transparent 34%),
+            linear-gradient(135deg, ${theme.palette.secondary.main} 0%, #B48608 42%, ${theme.palette.primary.main} 100%)
           `,
-          backgroundSize: 'cover',
-          backgroundPosition: '100% 100%',
         }}
       >
-        {/* <Stack sx={{ display: 'flex', textAlign: 'center', mb: 2 }}>
-          <Typography variant="h3">ธีรวัฒน์ เจียงคำ</Typography>
-        </Stack> */}
         <Box
           sx={{
             mx: 'auto',
@@ -525,13 +531,13 @@ export function Template1HomeView() {
             gridTemplateColumns: { xs: '1fr', md: '0.88fr 1.12fr' },
           }}
         >
-          <Box
-            sx={{
-              gap: 2,
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
-            }}
-          >
+          {isAbbotLoading ? (
+            <Skeleton
+              variant="rounded"
+              animation="wave"
+              sx={{ width: 1, height: { xs: 380, md: 520 }, bgcolor: 'rgba(255,255,255,0.1)' }}
+            />
+          ) : currentAbbot ? (
             <Box
               sx={{
                 p: 1,
@@ -541,85 +547,96 @@ export function Template1HomeView() {
                 boxShadow: '0 24px 60px rgba(0,0,0,0.22)',
               }}
             >
-              <Box
+              <Image
+                src={currentAbbot.imageUrl}
+                alt={`รูป${currentAbbot.fullName} เจ้าอาวาส${templeName}`}
+                ratio="3/4"
                 sx={{
                   width: 1,
-                  aspectRatio: '16 / 9',
-                  height: { xs: 200, md: 350 },
-                  overflow: 'hidden',
                   borderRadius: 1,
                   bgcolor: '#052518',
-                  '& .react-player__preview': {
-                    borderRadius: 1,
-                  },
-                  '& .react-player__shadow': {
-                    bgcolor: 'rgba(9, 47, 33, 0.54)',
-                    boxShadow: '0 18px 40px rgba(0,0,0,0.34)',
-                  },
+                  '& img': { objectFit: 'cover', objectPosition: 'center top' },
                 }}
-              >
-                <ReactPlayer
-                  src="https://www.youtube.com/watch?v=76jSHW8-Sug&t=5s"
-                  light="https://img.youtube.com/vi/76jSHW8-Sug/maxresdefault.jpg"
-                  width="100%"
-                  height="100%"
-                  playIcon={<PlayButton small />}
-                  // previewAriaLabel={`ดูวิดีโอ ${video.title}`}
-                  // onClickPreview={() => setSelectedVideo(video)}
-                />
-              </Box>
+              />
             </Box>
-          </Box>
+          ) : (
+            <Box
+              sx={{
+                minHeight: { xs: 300, md: 460 },
+                display: 'grid',
+                placeItems: 'center',
+                borderRadius: 1.5,
+                bgcolor: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(234,215,161,0.22)',
+              }}
+            >
+              <Typography sx={{ color: theme.palette.secondary.main }}>
+                ข้อมูลเจ้าอาวาสอยู่ระหว่างปรับปรุง
+              </Typography>
+            </Box>
+          )}
 
           <Box>
+            <Typography variant="overline" sx={{ color: theme.palette.common.white }}>
+              เจ้าอาวาส{templeName}องค์ปัจจุบัน
+            </Typography>
             <Typography
               component="h2"
               sx={{
-                color: theme.palette.secondary.main,
+                color: theme.palette.common.white,
                 maxWidth: 520,
                 fontSize: { xs: 42, sm: 58, md: 68 },
-                fontWeight: 800,
+                fontWeight: 600,
                 lineHeight: 1.2,
                 textTransform: 'uppercase',
               }}
             >
-              ธีรวัฒน์ เจียงคำ
+              {currentAbbot?.fullName || 'ข้อมูลอยู่ระหว่างปรับปรุง'}
             </Typography>
 
-            <Typography
-              sx={{
-                mt: 4,
-                maxWidth: 430,
-                color: theme.palette.secondary.main,
-                lineHeight: 1.75,
-              }}
-            >
-              การออกแบบไม่ควรยึดติดกับรูปแบบเดิมจนเกินไป
-              จนไม่สัมพันธ์กับความต้องการใช้งานของคนรุ่นใหม่
-              แนวคิดที่ดีคือการปล่อยให้วัสดุมีความเป็นตัวของมันเองมากที่สุด
-              เพื่อให้สามารถปรับเปลี่ยนไปเป็นอะไรก็ได้ที่ตอบสนองการใช้งานและสภาพปัจจุบันของผู้ใช้
-              ถ้าเรายึดติดกับการทำให้สิ่งของมีลักษณะโบราณมากเกินไป มันก็จะอยู่ได้แค่ในพิพิธภัณฑ์
-              ไม่ได้ถูกนำไปใช้งานจริง เมื่อสิ่งของไม่ถูกนำไปใช้งาน มันก็ไม่สามารถอยู่ร่วมกับสังคมได้
-            </Typography>
+            {currentAbbot?.displayTitle ? (
+              <Typography variant="h5" sx={{ mt: 1.5, color: theme.palette.common.white }}>
+                {currentAbbot.displayTitle}
+              </Typography>
+            ) : null}
 
-            <Typography
-              variant="h4"
-              sx={{
-                fontStyle: 'italic',
-                mt: 3,
-              }}
-            >
-              &quot;ธีรวัฒน์ เจียงคำ&quot;
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{
-                fontStyle: 'italic',
-                mt: 3,
-              }}
-            >
-              ที่มา https://soundisan.com/news/ttaste-khamriang/ และ The Isaan Record Podcast
-            </Typography>
+            {currentAbbot?.biography ? (
+              <Box
+                dangerouslySetInnerHTML={{ __html: currentAbbot.biography }}
+                sx={{
+                  mt: 4,
+                  maxWidth: 560,
+                  color: theme.palette.common.white,
+                  lineHeight: 1.85,
+                  '& p': { mt: 0, mb: 1.5 },
+                  '& ul, & ol': { pl: 3 },
+                }}
+              />
+            ) : null}
+
+            {currentAbbot?.administrativePositions ? (
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="subtitle2" sx={{ color: theme.palette.common.white }}>
+                  ตำแหน่งและหน้าที่
+                </Typography>
+                <Box
+                  dangerouslySetInnerHTML={{ __html: currentAbbot.administrativePositions }}
+                  sx={{ mt: 1, color: theme.palette.common.white, lineHeight: 1.8 }}
+                />
+              </Box>
+            ) : null}
+
+            {currentAbbot?.monasticRank ? (
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="subtitle2" sx={{ color: theme.palette.common.white }}>
+                  สมณศักดิ์
+                </Typography>
+                <Box
+                  dangerouslySetInnerHTML={{ __html: currentAbbot.monasticRank }}
+                  sx={{ mt: 1, color: theme.palette.common.white, lineHeight: 1.8 }}
+                />
+              </Box>
+            ) : null}
           </Box>
         </Box>
       </Box>
@@ -628,15 +645,11 @@ export function Template1HomeView() {
         sx={{
           px: { xs: 2.5, md: 8, lg: 13 },
           py: { xs: 8, md: 12 },
-          minHeight: 800,
+          minHeight: 720,
           backgroundImage: `
-            linear-gradient(180deg, ${theme.palette.primary.main} 0%, rgba(9,47,33,0.64) 32%, ${theme.palette.primary.main} 100%),
-            linear-gradient(90deg, rgba(5,37,24,0.94) 0%, rgba(18,61,43,0.48) 52%, rgba(5,37,24,0.9) 100%),
-            linear-gradient(0deg, rgba(217,181,109,0.1), rgba(217,181,109,0.1)),
-            url(${SCENES_IMAGE})
+            radial-gradient(circle at 85% 20%, rgba(246,237,219,0.12), transparent 30%),
+            linear-gradient(135deg, ${theme.palette.secondary.main} 0%, #A67C06 44%, ${theme.palette.primary.main} 100%)
           `,
-          backgroundSize: 'cover',
-          backgroundPosition: '100% 100%',
         }}
       >
         <Box
@@ -661,15 +674,8 @@ export function Template1HomeView() {
                 textTransform: 'uppercase',
               }}
             >
-              ศิลปะ ส่องทาง ให้แก่กัน เสมอ
+              สถาปัตย์และสิ่งสำคัญ
             </Typography>
-
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 4.5 }}>
-              <PlayButton small />
-              <Typography variant="h5" sx={{ fontWeight: 800, textTransform: 'uppercase' }}>
-                รับชมวิดีโอ
-              </Typography>
-            </Stack>
 
             <Typography
               sx={{
@@ -680,11 +686,24 @@ export function Template1HomeView() {
                 lineHeight: 1.75,
               }}
             >
-              อันว่า การใดแท้ ธรรมดาดีชอบ ฝูงข้าตกแต่งถ้วน อันล้วนที่ควร คุส่วนสมเสมอหน้า
-              เป็นไปในโลก ผลาผลแผ่ก้วง กวมพื้นแผ่นไตร ค้อมว่าสาธุการไหว้ แล้วนบนิ้วยอลง
-              กราบหว่างบูฮมฮอย บ่อนมรคาเพียงฮาบ การอันสมกระบวนเบื้อง ทั้งผองปองประโยชน์
-              ตางให้โลกเล่าเฮื้องภายซ้อยซาเซ็ง
+              เรียนรู้เรื่องราว ความเป็นมา และคุณค่าของสถาปัตยกรรม
+              รวมถึงสิ่งสำคัญภายในวัดที่สะท้อนศรัทธา ศิลปวัฒนธรรม และภูมิปัญญาของชุมชน
             </Typography>
+
+            <Button
+              component="a"
+              href={paths.banlao.architecture.root}
+              variant="outlined"
+              endIcon={<Iconify icon="solar:arrow-right-linear" />}
+              sx={{
+                mt: 4,
+                color: theme.palette.secondary.main,
+                borderColor: 'rgba(234,215,161,0.5)',
+                '&:hover': { borderColor: theme.palette.secondary.main },
+              }}
+            >
+              ดูทั้งหมด
+            </Button>
           </Box>
 
           <Box
@@ -694,100 +713,99 @@ export function Template1HomeView() {
               gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
             }}
           >
-            {VIDEO_ITEMS.map((video, index) => (
+            {isArchitectureLoading
+              ? Array.from({ length: 4 }, (_, index) => (
+                  <Skeleton
+                    key={index}
+                    variant="rounded"
+                    animation="wave"
+                    sx={{ height: 250, bgcolor: 'rgba(255,255,255,0.1)' }}
+                  />
+                ))
+              : featuredArchitectures.map((item) => (
+                  <Box
+                    key={item.id}
+                    component="a"
+                    href={paths.banlao.architecture.details(item.id)}
+                    sx={{
+                      p: 1,
+                      display: 'block',
+                      overflow: 'hidden',
+                      borderRadius: 1.5,
+                      color: 'inherit',
+                      textDecoration: 'none',
+                      bgcolor: 'rgba(234,215,161,0.1)',
+                      border: '1px solid rgba(234,215,161,0.22)',
+                      boxShadow: '0 24px 60px rgba(0,0,0,0.22)',
+                      transition: 'transform 180ms ease, border-color 180ms ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        borderColor: theme.palette.secondary.main,
+                      },
+                    }}
+                  >
+                    <Image
+                      src={item.imageUrl}
+                      alt={item.title}
+                      ratio="4/3"
+                      sx={{
+                        width: 1,
+                        borderRadius: 1,
+                        bgcolor: '#052518',
+                        '& img': { objectFit: 'cover' },
+                      }}
+                    />
+                    <Typography
+                      variant="subtitle2"
+                      sx={{
+                        mt: 1.5,
+                        px: 0.5,
+                        color: theme.palette.secondary.main,
+                        display: '-webkit-box',
+                        overflow: 'hidden',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                      }}
+                    >
+                      {item.title}
+                    </Typography>
+                    {item.year ? (
+                      <Typography
+                        variant="caption"
+                        sx={{ px: 0.5, color: 'rgba(246,237,219,0.58)' }}
+                      >
+                        {item.year}
+                      </Typography>
+                    ) : null}
+                  </Box>
+                ))}
+
+            {!isArchitectureLoading && !featuredArchitectures.length ? (
               <Box
-                key={`${video.title}-${index}`}
                 sx={{
-                  p: 1,
+                  gridColumn: '1 / -1',
+                  minHeight: 260,
+                  display: 'grid',
+                  placeItems: 'center',
                   borderRadius: 1.5,
-                  bgcolor: 'rgba(234,215,161,0.1)',
                   border: '1px solid rgba(234,215,161,0.22)',
-                  boxShadow: '0 24px 60px rgba(0,0,0,0.22)',
+                  bgcolor: 'rgba(255,255,255,0.06)',
                 }}
               >
-                <Box
-                  sx={{
-                    width: 1,
-                    aspectRatio: '16 / 9',
-                    overflow: 'hidden',
-                    borderRadius: 1,
-                    bgcolor: '#052518',
-                    '& .react-player__preview': {
-                      borderRadius: 1,
-                    },
-                    '& .react-player__shadow': {
-                      bgcolor: 'rgba(9, 47, 33, 0.54)',
-                      boxShadow: '0 18px 40px rgba(0,0,0,0.34)',
-                    },
-                  }}
-                >
-                  <ReactPlayer
-                    key={`${video.title}-${videoPreviewKey}`}
-                    src={video.src}
-                    light={video.cover}
-                    width="100%"
-                    height="100%"
-                    playIcon={<PlayButton small />}
-                    previewAriaLabel={`ดูวิดีโอ ${video.title}`}
-                    onClickPreview={() => setSelectedVideo(video)}
-                  />
-                </Box>
-
                 <Typography
                   sx={{
-                    mt: 1.25,
-                    px: 0.5,
                     color: theme.palette.secondary.main,
-                    fontSize: 13,
-                    fontWeight: 800,
                   }}
                 >
-                  {video.title}
+                  ยังไม่มีข้อมูลสถาปัตย์และสิ่งสำคัญ
                 </Typography>
               </Box>
-            ))}
+            ) : null}
           </Box>
         </Box>
       </Box>
 
       <HomeArticle />
-
-      {/* <Box
-        sx={{
-          textAlign: 'center',
-          px: { xs: 2.5, md: 8, lg: 13 },
-          py: { xs: 8, md: 12 },
-          minHeight: 600,
-          backgroundImage: `
-            linear-gradient(180deg, ${theme.palette.primary.main} 0%, rgba(9,47,33,0.64) 32%, ${theme.palette.primary.main} 100%),
-            linear-gradient(90deg, rgba(5,37,24,0.94) 0%, rgba(18,61,43,0.48) 52%, rgba(5,37,24,0.9) 100%),
-            linear-gradient(0deg, rgba(217,181,109,0.1), rgba(217,181,109,0.1)),
-            url(${SCENES_IMAGE})
-          `,
-          backgroundSize: 'cover',
-          backgroundPosition: '100% 100%',
-        }}
-      >
-        <Typography
-          sx={{
-            mt: 2,
-            color: theme.palette.secondary.main,
-            fontSize: { xs: 24, sm: 32, md: 40 },
-            fontWeight: 800,
-            lineHeight: 0.92,
-            textTransform: 'uppercase',
-          }}
-        >
-          ผู้มีส่วนร่วม
-        </Typography>
-        <Stack
-          mt={6}
-          sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}
-          spacing={4}
-        >
-          <Image alt="Single logo" sx={{ width: 200 }} src="/assets/akhahas-sri/logo-kaitod.png" />
-        </Stack>
-      </Box> */}
 
       <Dialog
         fullWidth
@@ -838,49 +856,6 @@ export function Template1HomeView() {
               }}
             />
           )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
-        fullWidth
-        maxWidth="lg"
-        open={!!selectedVideo}
-        onClose={handleCloseVideo}
-        slotProps={{
-          paper: {
-            sx: {
-              overflow: 'hidden',
-              bgcolor: '#052518',
-              borderRadius: 1.5,
-              border: '1px solid rgba(234,215,161,0.24)',
-            },
-          },
-        }}
-      >
-        <Box
-          sx={{
-            px: 2,
-            py: 1.25,
-            gap: 1.5,
-            display: 'flex',
-            alignItems: 'center',
-            color: theme.palette.secondary.main,
-            justifyContent: 'space-between',
-          }}
-        >
-          <Typography sx={{ fontSize: 16, fontWeight: 800 }}>{selectedVideo?.title}</Typography>
-
-          <IconButton onClick={handleCloseVideo} sx={{ color: 'inherit' }}>
-            <Iconify icon="mingcute:close-line" />
-          </IconButton>
-        </Box>
-
-        <DialogContent sx={{ p: 0, bgcolor: 'black' }}>
-          <Box sx={{ width: 1, aspectRatio: '16 / 9' }}>
-            {selectedVideo && (
-              <ReactPlayer controls playing src={selectedVideo.src} width="100%" height="100%" />
-            )}
-          </Box>
         </DialogContent>
       </Dialog>
 

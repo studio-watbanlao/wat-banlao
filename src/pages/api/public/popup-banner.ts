@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { getSafeApiError } from 'src/lib/api-error';
 import { supabaseRequest } from 'src/lib/supabase-rest';
-import { resolvePublicTemple } from 'src/lib/temple-access';
+import { resolvePublicTemple, setPublicCacheControl } from 'src/lib/temple-access';
 import type { PopupBannerFrequency, PopupBannerItem } from 'src/types/popup-banner';
 
 type PublicPopupBannerRow = {
@@ -52,7 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           updatedAt: row.updated_at,
         }
       : null;
-    res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
+    setPublicCacheControl(req, res, 'public, s-maxage=60, stale-while-revalidate=120');
     return res.status(200).json({ temple: temple.slug, popupBanner });
   } catch (error) {
     const { status, message } = getSafeApiError(error);

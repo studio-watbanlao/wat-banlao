@@ -138,6 +138,8 @@ export default function TempleFormPage({ temple }: Props) {
         : [...TEMPLE_MODULES],
       logoImage: null,
       currentLogoUrl: temple?.branding.logoUrl || '',
+      loginBackgroundImage: null,
+      currentLoginBackgroundUrl: temple?.branding.loginBackgroundUrl || '',
       bankCode: donation.bankCode,
       bankAccountNumber: donation.accountNumber,
       bankAccountName: donation.accountName,
@@ -148,6 +150,8 @@ export default function TempleFormPage({ temple }: Props) {
   });
   const { formState, handleSubmit, setValue, watch } = methods;
   const logoImage = watch('logoImage');
+  const loginBackgroundImage = watch('loginBackgroundImage');
+  const currentLoginBackgroundUrl = watch('currentLoginBackgroundUrl');
   const bankQrImage = watch('bankQrImage');
   const selectedBank = getThaiBank(watch('bankCode'));
   const selectedModules = watch('modules');
@@ -197,6 +201,21 @@ export default function TempleFormPage({ temple }: Props) {
     [bankQrImage, revokePreview, setValue]
   );
 
+  const dropLoginBackground = useCallback(
+    (files: File[]) => {
+      const file = files[0];
+      if (!file) return;
+      revokePreview(loginBackgroundImage);
+      const preview = URL.createObjectURL(file);
+      previews.current.add(preview);
+      setValue('loginBackgroundImage', Object.assign(file, { preview }), {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    },
+    [loginBackgroundImage, revokePreview, setValue]
+  );
+
   const save = handleSubmit(async (form) => {
     try {
       setSaving(true);
@@ -207,6 +226,9 @@ export default function TempleFormPage({ temple }: Props) {
         slug: form.slug.trim(),
         contact: temple?.branding.contact || {},
         logoImage: form.logoImage ? await fileToPayload(form.logoImage) : null,
+        loginBackgroundImage: form.loginBackgroundImage
+          ? await fileToPayload(form.loginBackgroundImage)
+          : null,
         bankQrImage: form.bankQrImage ? await fileToPayload(form.bankQrImage) : null,
       };
       if (!temple) {
@@ -303,6 +325,52 @@ export default function TempleFormPage({ temple }: Props) {
                 <MenuItem value="ARCHIVED">ปิดใช้งาน</MenuItem>
               </Field.Select>
             </Stack>
+          </Stack>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader
+          avatar={
+            <Avatar variant="rounded" sx={{ bgcolor: 'info.lighter', color: 'info.dark' }}>
+              <Iconify icon="solar:gallery-wide-bold" />
+            </Avatar>
+          }
+          title="ภาพพื้นหลังหน้าเข้าสู่ระบบ"
+          subheader="ภาพนี้จะแสดงบนหน้า Login ของวัดตาม Domain ที่กำหนด"
+        />
+        <Divider sx={{ pt: 2 }} />
+        <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+          <Stack spacing={1.5} sx={{ maxWidth: 920, mx: 'auto' }}>
+            <Field.Upload
+              name="loginBackgroundImage"
+              file={loginBackgroundImage || currentLoginBackgroundUrl}
+              maxSize={8 * 1024 * 1024}
+              accept={{ 'image/jpeg': [], 'image/png': [], 'image/webp': [] }}
+              onDrop={dropLoginBackground}
+              onDelete={() => {
+                if (loginBackgroundImage) revokePreview(loginBackgroundImage);
+                setValue('loginBackgroundImage', null, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                });
+                setValue('currentLoginBackgroundUrl', '', { shouldDirty: true });
+              }}
+              helperText="แนะนำภาพแนวนอน 16:9 ขนาดอย่างน้อย 1600 × 900 px · JPG, PNG หรือ WebP ไม่เกิน 8 MB"
+              sx={{
+                '& > div:first-of-type': {
+                  p: '0 !important',
+                  width: '100%',
+                  aspectRatio: '16 / 9',
+                },
+                '& .component-image img': {
+                  objectFit: 'cover !important',
+                },
+              }}
+            />
+            <Typography variant="caption" color="text.secondary">
+              หากไม่กำหนด ระบบจะใช้ภาพวัดเริ่มต้นที่มากับเว็บไซต์
+            </Typography>
           </Stack>
         </CardContent>
       </Card>

@@ -1,5 +1,6 @@
-import LoginView from "src/sections/auth/login";
 import AuthLayout from "./layout";
+
+import LoginView from "src/sections/auth/login";
 
 export const metadata = {
   title: "Login",
@@ -7,7 +8,7 @@ export const metadata = {
 
 const LoginPage = () => {
   return (
-    <AuthLayout>
+    <AuthLayout split>
       <LoginView />
     </AuthLayout>
   );

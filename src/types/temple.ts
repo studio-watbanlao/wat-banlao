@@ -32,6 +32,7 @@ export type TemplePermissions = Partial<Record<TempleModule, TempleAction[]>>;
 
 export type TempleBranding = {
   logoUrl: string;
+  loginBackgroundUrl: string;
   faviconUrl: string;
   primaryColor: string;
   secondaryColor: string;

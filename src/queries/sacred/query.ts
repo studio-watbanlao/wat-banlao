@@ -1,18 +1,23 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { fetchSacred, fetchSacredById } from 'src/api/sacred';
+import { usePublicTenantKey } from 'src/public-templates/use-public-tenant-key';
 import { SACRED_KEY } from '../key';
 
-export const useGetSacred = () =>
-  useQuery({
-    queryKey: [SACRED_KEY],
+export const useGetSacred = () => {
+  const tenantKey = usePublicTenantKey();
+  return useQuery({
+    queryKey: [SACRED_KEY, tenantKey],
     queryFn: fetchSacred,
     // staleTime: 1000 * 60 * 5,
   });
+};
 
-export const useGetSacredById = (id?: string) =>
-  useQuery({
-    queryKey: [SACRED_KEY, id],
+export const useGetSacredById = (id?: string) => {
+  const tenantKey = usePublicTenantKey();
+  return useQuery({
+    queryKey: [SACRED_KEY, tenantKey, id],
     queryFn: () => fetchSacredById(id),
     enabled: !!id, // ป้องกัน query ตอน id undefined
   });
+};

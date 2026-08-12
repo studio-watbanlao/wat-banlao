@@ -1,4 +1,5 @@
 import type { ContentResource } from 'src/lib/supabase-rest';
+import { withPublicTenantHeader } from 'src/utils/public-tenant';
 
 type ApiResponse<T> = { data: T };
 
@@ -13,7 +14,10 @@ const getApiOrigin = () => {
 };
 
 const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
-  const response = await fetch(`${getApiOrigin()}${path}`, init);
+  const response = await fetch(`${getApiOrigin()}${path}`, {
+    ...init,
+    headers: withPublicTenantHeader(init?.headers),
+  });
   const body = await response.json().catch(() => null);
 
   if (!response.ok) {

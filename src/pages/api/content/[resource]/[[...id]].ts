@@ -7,7 +7,7 @@ import {
   incrementContentView,
   type ContentResource,
 } from 'src/lib/supabase-rest';
-import { resolvePublicTemple } from 'src/lib/temple-access';
+import { resolvePublicTemple, setPublicCacheControl } from 'src/lib/temple-access';
 
 const isContentResource = (value: string): value is ContentResource =>
   CONTENT_RESOURCES.some((resource) => resource === value);
@@ -32,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       if (id && !data) return res.status(404).json({ message: 'Content not found.' });
 
-      res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+      setPublicCacheControl(req, res, 'public, s-maxage=300, stale-while-revalidate=600');
       return res.status(200).json({ data });
     }
 

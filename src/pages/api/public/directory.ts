@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { getSafeApiError } from 'src/lib/api-error';
 import { supabaseRequest } from 'src/lib/supabase-rest';
-import { resolvePublicTemple } from 'src/lib/temple-access';
+import { resolvePublicTemple, setPublicCacheControl } from 'src/lib/temple-access';
 import type { TempleDirectoryEntry } from 'src/types/temple-directory';
 
 type DirectoryRow = {
@@ -76,7 +76,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       order: 'sort_order.asc,created_at.asc',
     });
     const rows = await supabaseRequest<DirectoryRow[]>(`temple_directory_entries?${query}`);
-    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+    setPublicCacheControl(req, res, 'public, s-maxage=300, stale-while-revalidate=600');
     return res.status(200).json({ entries: rows.map(normalize) });
   } catch (error) {
     const { status, message } = getSafeApiError(error);

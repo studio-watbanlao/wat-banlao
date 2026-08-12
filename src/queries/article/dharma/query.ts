@@ -7,6 +7,7 @@ import {
 
 import type { InfiniteData } from '@tanstack/react-query';
 import { fetchDharma, fetchDharmaById } from 'src/api/dharma';
+import { usePublicTenantKey } from 'src/public-templates/use-public-tenant-key';
 import type { EditorialItem } from 'src/types/editorial';
 import { ARRICLE_KEY } from '../../key';
 
@@ -19,9 +20,10 @@ interface IDharmaPage {
 
 const PAGE_SIZE = 8;
 
-export const useGetDharma = (): UseInfiniteQueryResult<InfiniteData<IDharmaPage>, Error> =>
-  useInfiniteQuery<IDharmaPage, Error>({
-    queryKey: [ARRICLE_KEY, 'dharma-list'],
+export const useGetDharma = (): UseInfiniteQueryResult<InfiniteData<IDharmaPage>, Error> => {
+  const tenantKey = usePublicTenantKey();
+  return useInfiniteQuery<IDharmaPage, Error>({
+    queryKey: [ARRICLE_KEY, tenantKey, 'dharma-list'],
     queryFn: async ({ pageParam = 1 }) => {
       const page = Number(pageParam);
 
@@ -38,10 +40,12 @@ export const useGetDharma = (): UseInfiniteQueryResult<InfiniteData<IDharmaPage>
     getNextPageParam: (lastPage) => lastPage.nextPage,
     initialPageParam: 1,
   });
+};
 
-export const useGetDharmaById = (id?: string): UseQueryResult<IDharma, Error> =>
-  useQuery<IDharma, Error>({
-    queryKey: [ARRICLE_KEY, 'dharma-detail', id],
+export const useGetDharmaById = (id?: string): UseQueryResult<IDharma, Error> => {
+  const tenantKey = usePublicTenantKey();
+  return useQuery<IDharma, Error>({
+    queryKey: [ARRICLE_KEY, tenantKey, 'dharma-detail', id],
 
     queryFn: async () => {
       if (!id) throw new Error('ID is required');
@@ -54,3 +58,4 @@ export const useGetDharmaById = (id?: string): UseQueryResult<IDharma, Error> =>
 
     staleTime: 1000 * 60 * 5,
   });
+};

@@ -5,7 +5,6 @@ import { useRouter } from 'next/router';
 
 import { isPublicTemplateKey } from 'src/public-templates/catalog';
 import type { TempleBranding } from 'src/types/temple';
-import type { Temple } from 'src/types/temple';
 import axios from 'src/utils/axios';
 
 export type PublicTempleConfig = {
@@ -33,11 +32,11 @@ export function usePublicTemple() {
       : PUBLIC_TEMPLE_QUERY_KEY,
     queryFn: async () => {
       if (isPreviewRoute) {
-        const response = await axios.get('/api/admin/public-templates');
-        const temples = response.data.temples as Temple[];
-        const temple = temples.find((item) => item.id === templeId) || temples[0];
-
-        if (!temple) throw new Error('ไม่พบข้อมูลวัดสำหรับแสดงตัวอย่าง');
+        if (!templeId) throw new Error('ไม่พบข้อมูลวัดสำหรับแสดงตัวอย่าง');
+        const response = await axios.get('/api/public/config', {
+          headers: { 'x-temple-id': templeId },
+        });
+        const temple = response.data.temple as PublicTempleConfig;
 
         return {
           id: temple.id,
@@ -47,7 +46,7 @@ export function usePublicTemple() {
             ...temple.branding,
             publicTemplate: requestedTemplate || temple.branding.publicTemplate,
           },
-          primaryDomain: temple.domains.find((domain) => domain.isPrimary)?.domain || '',
+          primaryDomain: temple.primaryDomain,
         } satisfies PublicTempleConfig;
       }
 
@@ -55,7 +54,10 @@ export function usePublicTemple() {
       return response.data.temple as PublicTempleConfig;
     },
     enabled: !isPreviewRoute || router.isReady,
-    staleTime: 5 * 60 * 1000,
+    // Template/branding changes must be visible as soon as an admin saves them.
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
     retry: false,
   });
 }

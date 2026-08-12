@@ -16,7 +16,6 @@ import { MenuButton } from '../components/menu-button';
 import { SignInButton } from '../components/sign-in-button';
 import type { HeaderSectionProps, LayoutSectionProps, MainSectionProps } from '../core';
 import { HeaderSection, LayoutSection, MainSection } from '../core';
-import { navData as mainNavData } from '../nav-config-main';
 
 import type { FooterProps } from './footer';
 import { Footer, HomeFooter } from './footer';
@@ -27,15 +26,25 @@ import type { NavMainProps } from './nav/types';
 import { MainSchoolBrand } from './school-brand';
 
 import MataData from 'src/components/mata-data/mata-data';
-import { RiArticleLine, RiFacebookFill, RiInstagramLine } from 'src/components/remix-icon';
+import {
+  RiArticleLine,
+  RiBuildingLine,
+  RiCalendarLine,
+  RiFacebookFill,
+  RiHome5Line,
+  RiInstagramLine,
+  RiUserStarLine,
+} from 'src/components/remix-icon';
 import { languageOptions, useTranslate, useTranslatedMainNav } from 'src/locales';
 import { resolvePublicTemplateKey } from 'src/public-templates/catalog';
 import { PublicPopupBanner } from 'src/public-templates/public-popup-banner';
 import { usePublicTemple } from 'src/public-templates/use-public-temple';
+import { usePublicTenantKey } from 'src/public-templates/use-public-tenant-key';
 import { RouterLink } from 'src/routes/components';
 import { usePathname } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 import type { TemplePage } from 'src/types/temple-page';
+import type { TempleNavigationItem } from 'src/types/temple-navigation';
 import axios from 'src/utils/axios';
 
 const SerenePublicLayout = dynamic(() =>
@@ -69,6 +78,14 @@ const SOCIAL_LINKS = [
   },
 ] as const;
 
+const navigationIcon = (itemKey: string) => {
+  if (itemKey === 'home') return <RiHome5Line size={22} />;
+  if (itemKey === 'festivals' || itemKey === 'activities') return <RiCalendarLine size={22} />;
+  if (itemKey === 'masters') return <RiUserStarLine size={22} />;
+  if (itemKey === 'articles') return <RiArticleLine size={22} />;
+  return <RiBuildingLine size={22} />;
+};
+
 export type MainLayoutProps = LayoutBaseProps & {
   layoutQuery?: Breakpoint;
   slotProps?: {
@@ -93,21 +110,57 @@ export function MainLayout({
   const { t } = useTranslate('navbar');
   const pathname = usePathname();
   const { data: publicTemple } = usePublicTemple();
+  const tenantKey = usePublicTenantKey();
 
   const { value: open, onFalse: onClose, onTrue: onOpen } = useBoolean();
 
   const isHomePage = pathname === '/';
 
-  const { data: customPages = [] } = useQuery({
-    queryKey: ['public-menu-pages'],
+  const { data: publicNavigation } = useQuery({
+    queryKey: ['public-navigation', tenantKey],
     queryFn: async () => {
-      const response = await axios.get('/api/public/pages', { params: { menu: true } });
-      return response.data.pages as TemplePage[];
+      const [navigationResponse, pagesResponse] = await Promise.all([
+        axios.get('/api/public/navigation'),
+        axios.get('/api/public/pages', { params: { menu: true } }),
+      ]);
+      return {
+        items: navigationResponse.data.items as TempleNavigationItem[],
+        pages: pagesResponse.data.pages as TemplePage[],
+      };
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
     retry: false,
   });
-  const sourceNavData = slotProps?.nav?.data ?? mainNavData;
+  const navigationItems = publicNavigation?.items || [];
+  const customPages = publicNavigation?.pages || [];
+  const managedNavData = useMemo(
+    () =>
+      navigationItems
+        .filter((item) => !item.parentKey)
+        .toSorted((a, b) => a.sortOrder - b.sortOrder)
+        .map((item) => {
+          const childItems = navigationItems
+            .filter((child) => child.parentKey === item.itemKey)
+            .toSorted((a, b) => a.sortOrder - b.sortOrder)
+            .map((child) => ({
+              title: child.title,
+              path: child.path,
+              deepMatch: child.deepMatch,
+            }));
+          return {
+            title: item.title,
+            path: item.path,
+            icon: navigationIcon(item.itemKey),
+            deepMatch: item.deepMatch,
+            children: childItems.length
+              ? [{ subheader: '', items: childItems }]
+              : undefined,
+          };
+        }),
+    [navigationItems]
+  );
+  const sourceNavData = slotProps?.nav?.data ?? managedNavData;
   const rawNavData = useMemo(
     () => [
       ...sourceNavData,
@@ -146,7 +199,7 @@ export function MainLayout({
           })}
         >
           <Container
-            maxWidth="xl"
+            maxWidth="lg"
             sx={{
               height: 78,
               display: 'flex',
@@ -233,7 +286,7 @@ export function MainLayout({
           })}
         >
           <Container
-            maxWidth="xl"
+            maxWidth="lg"
             sx={{
               height: 46,
               display: 'flex',

@@ -7,6 +7,7 @@ import {
 
 import type { InfiniteData } from '@tanstack/react-query';
 import { fetchBlog, fetchBlogById } from 'src/api/blog';
+import { usePublicTenantKey } from 'src/public-templates/use-public-tenant-key';
 import type { EditorialItem } from 'src/types/editorial';
 import { ARRICLE_KEY } from '../../key';
 
@@ -19,9 +20,10 @@ interface IBlogPage {
 
 const PAGE_SIZE = 8;
 
-export const useGetBlog = (): UseInfiniteQueryResult<InfiniteData<IBlogPage>, Error> =>
-  useInfiniteQuery<IBlogPage, Error>({
-    queryKey: [ARRICLE_KEY, 'blog-list'],
+export const useGetBlog = (): UseInfiniteQueryResult<InfiniteData<IBlogPage>, Error> => {
+  const tenantKey = usePublicTenantKey();
+  return useInfiniteQuery<IBlogPage, Error>({
+    queryKey: [ARRICLE_KEY, tenantKey, 'blog-list'],
     queryFn: async ({ pageParam = 1 }) => {
       const page = Number(pageParam);
 
@@ -40,10 +42,12 @@ export const useGetBlog = (): UseInfiniteQueryResult<InfiniteData<IBlogPage>, Er
     getNextPageParam: (lastPage) => lastPage.nextPage,
     initialPageParam: 1,
   });
+};
 
-export const useGetBlogById = (id?: string): UseQueryResult<IBlog, Error> =>
-  useQuery<IBlog, Error>({
-    queryKey: [ARRICLE_KEY, 'blog-detail', id],
+export const useGetBlogById = (id?: string): UseQueryResult<IBlog, Error> => {
+  const tenantKey = usePublicTenantKey();
+  return useQuery<IBlog, Error>({
+    queryKey: [ARRICLE_KEY, tenantKey, 'blog-detail', id],
 
     queryFn: async () => {
       if (!id) throw new Error('ID is required');
@@ -56,3 +60,4 @@ export const useGetBlogById = (id?: string): UseQueryResult<IBlog, Error> =>
 
     staleTime: 1000 * 60 * 5,
   });
+};

@@ -28,6 +28,7 @@ type TempleRow = {
 
 type BrandingRow = {
   logo_url?: string;
+  login_background_url?: string;
   favicon_url?: string;
   primary_color?: string;
   secondary_color?: string;
@@ -67,6 +68,7 @@ export class TempleAccessError extends Error {
 
 const normalizeBranding = (row?: BrandingRow): TempleBranding => ({
   logoUrl: row?.logo_url || '',
+  loginBackgroundUrl: row?.login_background_url || '',
   faviconUrl: row?.favicon_url || '',
   primaryColor: row?.primary_color || '#6F4E37',
   secondaryColor: row?.secondary_color || '#C89545',
@@ -252,7 +254,27 @@ export const setTempleContextCookie = (res: NextApiResponse, templeId: string) =
   res.setHeader('Set-Cookie', [...cookies, cookie]);
 };
 
+export const setPublicCacheControl = (
+  req: NextApiRequest,
+  res: NextApiResponse,
+  cacheControl: string
+) => {
+  const hasPreviewTenant = typeof req.headers['x-temple-id'] === 'string';
+  res.setHeader('Vary', 'Host, x-temple-id, x-temple-slug');
+  res.setHeader(
+    'Cache-Control',
+    hasPreviewTenant ? 'private, no-store, max-age=0' : cacheControl
+  );
+};
+
 export const resolvePublicTemple = async (req: NextApiRequest) => {
+  const headerTempleId =
+    typeof req.headers['x-temple-id'] === 'string' ? req.headers['x-temple-id'].trim() : '';
+  if (headerTempleId) {
+    const byId = await getTempleById(headerTempleId);
+    if (byId?.status === 'ACTIVE') return byId;
+  }
+
   const querySlug = typeof req.query.templeSlug === 'string' ? req.query.templeSlug : '';
   const headerSlug =
     typeof req.headers['x-temple-slug'] === 'string' ? req.headers['x-temple-slug'] : '';

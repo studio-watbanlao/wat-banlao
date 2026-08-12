@@ -19,6 +19,7 @@ export function useMainSchoolBrand() {
       name: temple?.name || 'วัดบ้านเหล่า',
       code: typeof nameEnglish === 'string' ? nameEnglish.trim() : '',
       logo_url: temple?.branding.logoUrl || '/logo/logo.png',
+      login_background_url: temple?.branding.loginBackgroundUrl || '',
     },
     isLoading,
   };

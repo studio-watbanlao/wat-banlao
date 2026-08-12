@@ -8,6 +8,7 @@ import { isSuperAdminUser, resolveSessionUser } from 'src/lib/supabase-auth';
 import { supabaseRequest } from 'src/lib/supabase-rest';
 import { uploadBrandingImage } from 'src/lib/supabase-storage';
 import { listAllTemples } from 'src/lib/temple-access';
+import { DEFAULT_TEMPLE_NAVIGATION } from 'src/lib/temple-navigation';
 import { TEMPLE_MODULES, type TempleModule, type TemplePermissions } from 'src/types/temple';
 import { resolvePublicTemplateKey } from 'src/public-templates/catalog';
 
@@ -152,12 +153,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const id = randomUUID();
       const modules = Array.isArray(req.body?.modules) ? req.body.modules.filter(isModule) : [];
       const logo = parseImage(req.body?.logoImage, 'โลโก้วัด');
+      const loginBackground = parseImage(req.body?.loginBackgroundImage, 'ภาพพื้นหลังหน้า Login');
       const bankQr = parseImage(req.body?.bankQrImage, 'รูป QR Code');
       const logoUrl = logo
         ? await uploadBrandingImage(
             `${id}/logo-${Date.now()}.${logo.extension}`,
             logo.buffer,
             logo.contentType
+          )
+        : '';
+      const loginBackgroundUrl = loginBackground
+        ? await uploadBrandingImage(
+            `${id}/login-background-${Date.now()}.${loginBackground.extension}`,
+            loginBackground.buffer,
+            loginBackground.contentType
           )
         : '';
       const bankQrUrl = bankQr
@@ -179,6 +188,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           body: JSON.stringify({
             temple_id: id,
             logo_url: logoUrl || null,
+            login_background_url: loginBackgroundUrl || null,
             favicon_url: text(req.body?.faviconUrl, 2000) || null,
             primary_color: text(req.body?.primaryColor, 20) || '#6F4E37',
             secondary_color: text(req.body?.secondaryColor, 20) || '#C89545',
@@ -202,6 +212,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           headers: { Prefer: 'return=minimal' },
           body: JSON.stringify(STANDARD_PAGE_PACK.map((page) => ({ ...page, temple_id: id }))),
         }),
+        supabaseRequest('temple_navigation_items', {
+          method: 'POST',
+          headers: { Prefer: 'return=minimal' },
+          body: JSON.stringify(
+            DEFAULT_TEMPLE_NAVIGATION.map((item) => ({
+              temple_id: id,
+              item_key: item.itemKey,
+              title: item.title,
+              path: item.path,
+              parent_key: item.parentKey || null,
+              sort_order: item.sortOrder,
+              enabled: item.enabled,
+              deep_match: item.deepMatch,
+            }))
+          ),
+        }),
       ]);
       const createdTemple = await listAllTemples().then((items) =>
         items.find((item) => item.id === id)
@@ -222,6 +248,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return res.status(400).json({ message: 'ข้อมูลวัดไม่ถูกต้อง' });
         }
         const logo = parseImage(req.body?.logoImage, 'โลโก้วัด');
+        const loginBackground = parseImage(
+          req.body?.loginBackgroundImage,
+          'ภาพพื้นหลังหน้า Login'
+        );
         const bankQr = parseImage(req.body?.bankQrImage, 'รูป QR Code');
         const logoUrl = logo
           ? await uploadBrandingImage(
@@ -230,6 +260,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               logo.contentType
             )
           : text(req.body?.currentLogoUrl, 2000);
+        const loginBackgroundUrl = loginBackground
+          ? await uploadBrandingImage(
+              `${templeId}/login-background-${Date.now()}.${loginBackground.extension}`,
+              loginBackground.buffer,
+              loginBackground.contentType
+            )
+          : text(req.body?.currentLoginBackgroundUrl, 2000);
         const bankQrUrl = bankQr
           ? await uploadBrandingImage(
               `${templeId}/donation-qr-${Date.now()}.${bankQr.extension}`,
@@ -252,6 +289,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             body: JSON.stringify({
               temple_id: templeId,
               logo_url: logoUrl || null,
+              login_background_url: loginBackgroundUrl || null,
               favicon_url: text(req.body?.faviconUrl, 2000) || null,
               primary_color: text(req.body?.primaryColor, 20) || '#6F4E37',
               secondary_color: text(req.body?.secondaryColor, 20) || '#C89545',

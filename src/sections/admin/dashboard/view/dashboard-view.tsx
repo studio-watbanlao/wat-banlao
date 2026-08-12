@@ -2,7 +2,6 @@
 
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-
 import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -136,6 +135,20 @@ const loadDashboard = async (sources: ContentSource[]): Promise<SourceResult[]> 
 export default function DashboardView() {
   const access = useCurrentTempleAccess();
   const temple = access?.temple;
+  const primaryDomain = temple?.domains.find(
+    (domain) => domain.isPrimary && domain.verificationStatus === 'VERIFIED'
+  )?.domain;
+  const publicWebsiteUrl =
+    temple && access?.role === 'super_admin'
+      ? `${paths.dashboard.templates}/preview?${new URLSearchParams({
+          templeId: temple.id,
+        }).toString()}`
+      : primaryDomain
+        ? /^https?:\/\//i.test(primaryDomain)
+          ? primaryDomain
+          : `https://${primaryDomain}`
+      : '';
+  const isWebsitePreview = access?.role === 'super_admin' || !primaryDomain;
 
   const enabledSources = useMemo(
     () =>
@@ -214,13 +227,14 @@ export default function DashboardView() {
           </Box>
           <Button
             component="a"
-            href="/"
+            href={publicWebsiteUrl || undefined}
             target="_blank"
             rel="noopener noreferrer"
+            disabled={!publicWebsiteUrl}
             variant="outlined"
             startIcon={<Iconify icon="solar:eye-bold" />}
           >
-            ดูหน้าเว็บ
+            {isWebsitePreview ? 'ดูตัวอย่างหน้าเว็บ' : 'ดูหน้าเว็บ'}
           </Button>
         </Stack>
 

@@ -30,13 +30,6 @@ export const navData: NavSectionProps['data'] = [
         deep: true,
       },
       {
-        title: 'จัดการเมนู',
-        path: paths.dashboard.menus,
-        icon: <RiMenuLine />,
-        featureKey: 'pages',
-        deep: true,
-      },
-      {
         title: 'จัดการข่าวสาร/กิจกรรม',
         path: paths.dashboard.activity,
         icon: <RiCalendarLine />,
@@ -125,6 +118,13 @@ export const navData: NavSectionProps['data'] = [
   {
     subheader: 'ผู้ดูแลระบบ',
     items: [
+      {
+        title: 'จัดการเมนู',
+        path: paths.dashboard.menus,
+        icon: <RiMenuLine />,
+        featureKey: 'pages',
+        deep: true,
+      },
       {
         title: 'จัดการผู้ใช้งาน',
         path: paths.dashboard.users,

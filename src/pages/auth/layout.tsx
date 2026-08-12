@@ -5,12 +5,13 @@ import AuthLayoutCompact from "src/layouts/auth/compact";
 
 type Props = {
   children: React.ReactNode;
+  split?: boolean;
 };
 
-const AuthLayout = ({ children }: Props) => {
+const AuthLayout = ({ children, split = false }: Props) => {
   return (
     <GuestGuard>
-      <AuthLayoutCompact>{children}</AuthLayoutCompact>
+      <AuthLayoutCompact split={split}>{children}</AuthLayoutCompact>
     </GuestGuard>
   );
 };

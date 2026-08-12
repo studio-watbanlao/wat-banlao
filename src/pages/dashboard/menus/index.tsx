@@ -1,6 +1,6 @@
-import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import Chip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
@@ -8,35 +8,45 @@ import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
+import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import Iconify from 'src/components/iconify';
 import Layout from 'src/pages/dashboard/layout';
+import type { TempleNavigationItem } from 'src/types/temple-navigation';
 import type { TemplePage } from 'src/types/temple-page';
 import axios from 'src/utils/axios';
 import { getErrorMessage } from 'src/utils/error-message';
 
-const normalizeOrder = (pages: TemplePage[]) =>
-  pages.map((page, index) => ({ ...page, sortOrder: (index + 1) * 10 }));
-
+const byOrder = <T extends { sortOrder: number }>(a: T, b: T) => a.sortOrder - b.sortOrder;
 const customPagesOnly = (pages: TemplePage[]) => pages.filter((page) => page.pageType === 'CUSTOM');
 
 export default function TempleMenuManagementPage() {
-  const [pages, setPages] = useState<TemplePage[]>([]);
+  const [items, setItems] = useState<TempleNavigationItem[]>([]);
+  const [customPages, setCustomPages] = useState<TemplePage[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const loadPages = useCallback(async () => {
+  const parents = useMemo(
+    () => items.filter((item) => !item.parentKey).toSorted(byOrder),
+    [items]
+  );
+
+  const loadMenu = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
-      const response = await axios.get('/api/admin/pages');
-      setPages(customPagesOnly(response.data.pages as TemplePage[]));
+      const [navigationResponse, pagesResponse] = await Promise.all([
+        axios.get('/api/admin/navigation'),
+        axios.get('/api/admin/pages'),
+      ]);
+      setItems(navigationResponse.data.items as TempleNavigationItem[]);
+      setCustomPages(customPagesOnly(pagesResponse.data.pages as TemplePage[]));
       setDirty(false);
     } catch (requestError) {
       setError(getErrorMessage(requestError));
@@ -46,27 +56,43 @@ export default function TempleMenuManagementPage() {
   }, []);
 
   useEffect(() => {
-    loadPages();
-  }, [loadPages]);
+    loadMenu();
+  }, [loadMenu]);
 
-  const toggleVisibility = (id: string) => {
-    setPages((currentPages) =>
-      currentPages.map((page) =>
-        page.id === id ? { ...page, showInMenu: !page.showInMenu } : page
-      )
+  const updateItem = (itemKey: string, values: Partial<TempleNavigationItem>) => {
+    setItems((current) =>
+      current.map((item) => (item.itemKey === itemKey ? { ...item, ...values } : item))
     );
     setDirty(true);
     setSuccess('');
   };
 
-  const movePage = (index: number, direction: -1 | 1) => {
-    const destination = index + direction;
-    if (destination < 0 || destination >= pages.length) return;
-    setPages((currentPages) => {
-      const nextPages = [...currentPages];
-      [nextPages[index], nextPages[destination]] = [nextPages[destination], nextPages[index]];
-      return normalizeOrder(nextPages);
+  const moveItem = (itemKey: string, direction: -1 | 1) => {
+    setItems((current) => {
+      const selected = current.find((item) => item.itemKey === itemKey);
+      if (!selected) return current;
+      const siblings = current
+        .filter((item) => item.parentKey === selected.parentKey)
+        .toSorted(byOrder);
+      const index = siblings.findIndex((item) => item.itemKey === itemKey);
+      const target = siblings[index + direction];
+      if (!target) return current;
+      return current.map((item) => {
+        if (item.itemKey === selected.itemKey) return { ...item, sortOrder: target.sortOrder };
+        if (item.itemKey === target.itemKey) return { ...item, sortOrder: selected.sortOrder };
+        return item;
+      });
     });
+    setDirty(true);
+    setSuccess('');
+  };
+
+  const toggleCustomPage = (id: string) => {
+    setCustomPages((current) =>
+      current.map((page) =>
+        page.id === id ? { ...page, showInMenu: !page.showInMenu } : page
+      )
+    );
     setDirty(true);
     setSuccess('');
   };
@@ -76,17 +102,28 @@ export default function TempleMenuManagementPage() {
       setSaving(true);
       setError('');
       setSuccess('');
-      const response = await axios.patch('/api/admin/pages', {
-        action: 'updateMenu',
-        items: pages.map((page) => ({
-          id: page.id,
-          showInMenu: page.showInMenu,
-          sortOrder: page.sortOrder,
-        })),
-      });
-      setPages(customPagesOnly(response.data.pages as TemplePage[]));
+      const [navigationResponse, pagesResponse] = await Promise.all([
+        axios.patch('/api/admin/navigation', {
+          items: items.map(({ itemKey, title, sortOrder, enabled }) => ({
+            itemKey,
+            title,
+            sortOrder,
+            enabled,
+          })),
+        }),
+        axios.patch('/api/admin/pages', {
+          action: 'updateMenu',
+          items: customPages.map((page, index) => ({
+            id: page.id,
+            showInMenu: page.showInMenu,
+            sortOrder: page.sortOrder || (index + 1) * 10,
+          })),
+        }),
+      ]);
+      setItems(navigationResponse.data.items as TempleNavigationItem[]);
+      setCustomPages(customPagesOnly(pagesResponse.data.pages as TemplePage[]));
       setDirty(false);
-      setSuccess('บันทึกการจัดเมนูเรียบร้อยแล้ว');
+      setSuccess('บันทึกเมนูเว็บไซต์เรียบร้อยแล้ว');
     } catch (requestError) {
       setError(getErrorMessage(requestError));
     } finally {
@@ -94,111 +131,200 @@ export default function TempleMenuManagementPage() {
     }
   };
 
+  const renderMoveButtons = (item: TempleNavigationItem, siblings: TempleNavigationItem[]) => {
+    const index = siblings.findIndex((sibling) => sibling.itemKey === item.itemKey);
+    return (
+      <Stack direction="row" spacing={0.25}>
+        <Tooltip title="เลื่อนขึ้น">
+          <span>
+            <IconButton
+              size="small"
+              disabled={index === 0}
+              onClick={() => moveItem(item.itemKey, -1)}
+              aria-label={`เลื่อน ${item.title} ขึ้น`}
+            >
+              <Iconify icon="solar:alt-arrow-up-linear" />
+            </IconButton>
+          </span>
+        </Tooltip>
+        <Tooltip title="เลื่อนลง">
+          <span>
+            <IconButton
+              size="small"
+              disabled={index === siblings.length - 1}
+              onClick={() => moveItem(item.itemKey, 1)}
+              aria-label={`เลื่อน ${item.title} ลง`}
+            >
+              <Iconify icon="solar:alt-arrow-down-linear" />
+            </IconButton>
+          </span>
+        </Tooltip>
+      </Stack>
+    );
+  };
+
   return (
     <Layout>
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Stack spacing={3}>
-          <Stack spacing={0.5}>
-            <Typography variant="h4">จัดการเมนูเว็บไซต์</Typography>
-            <Typography variant="body2" color="text.secondary">
-              เลือกหน้าที่ต้องการแสดงบนเมนู และจัดลำดับด้วยปุ่มขึ้นหรือลง
-            </Typography>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
+            alignItems={{ sm: 'center' }}
+            justifyContent="space-between"
+          >
+            <Box>
+              <Typography variant="h4">จัดการเมนูเว็บไซต์</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                กำหนดชื่อ ลำดับ และการแสดงผลเมนูสำหรับเว็บไซต์ของวัดนี้
+              </Typography>
+            </Box>
+            <Button
+              variant="contained"
+              loading={saving}
+              disabled={!dirty || loading}
+              onClick={saveMenu}
+              startIcon={<Iconify icon="solar:diskette-bold" />}
+            >
+              บันทึกเมนู
+            </Button>
           </Stack>
 
           <Alert severity="info">
-            หน้านี้จัดการเมนูจาก “หน้าเฉพาะวัด” ส่วนเมนูหลักมากับ Public Template และแก้ไขในโค้ดของ
-            Template นั้น หน้าที่เป็นแบบร่างหรือเก็บถาวรจะยังไม่แสดงบนเว็บไซต์
+            การซ่อนเมนูหลักจะซ่อนเมนูย่อยทั้งหมดบนเว็บไซต์ แต่สถานะของเมนูย่อยจะยังถูกเก็บไว้
           </Alert>
           {error ? <Alert severity="error">{error}</Alert> : null}
           {success ? <Alert severity="success">{success}</Alert> : null}
 
           <Card>
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              alignItems={{ xs: 'flex-start', sm: 'center' }}
-              justifyContent="space-between"
-              spacing={1}
-              sx={{ p: 2.5 }}
-            >
-              <Box>
-                <Typography variant="h6">รายการหน้า</Typography>
-                <Typography variant="caption" color="text.secondary">
-                  เปิดใช้งาน {pages.filter((page) => page.showInMenu).length} จาก {pages.length}{' '}
-                  หน้า
-                </Typography>
-              </Box>
-              <LoadingButton
-                variant="contained"
-                loading={saving}
-                disabled={!dirty || loading}
-                onClick={saveMenu}
-                startIcon={<Iconify icon="solar:diskette-bold" />}
-              >
-                บันทึกเมนู
-              </LoadingButton>
-            </Stack>
-
+            <Box sx={{ p: 2.5 }}>
+              <Typography variant="h6">เมนูหลักและเมนูย่อย</Typography>
+              <Typography variant="caption" color="text.secondary">
+                เปิดใช้งาน {items.filter((item) => item.enabled).length} จาก {items.length} รายการ
+              </Typography>
+            </Box>
             <Divider />
 
             {loading ? (
               <Typography color="text.secondary" sx={{ p: 3 }}>
-                กำลังโหลดรายการเมนู...
-              </Typography>
-            ) : null}
-
-            {!loading && pages.length === 0 ? (
-              <Typography color="text.secondary" sx={{ p: 3, textAlign: 'center' }}>
-                ยังไม่มีหน้าสำหรับจัดเป็นเมนู
+                กำลังโหลดเมนู...
               </Typography>
             ) : null}
 
             {!loading
-              ? pages.map((page, index) => (
+              ? parents.map((parent, parentIndex) => {
+                  const children = items
+                    .filter((item) => item.parentKey === parent.itemKey)
+                    .toSorted(byOrder);
+                  return (
+                    <Box
+                      key={parent.itemKey}
+                      sx={{
+                        borderBottom: parentIndex < parents.length - 1 ? '1px solid' : 0,
+                        borderColor: 'divider',
+                        bgcolor: parent.enabled ? 'background.paper' : 'background.neutral',
+                      }}
+                    >
+                      <Stack
+                        direction={{ xs: 'column', md: 'row' }}
+                        spacing={2}
+                        alignItems={{ md: 'center' }}
+                        sx={{ px: 2.5, py: 2 }}
+                      >
+                        {renderMoveButtons(parent, parents)}
+                        <TextField
+                          size="small"
+                          label="ชื่อเมนูหลัก"
+                          value={parent.title}
+                          onChange={(event) => updateItem(parent.itemKey, { title: event.target.value })}
+                          sx={{ width: { xs: 1, md: 320 } }}
+                        />
+                        <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
+                          {parent.path}
+                        </Typography>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Typography variant="body2">
+                            {parent.enabled ? 'แสดง' : 'ซ่อน'}
+                          </Typography>
+                          <Switch
+                            checked={parent.enabled}
+                            onChange={(_, checked) => updateItem(parent.itemKey, { enabled: checked })}
+                            inputProps={{ 'aria-label': `แสดงเมนู ${parent.title}` }}
+                          />
+                        </Stack>
+                      </Stack>
+
+                      {children.length ? (
+                        <Stack spacing={1} sx={{ px: { xs: 2, md: 7 }, pb: 2 }}>
+                          {children.map((child) => (
+                            <Stack
+                              key={child.itemKey}
+                              direction={{ xs: 'column', md: 'row' }}
+                              spacing={1.5}
+                              alignItems={{ md: 'center' }}
+                              sx={{
+                                p: 1.5,
+                                borderRadius: 1.5,
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                bgcolor: child.enabled ? 'background.paper' : 'background.neutral',
+                              }}
+                            >
+                              {renderMoveButtons(child, children)}
+                              <TextField
+                                size="small"
+                                label="ชื่อเมนูย่อย"
+                                value={child.title}
+                                onChange={(event) =>
+                                  updateItem(child.itemKey, { title: event.target.value })
+                                }
+                                sx={{ width: { xs: 1, md: 300 } }}
+                              />
+                              <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
+                                {child.path}
+                              </Typography>
+                              <Switch
+                                checked={child.enabled}
+                                onChange={(_, checked) =>
+                                  updateItem(child.itemKey, { enabled: checked })
+                                }
+                                inputProps={{ 'aria-label': `แสดงเมนู ${child.title}` }}
+                              />
+                            </Stack>
+                          ))}
+                        </Stack>
+                      ) : null}
+                    </Box>
+                  );
+                })
+              : null}
+          </Card>
+
+          <Card>
+            <Box sx={{ p: 2.5 }}>
+              <Typography variant="h6">หน้าเฉพาะวัด</Typography>
+              <Typography variant="caption" color="text.secondary">
+                หน้าเนื้อหาที่สร้างเพิ่มและต้องการแสดงเป็นเมนูหลัก
+              </Typography>
+            </Box>
+            <Divider />
+            {!loading && !customPages.length ? (
+              <Typography color="text.secondary" sx={{ p: 3, textAlign: 'center' }}>
+                ยังไม่มีหน้าเฉพาะวัด
+              </Typography>
+            ) : null}
+            {!loading
+              ? customPages.toSorted(byOrder).map((page) => (
                   <Stack
                     key={page.id}
                     direction="row"
                     spacing={2}
                     alignItems="center"
-                    sx={{
-                      px: { xs: 1.5, sm: 2.5 },
-                      py: 1.75,
-                      borderBottom: index < pages.length - 1 ? '1px solid' : 0,
-                      borderColor: 'divider',
-                      bgcolor: page.showInMenu ? 'background.paper' : 'background.neutral',
-                    }}
+                    sx={{ px: 2.5, py: 1.75, borderBottom: '1px solid', borderColor: 'divider' }}
                   >
-                    <Stack direction="row" spacing={0.25}>
-                      <Tooltip title="เลื่อนขึ้น">
-                        <span>
-                          <IconButton
-                            size="small"
-                            disabled={index === 0}
-                            onClick={() => movePage(index, -1)}
-                            aria-label={`เลื่อน ${page.title} ขึ้น`}
-                          >
-                            <Iconify icon="solar:alt-arrow-up-linear" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                      <Tooltip title="เลื่อนลง">
-                        <span>
-                          <IconButton
-                            size="small"
-                            disabled={index === pages.length - 1}
-                            onClick={() => movePage(index, 1)}
-                            aria-label={`เลื่อน ${page.title} ลง`}
-                          >
-                            <Iconify icon="solar:alt-arrow-down-linear" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    </Stack>
-
-                    <Stack spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
-                      <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                        <Typography variant="subtitle2" noWrap>
-                          {page.title}
-                        </Typography>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Typography variant="subtitle2" noWrap>{page.title}</Typography>
                         <Chip
                           size="small"
                           variant="soft"
@@ -206,25 +332,13 @@ export default function TempleMenuManagementPage() {
                           label={page.status === 'PUBLIC' ? 'เผยแพร่แล้ว' : 'ยังไม่เผยแพร่'}
                         />
                       </Stack>
-                      <Typography variant="caption" color="text.secondary" noWrap>
-                        /{page.slug} · ลำดับ {page.sortOrder}
-                      </Typography>
-                    </Stack>
-
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Typography
-                        variant="body2"
-                        color={page.showInMenu ? 'text.primary' : 'text.secondary'}
-                        sx={{ display: { xs: 'none', sm: 'block' } }}
-                      >
-                        {page.showInMenu ? 'แสดงในเมนู' : 'ซ่อนจากเมนู'}
-                      </Typography>
-                      <Switch
-                        checked={page.showInMenu}
-                        onChange={() => toggleVisibility(page.id)}
-                        inputProps={{ 'aria-label': `แสดง ${page.title} ในเมนูเว็บไซต์` }}
-                      />
-                    </Stack>
+                      <Typography variant="caption" color="text.secondary">/{page.slug}</Typography>
+                    </Box>
+                    <Switch
+                      checked={page.showInMenu}
+                      onChange={() => toggleCustomPage(page.id)}
+                      inputProps={{ 'aria-label': `แสดง ${page.title} ในเมนูเว็บไซต์` }}
+                    />
                   </Stack>
                 ))
               : null}

@@ -46,6 +46,8 @@ export const templeFormSchema = z
     modules: z.array(z.string()).min(1, 'กรุณาเปิดอย่างน้อยหนึ่ง Module'),
     logoImage: optionalImageFileSchema.default(null),
     currentLogoUrl: z.string().default(''),
+    loginBackgroundImage: optionalImageFileSchema.default(null),
+    currentLoginBackgroundUrl: z.string().default(''),
     bankCode: z.string().trim().max(20, 'รหัสธนาคารไม่ถูกต้อง').default(''),
     bankAccountNumber: z.string().trim().max(80, 'เลขบัญชียาวเกินไป').default(''),
     bankAccountName: z.string().trim().max(200, 'ชื่อบัญชียาวเกินไป').default(''),

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import Script from 'next/script';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -33,16 +33,24 @@ type Props = {
 
 export default function GoogleSignInButton({ onCredential }: Props) {
   const buttonRef = useRef<HTMLDivElement>(null);
+  const onCredentialRef = useRef(onCredential);
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
-  const renderGoogleButton = () => {
+  useEffect(() => {
+    onCredentialRef.current = onCredential;
+  }, [onCredential]);
+
+  const renderGoogleButton = useCallback(() => {
     if (!clientId || !window.google || !buttonRef.current) return;
+
+    const availableWidth = Math.floor(buttonRef.current.getBoundingClientRect().width);
+    const buttonWidth = Math.min(400, Math.max(200, availableWidth));
 
     buttonRef.current.innerHTML = '';
     window.google.accounts.id.initialize({
       client_id: clientId,
       ux_mode: 'popup',
-      callback: (response) => onCredential(response.credential),
+      callback: (response) => onCredentialRef.current(response.credential),
     });
     window.google.accounts.id.renderButton(buttonRef.current, {
       type: 'standard',
@@ -51,15 +59,20 @@ export default function GoogleSignInButton({ onCredential }: Props) {
       text: 'continue_with',
       shape: 'rectangular',
       logo_alignment: 'left',
-      width: 320,
+      width: buttonWidth,
     });
-  };
+  }, [clientId]);
 
   useEffect(() => {
     renderGoogleButton();
-    // The callback is intentionally refreshed only when the client ID changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clientId]);
+
+    if (!buttonRef.current || typeof ResizeObserver === 'undefined') return undefined;
+
+    const resizeObserver = new ResizeObserver(renderGoogleButton);
+    resizeObserver.observe(buttonRef.current);
+
+    return () => resizeObserver.disconnect();
+  }, [renderGoogleButton]);
 
   if (!clientId) {
     return <Alert severity="warning">Missing NEXT_PUBLIC_GOOGLE_CLIENT_ID</Alert>;
@@ -72,7 +85,10 @@ export default function GoogleSignInButton({ onCredential }: Props) {
         strategy="afterInteractive"
         onLoad={renderGoogleButton}
       />
-      <Box ref={buttonRef} sx={{ display: 'flex', justifyContent: 'center', minHeight: 44 }} />
+      <Box
+        ref={buttonRef}
+        sx={{ width: 1, minWidth: 0, minHeight: 44, display: 'flex', justifyContent: 'center' }}
+      />
     </>
   );
 }
