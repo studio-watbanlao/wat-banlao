@@ -16,9 +16,9 @@ export function useMainSchoolBrand() {
   return {
     user: null,
     school: {
-      name: temple?.name || 'วัดบ้านเหล่า',
+      name: temple?.name || 'เว็บไซต์วัด',
       code: typeof nameEnglish === 'string' ? nameEnglish.trim() : '',
-      logo_url: temple?.branding.logoUrl || '/logo/logo.png',
+      logo_url: temple?.branding.logoUrl || '',
       login_background_url: temple?.branding.loginBackgroundUrl || '',
     },
     isLoading,

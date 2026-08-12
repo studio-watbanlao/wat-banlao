@@ -13,8 +13,11 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { useAuthContext } from 'src/auth/hooks';
 import Iconify from 'src/components/iconify';
 import Layout from 'src/pages/dashboard/layout';
+import { useRouter } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
 import type { TempleNavigationItem } from 'src/types/temple-navigation';
 import type { TemplePage } from 'src/types/temple-page';
 import axios from 'src/utils/axios';
@@ -24,6 +27,8 @@ const byOrder = <T extends { sortOrder: number }>(a: T, b: T) => a.sortOrder - b
 const customPagesOnly = (pages: TemplePage[]) => pages.filter((page) => page.pageType === 'CUSTOM');
 
 export default function TempleMenuManagementPage() {
+  const router = useRouter();
+  const { user } = useAuthContext();
   const [items, setItems] = useState<TempleNavigationItem[]>([]);
   const [customPages, setCustomPages] = useState<TemplePage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,10 +37,7 @@ export default function TempleMenuManagementPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const parents = useMemo(
-    () => items.filter((item) => !item.parentKey).toSorted(byOrder),
-    [items]
-  );
+  const parents = useMemo(() => items.filter((item) => !item.parentKey).toSorted(byOrder), [items]);
 
   const loadMenu = useCallback(async () => {
     try {
@@ -56,8 +58,12 @@ export default function TempleMenuManagementPage() {
   }, []);
 
   useEffect(() => {
-    loadMenu();
-  }, [loadMenu]);
+    if (user?.role && user.role !== 'super_admin') {
+      router.replace(paths.page403);
+      return;
+    }
+    if (user?.role === 'super_admin') loadMenu();
+  }, [loadMenu, router, user?.role]);
 
   const updateItem = (itemKey: string, values: Partial<TempleNavigationItem>) => {
     setItems((current) =>
@@ -89,9 +95,7 @@ export default function TempleMenuManagementPage() {
 
   const toggleCustomPage = (id: string) => {
     setCustomPages((current) =>
-      current.map((page) =>
-        page.id === id ? { ...page, showInMenu: !page.showInMenu } : page
-      )
+      current.map((page) => (page.id === id ? { ...page, showInMenu: !page.showInMenu } : page))
     );
     setDirty(true);
     setSuccess('');
@@ -236,7 +240,9 @@ export default function TempleMenuManagementPage() {
                           size="small"
                           label="ชื่อเมนูหลัก"
                           value={parent.title}
-                          onChange={(event) => updateItem(parent.itemKey, { title: event.target.value })}
+                          onChange={(event) =>
+                            updateItem(parent.itemKey, { title: event.target.value })
+                          }
                           sx={{ width: { xs: 1, md: 320 } }}
                         />
                         <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
@@ -248,7 +254,9 @@ export default function TempleMenuManagementPage() {
                           </Typography>
                           <Switch
                             checked={parent.enabled}
-                            onChange={(_, checked) => updateItem(parent.itemKey, { enabled: checked })}
+                            onChange={(_, checked) =>
+                              updateItem(parent.itemKey, { enabled: checked })
+                            }
                             inputProps={{ 'aria-label': `แสดงเมนู ${parent.title}` }}
                           />
                         </Stack>
@@ -324,7 +332,9 @@ export default function TempleMenuManagementPage() {
                   >
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Stack direction="row" spacing={1} alignItems="center">
-                        <Typography variant="subtitle2" noWrap>{page.title}</Typography>
+                        <Typography variant="subtitle2" noWrap>
+                          {page.title}
+                        </Typography>
                         <Chip
                           size="small"
                           variant="soft"
@@ -332,7 +342,9 @@ export default function TempleMenuManagementPage() {
                           label={page.status === 'PUBLIC' ? 'เผยแพร่แล้ว' : 'ยังไม่เผยแพร่'}
                         />
                       </Stack>
-                      <Typography variant="caption" color="text.secondary">/{page.slug}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        /{page.slug}
+                      </Typography>
                     </Box>
                     <Switch
                       checked={page.showInMenu}

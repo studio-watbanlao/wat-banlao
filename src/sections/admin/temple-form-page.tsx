@@ -46,7 +46,7 @@ type EditSection = 'details' | 'modules' | 'domains' | 'members';
 const MODULE_LABELS: Record<TempleModule, string> = {
   dashboard: 'หน้าภาพรวม',
   pages: 'หน้าคงที่',
-  banners: 'Banner',
+  banners: 'แบนเนอร์',
   activities: 'กิจกรรม',
   architectures: 'สถาปัตย์',
   directory: 'ทำเนียบวัด',
@@ -56,15 +56,15 @@ const MODULE_LABELS: Record<TempleModule, string> = {
   dharmas: 'ธรรมะ',
   contacts: 'ข้อความติดต่อ',
   sacred: 'วัตถุมงคล',
-  branding: 'Branding',
+  branding: 'อัตลักษณ์เว็บไซต์',
   members: 'ผู้ดูแลวัด',
-  domains: 'Domain',
+  domains: 'โดเมน',
 };
 
 const EDIT_TABS: Array<{ value: EditSection; label: string; icon: string }> = [
-  { value: 'details', label: 'ข้อมูลและ Branding', icon: 'solar:palette-bold' },
-  { value: 'modules', label: 'Modules', icon: 'solar:widget-5-bold' },
-  { value: 'domains', label: 'Domains', icon: 'solar:global-bold' },
+  { value: 'details', label: 'ข้อมูลและรูปแบบเว็บไซต์', icon: 'solar:palette-bold' },
+  { value: 'modules', label: 'ส่วนงานที่เปิดใช้', icon: 'solar:widget-5-bold' },
+  { value: 'domains', label: 'โดเมน', icon: 'solar:global-bold' },
   { value: 'members', label: 'ผู้ดูแล', icon: 'solar:users-group-rounded-bold' },
 ];
 
@@ -132,12 +132,15 @@ export default function TempleFormPage({ temple }: Props) {
       fontFamily: temple?.branding.fontFamily || '',
       adminTemplate: temple?.branding.adminTemplate || 'classic',
       publicTemplate: resolvePublicTemplateKey(temple?.branding.publicTemplate),
-      faviconUrl: temple?.branding.faviconUrl || '',
       modules: temple
         ? TEMPLE_MODULES.filter((module) => temple.modules[module])
         : [...TEMPLE_MODULES],
       logoImage: null,
       currentLogoUrl: temple?.branding.logoUrl || '',
+      faviconImage: null,
+      currentFaviconUrl: temple?.branding.faviconUrl || '',
+      ogImage: null,
+      currentOgImageUrl: temple?.branding.ogImageUrl || '',
       loginBackgroundImage: null,
       currentLoginBackgroundUrl: temple?.branding.loginBackgroundUrl || '',
       bankCode: donation.bankCode,
@@ -150,6 +153,10 @@ export default function TempleFormPage({ temple }: Props) {
   });
   const { formState, handleSubmit, setValue, watch } = methods;
   const logoImage = watch('logoImage');
+  const faviconImage = watch('faviconImage');
+  const currentFaviconUrl = watch('currentFaviconUrl');
+  const ogImage = watch('ogImage');
+  const currentOgImageUrl = watch('currentOgImageUrl');
   const loginBackgroundImage = watch('loginBackgroundImage');
   const currentLoginBackgroundUrl = watch('currentLoginBackgroundUrl');
   const bankQrImage = watch('bankQrImage');
@@ -201,6 +208,36 @@ export default function TempleFormPage({ temple }: Props) {
     [bankQrImage, revokePreview, setValue]
   );
 
+  const dropFavicon = useCallback(
+    (files: File[]) => {
+      const file = files[0];
+      if (!file) return;
+      revokePreview(faviconImage);
+      const preview = URL.createObjectURL(file);
+      previews.current.add(preview);
+      setValue('faviconImage', Object.assign(file, { preview }), {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    },
+    [faviconImage, revokePreview, setValue]
+  );
+
+  const dropOgImage = useCallback(
+    (files: File[]) => {
+      const file = files[0];
+      if (!file) return;
+      revokePreview(ogImage);
+      const preview = URL.createObjectURL(file);
+      previews.current.add(preview);
+      setValue('ogImage', Object.assign(file, { preview }), {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    },
+    [ogImage, revokePreview, setValue]
+  );
+
   const dropLoginBackground = useCallback(
     (files: File[]) => {
       const file = files[0];
@@ -226,6 +263,8 @@ export default function TempleFormPage({ temple }: Props) {
         slug: form.slug.trim(),
         contact: temple?.branding.contact || {},
         logoImage: form.logoImage ? await fileToPayload(form.logoImage) : null,
+        faviconImage: form.faviconImage ? await fileToPayload(form.faviconImage) : null,
+        ogImage: form.ogImage ? await fileToPayload(form.ogImage) : null,
         loginBackgroundImage: form.loginBackgroundImage
           ? await fileToPayload(form.loginBackgroundImage)
           : null,
@@ -318,7 +357,7 @@ export default function TempleFormPage({ temple }: Props) {
             <Divider />
 
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-              <Field.Text name="slug" required label="Slug" placeholder="wat-example" />
+              <Field.Text name="slug" required label="รหัสวัดใน URL" placeholder="wat-example" />
               <Field.Select name="status" label="สถานะ" disabled={!temple}>
                 <MenuItem value="ACTIVE">เปิดใช้งาน</MenuItem>
                 <MenuItem value="SUSPENDED">ระงับชั่วคราว</MenuItem>
@@ -337,7 +376,7 @@ export default function TempleFormPage({ temple }: Props) {
             </Avatar>
           }
           title="ภาพพื้นหลังหน้าเข้าสู่ระบบ"
-          subheader="ภาพนี้จะแสดงบนหน้า Login ของวัดตาม Domain ที่กำหนด"
+          subheader="ภาพนี้จะแสดงบนหน้าเข้าสู่ระบบของวัดตามโดเมนที่กำหนด"
         />
         <Divider sx={{ pt: 2 }} />
         <CardContent sx={{ p: { xs: 2, md: 3 } }}>
@@ -537,7 +576,7 @@ export default function TempleFormPage({ temple }: Props) {
               <Iconify icon="solar:palette-bold" />
             </Avatar>
           }
-          title="Branding และรูปแบบการแสดงผล"
+          title="อัตลักษณ์และรูปแบบการแสดงผล"
           subheader="โลโก้ สี และ Template ที่เป็นเอกลักษณ์ของวัดนี้"
         />
         <Divider sx={{ pt: 2 }} />
@@ -563,7 +602,7 @@ export default function TempleFormPage({ temple }: Props) {
               <Stack spacing={0.5} alignItems="center" textAlign="center">
                 <Typography variant="subtitle1">โลโก้วัด</Typography>
                 <Typography variant="caption" color="text.secondary">
-                  ใช้แสดงบน Header และหน้าเว็บไซต์
+                  ใช้แสดงบริเวณส่วนหัวและหน้าเว็บไซต์
                 </Typography>
               </Stack>
               <Field.Upload
@@ -606,7 +645,7 @@ export default function TempleFormPage({ temple }: Props) {
                 <Stack spacing={0.5}>
                   <Typography variant="subtitle1">สีและตัวอักษร</Typography>
                   <Typography variant="body2" color="text.secondary">
-                    กำหนดโทนสีหลักของเว็บไซต์และ Font ที่ต้องการใช้งาน
+                    กำหนดโทนสีหลักและแบบอักษรที่ต้องการใช้งาน
                   </Typography>
                 </Stack>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
@@ -615,7 +654,7 @@ export default function TempleFormPage({ temple }: Props) {
                 </Stack>
                 <Field.Text
                   name="fontFamily"
-                  label="Font Family"
+                  label="ชื่อแบบอักษร"
                   placeholder="เช่น IBM Plex Sans Thai"
                 />
               </Stack>
@@ -626,16 +665,16 @@ export default function TempleFormPage({ temple }: Props) {
                 <Stack spacing={0.5}>
                   <Typography variant="subtitle1">รูปแบบระบบ</Typography>
                   <Typography variant="body2" color="text.secondary">
-                    เลือกรูปแบบหน้า Admin และ Public Site ของวัดนี้
+                    เลือกรูปแบบหน้าผู้ดูแลระบบและหน้าเว็บไซต์สาธารณะของวัดนี้
                   </Typography>
                 </Stack>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                  <Field.Select name="adminTemplate" label="Admin Template">
-                    <MenuItem value="classic">Classic</MenuItem>
-                    <MenuItem value="modern">Modern</MenuItem>
-                    <MenuItem value="minimal">Minimal</MenuItem>
+                  <Field.Select name="adminTemplate" label="รูปแบบหน้าผู้ดูแลระบบ">
+                    <MenuItem value="classic">คลาสสิก</MenuItem>
+                    <MenuItem value="modern">ทันสมัย</MenuItem>
+                    <MenuItem value="minimal">เรียบง่าย</MenuItem>
                   </Field.Select>
-                  <Field.Select name="publicTemplate" label="Public Template">
+                  <Field.Select name="publicTemplate" label="รูปแบบหน้าเว็บไซต์สาธารณะ">
                     {selectableTemplates.map((template) => (
                       <MenuItem key={template.key} value={template.key}>
                         {template.name}
@@ -643,11 +682,73 @@ export default function TempleFormPage({ temple }: Props) {
                     ))}
                   </Field.Select>
                 </Stack>
-                <Field.Text
-                  name="faviconUrl"
-                  label="Favicon URL"
-                  placeholder="https://example.com/favicon.ico"
-                />
+              </Stack>
+
+              <Divider />
+
+              <Stack spacing={2}>
+                <Stack spacing={0.5}>
+                  <Typography variant="subtitle1">รูปสำหรับเบราว์เซอร์และการแชร์</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    อัปโหลดไอคอนประจำเว็บไซต์และภาพตัวอย่างเมื่อแชร์ลิงก์ผ่านโซเชียลมีเดีย
+                  </Typography>
+                </Stack>
+                <Stack direction={{ xs: 'column', md: 'row' }} spacing={2.5}>
+                  <Stack spacing={1} sx={{ width: { xs: 1, md: 220 }, flexShrink: 0 }}>
+                    <Typography variant="subtitle2">ไอคอนเว็บไซต์ (Favicon)</Typography>
+                    <Field.Upload
+                      name="faviconImage"
+                      file={faviconImage || currentFaviconUrl}
+                      maxSize={8 * 1024 * 1024}
+                      accept={{
+                        'image/x-icon': ['.ico'],
+                        'image/vnd.microsoft.icon': ['.ico'],
+                        'image/jpeg': [],
+                        'image/png': [],
+                        'image/webp': [],
+                      }}
+                      onDrop={dropFavicon}
+                      onDelete={() => {
+                        if (faviconImage) revokePreview(faviconImage);
+                        setValue('faviconImage', null, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        });
+                        setValue('currentFaviconUrl', '', { shouldDirty: true });
+                      }}
+                      helperText="รองรับ ICO, PNG, JPG และ WebP · แนะนำรูป 1:1 อย่างน้อย 512 × 512 px"
+                      sx={{
+                        '& > div:first-of-type': { p: '0 !important', aspectRatio: '1 / 1' },
+                        '& .component-image img': { objectFit: 'contain !important' },
+                      }}
+                    />
+                  </Stack>
+
+                  <Stack spacing={1} sx={{ width: 1, minWidth: 0 }}>
+                    <Typography variant="subtitle2">ภาพตัวอย่างสำหรับการแชร์ (OG Image)</Typography>
+                    <Field.Upload
+                      name="ogImage"
+                      file={ogImage || currentOgImageUrl}
+                      maxSize={8 * 1024 * 1024}
+                      accept={{ 'image/jpeg': [], 'image/png': [], 'image/webp': [] }}
+                      onDrop={dropOgImage}
+                      onDelete={() => {
+                        if (ogImage) revokePreview(ogImage);
+                        setValue('ogImage', null, { shouldDirty: true, shouldValidate: true });
+                        setValue('currentOgImageUrl', '', { shouldDirty: true });
+                      }}
+                      helperText="แนะนำ 1200 × 630 px · ใช้เมื่อแชร์หน้าเว็บที่ไม่มีภาพหน้าปก"
+                      sx={{
+                        '& > div:first-of-type': {
+                          p: '0 !important',
+                          width: '100%',
+                          aspectRatio: '1200 / 630',
+                        },
+                        '& .component-image img': { objectFit: 'cover !important' },
+                      }}
+                    />
+                  </Stack>
+                </Stack>
               </Stack>
             </Stack>
           </Stack>
@@ -664,9 +765,9 @@ export default function TempleFormPage({ temple }: Props) {
             <Iconify icon="solar:widget-5-bold" />
           </Avatar>
         }
-        title="Modules ที่เปิดใช้งาน"
+        title="ส่วนงานที่เปิดใช้งาน"
         subheader="เมนูที่ปิดจะไม่แสดงแก่ผู้ดูแลวัด และ API จะปฏิเสธการเข้าถึง"
-        action={<Chip color="primary" label={`เลือก ${selectedModules.length} Modules`} />}
+        action={<Chip color="primary" label={`เลือกแล้ว ${selectedModules.length} ส่วนงาน`} />}
       />
       <Divider sx={{ pt: 2 }} />
       <CardContent>
@@ -739,7 +840,9 @@ export default function TempleFormPage({ temple }: Props) {
                 ) : null}
               </Stack>
               <Typography variant="body2" color="text.secondary">
-                {temple ? `Slug: ${temple.slug}` : 'กรอกข้อมูล Branding และ Modules เพื่อสร้างวัด'}
+                {temple
+                  ? `รหัสวัดใน URL: ${temple.slug}`
+                  : 'กรอกข้อมูล รูปแบบเว็บไซต์ และส่วนงานที่ต้องการเพื่อสร้างวัด'}
               </Typography>
             </Stack>
           </Stack>

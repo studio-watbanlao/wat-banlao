@@ -85,8 +85,18 @@ export function Template1PublicLayout({ children, navData, footerContent }: Prop
                 ml: 'auto',
                 display: { xs: 'none', md: 'flex' },
                 alignSelf: 'stretch',
-                '& a, & button': { color: 'rgba(255,255,255,0.82)' },
-                '& a:hover, & button:hover': { color: 'secondary.main' },
+                '--header-nav-color': 'rgba(255,255,255,0.88)',
+                '--header-accent-color': 'var(--palette-secondary-main)',
+                '--nav-dropdown-bg': '#102F24',
+                '--nav-dropdown-color': '#FFF8E8',
+                '--nav-dropdown-border-color': 'rgba(242,198,109,0.3)',
+                '--nav-dropdown-shadow': '0 22px 55px rgba(2,18,12,0.36)',
+                '--nav-dropdown-dot-color': 'rgba(242,198,109,0.52)',
+                '--nav-dropdown-item-color': 'rgba(255,248,232,0.82)',
+                '--nav-dropdown-item-hover-color': '#F2C66D',
+                '--nav-dropdown-item-hover-bg': 'rgba(242,198,109,0.12)',
+                '--nav-dropdown-item-active-color': '#F2C66D',
+                '--nav-dropdown-item-active-bg': 'rgba(242,198,109,0.16)',
               }}
             >
               <NavDesktop data={navData} sx={{ '& ul': { gap: 2 } }} />
@@ -103,7 +113,7 @@ export function Template1PublicLayout({ children, navData, footerContent }: Prop
         footerContent ?? (
           <Box component="footer" sx={{ mt: 'auto', color: 'common.white', bgcolor: '#0A1E17' }}>
             <Box sx={{ height: 3, bgcolor: 'secondary.main' }} />
-            <Container maxWidth="lg" sx={{ py: { xs: 5, md: 8 } }}>
+            <Container maxWidth="xl" sx={{ py: { xs: 5, md: 8 } }}>
               <Stack
                 direction={{ xs: 'column', md: 'row' }}
                 spacing={{ xs: 4, md: 8 }}

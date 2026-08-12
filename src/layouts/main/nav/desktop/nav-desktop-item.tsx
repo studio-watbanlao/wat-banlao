@@ -75,7 +75,10 @@ const ItemRoot = styled(ButtonBase, { shouldForwardProp })<StyledState>(({
     content: '""',
     borderRadius: '50%',
     position: 'absolute',
-    backgroundColor: varAlpha(theme.vars.palette.text.disabledChannel, 0.64),
+    backgroundColor: `var(--nav-dropdown-dot-color, ${varAlpha(
+      theme.vars.palette.text.disabledChannel,
+      0.64
+    )})`,
     transition: theme.transitions.create(['opacity', 'scale'], {
       duration: theme.transitions.duration.shorter,
     }),
@@ -103,14 +106,14 @@ const ItemRoot = styled(ButtonBase, { shouldForwardProp })<StyledState>(({
     padding: theme.spacing(1.25, 3),
     borderRadius: Number(theme.shape.borderRadius) * 1.75,
     justifyContent: 'flex-start',
-    color: theme.vars.palette.text.secondary,
+    color: 'var(--nav-dropdown-item-color, var(--palette-text-secondary))',
     '&:hover': {
-      color: theme.vars.palette.text.primary,
-      backgroundColor: theme.vars.palette.action.hover,
+      color: 'var(--nav-dropdown-item-hover-color, var(--palette-text-primary))',
+      backgroundColor: 'var(--nav-dropdown-item-hover-bg, var(--palette-action-hover))',
     },
     ...(active && {
-      color: theme.vars.palette.text.primary,
-      backgroundColor: theme.vars.palette.action.selected,
+      color: 'var(--nav-dropdown-item-active-color, var(--palette-text-primary))',
+      backgroundColor: 'var(--nav-dropdown-item-active-bg, var(--palette-action-selected))',
     }),
   };
 

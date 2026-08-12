@@ -30,6 +30,7 @@ type BrandingRow = {
   logo_url?: string;
   login_background_url?: string;
   favicon_url?: string;
+  og_image_url?: string;
   primary_color?: string;
   secondary_color?: string;
   font_family?: string;
@@ -70,6 +71,7 @@ const normalizeBranding = (row?: BrandingRow): TempleBranding => ({
   logoUrl: row?.logo_url || '',
   loginBackgroundUrl: row?.login_background_url || '',
   faviconUrl: row?.favicon_url || '',
+  ogImageUrl: row?.og_image_url || '',
   primaryColor: row?.primary_color || '#6F4E37',
   secondaryColor: row?.secondary_color || '#C89545',
   fontFamily: row?.font_family || '',
@@ -98,7 +100,9 @@ const hydrateTemple = async (row: TempleRow): Promise<Temple> => {
   const queryId = encodeURIComponent(row.id);
   const [brandingRows, moduleRows, domainRows] = await Promise.all([
     supabaseRequest<BrandingRow[]>(`temple_branding?select=*&temple_id=eq.${queryId}&limit=1`),
-    supabaseRequest<ModuleRow[]>(`temple_modules?select=module_key,enabled&temple_id=eq.${queryId}`),
+    supabaseRequest<ModuleRow[]>(
+      `temple_modules?select=module_key,enabled&temple_id=eq.${queryId}`
+    ),
     supabaseRequest<DomainRow[]>(
       `temple_domains?select=*&temple_id=eq.${queryId}&order=is_primary.desc,domain.asc`
     ),
@@ -134,11 +138,31 @@ export const getTempleBySlug = async (slug: string) => {
 };
 
 export const getTempleByDomain = async (domain: string) => {
-  const normalizedDomain = domain.toLowerCase().split(':')[0].replace(/^www\./, '');
+  const normalizedDomain = domain
+    .toLowerCase()
+    .split(':')[0]
+    .replace(/^www\./, '');
   const domains = await supabaseRequest<Array<{ temple_id: string }>>(
     `temple_domains?select=temple_id&domain=eq.${encodeURIComponent(normalizedDomain)}&verification_status=eq.VERIFIED&limit=1`
   );
   return domains[0] ? getTempleById(domains[0].temple_id) : null;
+};
+
+const getVercelProjectSlug = (host: string) => {
+  const normalizedHost = host
+    .toLowerCase()
+    .split(':')[0]
+    .replace(/^www\./, '');
+  if (!normalizedHost.endsWith('.vercel.app')) return '';
+
+  return normalizedHost.slice(0, -'.vercel.app'.length);
+};
+
+const isLocalDevelopmentHost = (host: string) => {
+  const normalizedHost = host.toLowerCase().split(':')[0];
+  return (
+    normalizedHost === 'localhost' || normalizedHost === '127.0.0.1' || host.startsWith('[::1]')
+  );
 };
 
 export const listAllTemples = async () => {
@@ -260,10 +284,17 @@ export const setPublicCacheControl = (
   cacheControl: string
 ) => {
   const hasPreviewTenant = typeof req.headers['x-temple-id'] === 'string';
-  res.setHeader('Vary', 'Host, x-temple-id, x-temple-slug');
+  const hasLocalTempleContext =
+    isLocalDevelopmentHost(req.headers.host || '') && Boolean(req.cookies[TEMPLE_CONTEXT_COOKIE]);
+  res.setHeader(
+    'Vary',
+    hasLocalTempleContext
+      ? 'Host, Cookie, x-temple-id, x-temple-slug'
+      : 'Host, x-temple-id, x-temple-slug'
+  );
   res.setHeader(
     'Cache-Control',
-    hasPreviewTenant ? 'private, no-store, max-age=0' : cacheControl
+    hasPreviewTenant || hasLocalTempleContext ? 'private, no-store, max-age=0' : cacheControl
   );
 };
 
@@ -278,14 +309,36 @@ export const resolvePublicTemple = async (req: NextApiRequest) => {
   const querySlug = typeof req.query.templeSlug === 'string' ? req.query.templeSlug : '';
   const headerSlug =
     typeof req.headers['x-temple-slug'] === 'string' ? req.headers['x-temple-slug'] : '';
-  const configuredSlug = process.env.TEMPLE_SLUG || process.env.NEXT_PUBLIC_TEMPLE_SLUG;
-  const explicitSlug = querySlug || headerSlug || configuredSlug;
+  const explicitSlug = querySlug || headerSlug;
   if (explicitSlug) {
     const bySlug = await getTempleBySlug(explicitSlug);
     if (bySlug?.status === 'ACTIVE') return bySlug;
   }
-  const byDomain = await getTempleByDomain(req.headers.host || '');
+
+  const host = req.headers.host || '';
+  if (isLocalDevelopmentHost(host)) {
+    const localTempleId = req.cookies[TEMPLE_CONTEXT_COOKIE] || '';
+    if (localTempleId) {
+      const localTemple = await getTempleById(localTempleId);
+      if (localTemple?.status === 'ACTIVE') return localTemple;
+    }
+  }
+
+  const byDomain = await getTempleByDomain(host);
   if (byDomain?.status === 'ACTIVE') return byDomain;
+
+  const vercelProjectSlug = getVercelProjectSlug(host);
+  if (vercelProjectSlug) {
+    const byVercelProject = await getTempleBySlug(vercelProjectSlug);
+    if (byVercelProject?.status === 'ACTIVE') return byVercelProject;
+  }
+
+  const configuredSlug = process.env.TEMPLE_SLUG || process.env.NEXT_PUBLIC_TEMPLE_SLUG;
+  if (configuredSlug) {
+    const byConfiguredSlug = await getTempleBySlug(configuredSlug);
+    if (byConfiguredSlug?.status === 'ACTIVE') return byConfiguredSlug;
+  }
+
   const fallback = await getTempleBySlug(DEFAULT_TEMPLE_SLUG);
   if (fallback?.status === 'ACTIVE') return fallback;
   throw new TempleAccessError('ไม่พบเว็บไซต์วัดสำหรับ Domain นี้', 404);

@@ -6,11 +6,11 @@ import { styled } from '@mui/material/styles';
 
 const NavDropdownPaper = styled('div')(({ theme }) => ({
   padding: theme.spacing(1.5, 2),
-  color: theme.vars.palette.text.primary,
-  backgroundColor: theme.vars.palette.background.paper,
-  border: `1px solid ${theme.vars.palette.divider}`,
+  color: 'var(--nav-dropdown-color, var(--palette-text-primary))',
+  backgroundColor: 'var(--nav-dropdown-bg, var(--palette-background-paper))',
+  border: '1px solid var(--nav-dropdown-border-color, var(--palette-divider))',
   borderRadius: Number(theme.shape.borderRadius) * 2,
-  boxShadow: '0 14px 36px rgba(24, 33, 45, 0.08)',
+  boxShadow: 'var(--nav-dropdown-shadow, 0 14px 36px rgba(24, 33, 45, 0.08))',
 }));
 
 // ----------------------------------------------------------------------

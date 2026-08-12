@@ -13,6 +13,7 @@ import { TEMPLE_MODULES, type TempleModule, type TemplePermissions } from 'src/t
 import { resolvePublicTemplateKey } from 'src/public-templates/catalog';
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const ALLOWED_FAVICON_TYPES = [...ALLOWED_IMAGE_TYPES, 'image/x-icon', 'image/vnd.microsoft.icon'];
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const text = (value: unknown, max = 500) =>
@@ -65,10 +66,10 @@ const STANDARD_PAGE_PACK = [
   },
 ] as const;
 
-const parseImage = (value: unknown, label: string) => {
+const parseImage = (value: unknown, label: string, allowedTypes = ALLOWED_IMAGE_TYPES) => {
   if (!value || typeof value !== 'object') return null;
   const image = value as { type?: unknown; base64?: unknown };
-  if (typeof image.type !== 'string' || !ALLOWED_IMAGE_TYPES.includes(image.type)) {
+  if (typeof image.type !== 'string' || !allowedTypes.includes(image.type)) {
     throw Object.assign(new Error(`รองรับ${label}เฉพาะ JPG, PNG และ WebP`), { status: 400 });
   }
   if (typeof image.base64 !== 'string') {
@@ -79,7 +80,13 @@ const parseImage = (value: unknown, label: string) => {
     throw Object.assign(new Error(`${label}ต้องมีขนาดไม่เกิน 8 MB`), { status: 400 });
   }
   const extension =
-    image.type === 'image/png' ? 'png' : image.type === 'image/webp' ? 'webp' : 'jpg';
+    image.type === 'image/png'
+      ? 'png'
+      : image.type === 'image/webp'
+        ? 'webp'
+        : image.type === 'image/x-icon' || image.type === 'image/vnd.microsoft.icon'
+          ? 'ico'
+          : 'jpg';
   return { buffer, contentType: image.type, extension };
 };
 
@@ -129,7 +136,7 @@ const brandingContact = (body: NextApiRequest['body'], qrCodeUrl: string) => {
   };
 };
 
-export const config = { api: { bodyParser: { sizeLimit: '28mb' } } };
+export const config = { api: { bodyParser: { sizeLimit: '56mb' } } };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -153,6 +160,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const id = randomUUID();
       const modules = Array.isArray(req.body?.modules) ? req.body.modules.filter(isModule) : [];
       const logo = parseImage(req.body?.logoImage, 'โลโก้วัด');
+      const favicon = parseImage(req.body?.faviconImage, 'ไอคอนเว็บไซต์', ALLOWED_FAVICON_TYPES);
+      const ogImage = parseImage(req.body?.ogImage, 'ภาพตัวอย่างสำหรับการแชร์');
       const loginBackground = parseImage(req.body?.loginBackgroundImage, 'ภาพพื้นหลังหน้า Login');
       const bankQr = parseImage(req.body?.bankQrImage, 'รูป QR Code');
       const logoUrl = logo
@@ -169,6 +178,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             loginBackground.contentType
           )
         : '';
+      const faviconUrl = favicon
+        ? await uploadBrandingImage(
+            `${id}/favicon-${Date.now()}.${favicon.extension}`,
+            favicon.buffer,
+            favicon.contentType
+          )
+        : text(req.body?.currentFaviconUrl, 2000);
+      const ogImageUrl = ogImage
+        ? await uploadBrandingImage(
+            `${id}/og-image-${Date.now()}.${ogImage.extension}`,
+            ogImage.buffer,
+            ogImage.contentType
+          )
+        : text(req.body?.currentOgImageUrl, 2000);
       const bankQrUrl = bankQr
         ? await uploadBrandingImage(
             `${id}/donation-qr-${Date.now()}.${bankQr.extension}`,
@@ -189,7 +212,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             temple_id: id,
             logo_url: logoUrl || null,
             login_background_url: loginBackgroundUrl || null,
-            favicon_url: text(req.body?.faviconUrl, 2000) || null,
+            favicon_url: faviconUrl || null,
+            og_image_url: ogImageUrl || null,
             primary_color: text(req.body?.primaryColor, 20) || '#6F4E37',
             secondary_color: text(req.body?.secondaryColor, 20) || '#C89545',
             font_family: text(req.body?.fontFamily, 120) || null,
@@ -248,10 +272,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return res.status(400).json({ message: 'ข้อมูลวัดไม่ถูกต้อง' });
         }
         const logo = parseImage(req.body?.logoImage, 'โลโก้วัด');
-        const loginBackground = parseImage(
-          req.body?.loginBackgroundImage,
-          'ภาพพื้นหลังหน้า Login'
-        );
+        const favicon = parseImage(req.body?.faviconImage, 'ไอคอนเว็บไซต์', ALLOWED_FAVICON_TYPES);
+        const ogImage = parseImage(req.body?.ogImage, 'ภาพตัวอย่างสำหรับการแชร์');
+        const loginBackground = parseImage(req.body?.loginBackgroundImage, 'ภาพพื้นหลังหน้า Login');
         const bankQr = parseImage(req.body?.bankQrImage, 'รูป QR Code');
         const logoUrl = logo
           ? await uploadBrandingImage(
@@ -267,6 +290,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               loginBackground.contentType
             )
           : text(req.body?.currentLoginBackgroundUrl, 2000);
+        const faviconUrl = favicon
+          ? await uploadBrandingImage(
+              `${templeId}/favicon-${Date.now()}.${favicon.extension}`,
+              favicon.buffer,
+              favicon.contentType
+            )
+          : text(req.body?.currentFaviconUrl, 2000);
+        const ogImageUrl = ogImage
+          ? await uploadBrandingImage(
+              `${templeId}/og-image-${Date.now()}.${ogImage.extension}`,
+              ogImage.buffer,
+              ogImage.contentType
+            )
+          : text(req.body?.currentOgImageUrl, 2000);
         const bankQrUrl = bankQr
           ? await uploadBrandingImage(
               `${templeId}/donation-qr-${Date.now()}.${bankQr.extension}`,
@@ -290,7 +327,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               temple_id: templeId,
               logo_url: logoUrl || null,
               login_background_url: loginBackgroundUrl || null,
-              favicon_url: text(req.body?.faviconUrl, 2000) || null,
+              favicon_url: faviconUrl || null,
+              og_image_url: ogImageUrl || null,
               primary_color: text(req.body?.primaryColor, 20) || '#6F4E37',
               secondary_color: text(req.body?.secondaryColor, 20) || '#C89545',
               font_family: text(req.body?.fontFamily, 120) || null,

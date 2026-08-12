@@ -1,30 +1,31 @@
 'use client';
 
-import * as Yup from 'yup';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
-import Stack from '@mui/material/Stack';
 import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import LoadingButton from '@mui/lab/LoadingButton';
 import InputAdornment from '@mui/material/InputAdornment';
+import Skeleton from '@mui/material/Skeleton';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import * as Yup from 'yup';
 
 import GoogleSignInButton from './google-sign-in-button';
 
-import { Logo } from 'src/components/logo';
-import { useRouter, useSearchParams } from 'src/routes/hooks';
-import { useBoolean } from 'src/hooks/use-boolean';
 import { useAuthContext } from 'src/auth/hooks';
 import { getPostLoginPath } from 'src/auth/post-login-path';
-import { PATH_AFTER_LOGIN } from 'src/config-global';
-import { getErrorMessage } from 'src/utils/error-message';
-import { useMainSchoolBrand } from 'src/layouts/main/school-brand';
-import Iconify from 'src/components/iconify';
 import { Form, RHFTextField } from 'src/components/hook-form';
+import Iconify from 'src/components/iconify';
+import { Logo } from 'src/components/logo';
+import { PATH_AFTER_LOGIN } from 'src/config-global';
+import { useBoolean } from 'src/hooks/use-boolean';
+import { useMainSchoolBrand } from 'src/layouts/main/school-brand';
+import { useRouter, useSearchParams } from 'src/routes/hooks';
+import { getErrorMessage } from 'src/utils/error-message';
 
 // ----------------------------------------------------------------------
 
@@ -46,9 +47,7 @@ const LoginView = () => {
   const { school, isLoading: isTempleLoading } = useMainSchoolBrand();
   const [errorMsg, setErrorMsg] = useState('');
   const returnTo = searchParams.get('returnTo');
-  const loginBackgroundUrl = isTempleLoading
-    ? ''
-    : school.login_background_url || '/assets/images/watbanlao.png';
+  const loginBackgroundUrl = isTempleLoading ? '' : school.login_background_url || '';
 
   const methods = useForm({
     resolver: yupResolver(LoginSchema),
@@ -134,12 +133,17 @@ const LoginView = () => {
           >
             ระบบจัดการเว็บไซต์วัด
           </Typography>
-          <Typography variant="h3" sx={{ maxWidth: 420, fontSize: { xs: 27, sm: 34, md: 42 } }}>
+          <Typography variant="h4" sx={{ maxWidth: 420, fontSize: { xs: 27, sm: 34, md: 36 } }}>
             จัดการข้อมูลวัดได้ในที่เดียว
           </Typography>
           <Typography
             variant="body1"
-            sx={{ mt: 1.5, maxWidth: 430, color: 'rgba(255,255,255,0.76)', display: { xs: 'none', sm: 'block' } }}
+            sx={{
+              mt: 1.5,
+              maxWidth: 430,
+              color: 'rgba(255,255,255,0.76)',
+              display: { xs: 'none', sm: 'block' },
+            }}
           >
             อัปเดตกิจกรรม บทความ เทศกาล และข้อมูลสำคัญของวัดได้อย่างสะดวก
           </Typography>
@@ -156,20 +160,55 @@ const LoginView = () => {
       >
         <Stack sx={{ width: 1, maxWidth: 380, minWidth: 0 }}>
           <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 4 }}>
-            <Logo
-              disabledLink
-              src={school.logo_url}
-              alt={school.name}
-              sx={{ width: 48, height: 48, flexShrink: 0, cursor: 'default', objectFit: 'contain' }}
-            />
-            <Box sx={{ minWidth: 0 }}>
-              <Typography variant="subtitle1" noWrap>
-                {school.name}
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                ระบบสำหรับผู้ดูแลและสมาชิกวัด
-              </Typography>
-            </Box>
+            {isTempleLoading ? (
+              <>
+                <Skeleton variant="circular" width={48} height={48} sx={{ flexShrink: 0 }} />
+                <Stack spacing={0.5} sx={{ flex: 1 }}>
+                  <Skeleton width={180} height={24} />
+                  <Skeleton width={220} height={18} />
+                </Stack>
+              </>
+            ) : (
+              <>
+                {school.logo_url ? (
+                  <Logo
+                    disabledLink
+                    src={school.logo_url}
+                    alt={school.name}
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      flexShrink: 0,
+                      cursor: 'default',
+                      objectFit: 'contain',
+                    }}
+                  />
+                ) : (
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      flexShrink: 0,
+                      display: 'grid',
+                      placeItems: 'center',
+                      borderRadius: '50%',
+                      color: 'primary.main',
+                      bgcolor: 'background.neutral',
+                    }}
+                  >
+                    <Iconify icon="solar:buildings-2-linear" width={26} />
+                  </Box>
+                )}
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography variant="subtitle1" noWrap>
+                    {school.name}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                    ระบบสำหรับผู้ดูแลและสมาชิกวัด
+                  </Typography>
+                </Box>
+              </>
+            )}
           </Stack>
 
           <Typography variant="h4">เข้าสู่ระบบ</Typography>

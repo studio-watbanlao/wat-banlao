@@ -1,9 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { getSafeApiError } from 'src/lib/api-error';
-import { resolveSessionUser } from 'src/lib/supabase-auth';
+import { isSuperAdminUser, resolveSessionUser } from 'src/lib/supabase-auth';
 import { supabaseRequest } from 'src/lib/supabase-rest';
-import { requireTemplePermission } from 'src/lib/temple-access';
+import { resolveTempleAccess } from 'src/lib/temple-access';
 import { getTempleNavigation } from 'src/lib/temple-navigation';
 
 const text = (value: unknown, max: number) =>
@@ -13,8 +13,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const user = await resolveSessionUser(req, res);
     if (!user) return res.status(401).json({ message: 'กรุณาเข้าสู่ระบบ' });
-    const action = req.method === 'PATCH' ? 'update' : 'read';
-    const access = await requireTemplePermission(req, user, 'pages', action);
+    if (!isSuperAdminUser(user)) {
+      return res.status(403).json({ message: 'เฉพาะผู้ดูแลระบบสูงสุดเท่านั้น' });
+    }
+    const access = await resolveTempleAccess(req, user);
     const templeId = access.temple.id;
 
     if (req.method === 'GET') {

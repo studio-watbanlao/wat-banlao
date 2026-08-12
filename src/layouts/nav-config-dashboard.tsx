@@ -122,7 +122,7 @@ export const navData: NavSectionProps['data'] = [
         title: 'จัดการเมนู',
         path: paths.dashboard.menus,
         icon: <RiMenuLine />,
-        featureKey: 'pages',
+        roles: ['super_admin'],
         deep: true,
       },
       {

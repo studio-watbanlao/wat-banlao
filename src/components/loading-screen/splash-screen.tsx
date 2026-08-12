@@ -1,15 +1,13 @@
 import Box, { BoxProps } from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
 import { m } from 'framer-motion';
-import type { SyntheticEvent } from 'react';
 
 import Logo from '../logo';
 
 import { useAuthContext } from 'src/auth/hooks';
+import Iconify from 'src/components/iconify';
 import { usePublicTemple } from 'src/public-templates/use-public-temple';
 import type { TempleAccess } from 'src/types/temple';
-
-const DEFAULT_LOGO = '/logo/logo_single.png';
 
 const SplashScreen = ({ sx, ...other }: BoxProps) => {
   const theme = useTheme();
@@ -20,16 +18,8 @@ const SplashScreen = ({ sx, ...other }: BoxProps) => {
   const currentAccess =
     accesses.find((access) => access.temple.id === user?.currentTempleId) || accesses[0];
   const temple = currentAccess?.temple || publicTemple;
-  const logoUrl = temple?.branding.logoUrl || DEFAULT_LOGO;
-  const templeName = temple?.name || 'วัดบ้านเหล่า';
-
-  const handleLogoError = (event: SyntheticEvent<HTMLImageElement>) => {
-    const image = event.currentTarget;
-
-    if (!image.src.endsWith(DEFAULT_LOGO)) {
-      image.src = DEFAULT_LOGO;
-    }
-  };
+  const logoUrl = temple?.branding.logoUrl || '';
+  const templeName = temple?.name || 'เว็บไซต์วัด';
 
   return (
     <Box
@@ -129,13 +119,28 @@ const SplashScreen = ({ sx, ...other }: BoxProps) => {
         transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
         style={{ position: 'relative', zIndex: 2 }}
       >
-        <Logo
-          disabledLink
-          src={logoUrl}
-          alt={templeName}
-          onError={handleLogoError}
-          sx={{ width: 88, height: 88, display: 'block', objectFit: 'contain' }}
-        />
+        {logoUrl ? (
+          <Logo
+            disabledLink
+            src={logoUrl}
+            alt={templeName}
+            sx={{ width: 88, height: 88, display: 'block', objectFit: 'contain' }}
+          />
+        ) : (
+          <Box
+            sx={{
+              width: 88,
+              height: 88,
+              display: 'grid',
+              placeItems: 'center',
+              borderRadius: '50%',
+              color: 'primary.main',
+              bgcolor: alpha(theme.palette.background.paper, 0.72),
+            }}
+          >
+            <Iconify icon="solar:buildings-2-linear" width={44} />
+          </Box>
+        )}
       </m.div>
     </Box>
   );

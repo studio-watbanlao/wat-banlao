@@ -4,6 +4,7 @@ import type { Theme, CSSObject, Breakpoint } from '@mui/material/styles';
 import { merge } from 'es-toolkit';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
+import Skeleton from '@mui/material/Skeleton';
 import { alpha } from '@mui/material/styles';
 
 import type { MainSectionProps, HeaderSectionProps, LayoutSectionProps } from '../core';
@@ -14,8 +15,8 @@ import { AuthCenteredContent } from './content';
 import type { AuthCenteredContentProps } from './content';
 
 import { Logo } from 'src/components/logo';
+import Iconify from 'src/components/iconify';
 import { languageOptions } from 'src/locales';
-import { CONFIG } from 'src/config-global';
 import { usePublicTemple } from 'src/public-templates/use-public-temple';
 
 // ----------------------------------------------------------------------
@@ -39,9 +40,7 @@ export function AuthCenteredLayout({
   layoutQuery = 'md',
 }: AuthCenteredLayoutProps) {
   const { data: temple, isLoading: isTempleLoading } = usePublicTemple();
-  const loginBackgroundUrl = isTempleLoading
-    ? ''
-    : temple?.branding.loginBackgroundUrl || `${CONFIG.assetsDir}/assets/images/watbanlao.png`;
+  const loginBackgroundUrl = isTempleLoading ? '' : temple?.branding.loginBackgroundUrl || '';
 
   const renderHeader = () => {
     const headerSlotProps: HeaderSectionProps['slotProps'] = {
@@ -61,7 +60,26 @@ export function AuthCenteredLayout({
       leftArea: (
         <>
           {/** @slot Logo */}
-          {customHeaderSlots?.leftArea ?? <Logo />}
+          {customHeaderSlots?.leftArea ??
+            (isTempleLoading ? (
+              <Skeleton variant="circular" width={40} height={40} />
+            ) : temple?.branding.logoUrl ? (
+              <Logo src={temple.branding.logoUrl} alt={temple.name} />
+            ) : (
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  display: 'grid',
+                  placeItems: 'center',
+                  borderRadius: '50%',
+                  color: 'primary.main',
+                  bgcolor: 'background.paper',
+                }}
+              >
+                <Iconify icon="solar:buildings-2-linear" width={24} />
+              </Box>
+            ))}
         </>
       ),
       rightArea: (

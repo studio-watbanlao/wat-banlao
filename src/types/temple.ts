@@ -34,6 +34,7 @@ export type TempleBranding = {
   logoUrl: string;
   loginBackgroundUrl: string;
   faviconUrl: string;
+  ogImageUrl: string;
   primaryColor: string;
   secondaryColor: string;
   fontFamily: string;

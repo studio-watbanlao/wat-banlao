@@ -6,12 +6,14 @@ import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import Chip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
+import type { ContainerProps } from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import Iconify from 'src/components/iconify';
 import Image from 'src/components/image';
+import { usePublicTemple } from 'src/public-templates/use-public-temple';
 import { useGetActivity } from 'src/queries/activity';
 import { RouterLink } from 'src/routes/components';
 import { paths } from 'src/routes/paths';
@@ -24,6 +26,10 @@ const FALLBACK_IMAGE = '/assets/background/overlay_4.jpg';
 const CONTENT_TYPE_LABEL: Record<ActivityContentType, string> = {
   activity: 'กิจกรรม',
   news: 'ข่าวสาร',
+};
+
+type Props = {
+  maxWidth?: ContainerProps['maxWidth'];
 };
 
 function ActivityNewsCard({ item }: { item: ActivityItem }) {
@@ -110,9 +116,11 @@ function ActivityNewsCard({ item }: { item: ActivityItem }) {
   );
 }
 
-export default function HomeArticle() {
+export default function HomeArticle({ maxWidth = 'lg' }: Props) {
   const { data = [], isLoading } = useGetActivity();
+  const { data: temple } = usePublicTemple();
   const displayItems = data.slice(0, MAX_ITEMS);
+  const templeName = temple?.name || 'วัด';
 
   return (
     <Box
@@ -120,7 +128,7 @@ export default function HomeArticle() {
       aria-labelledby="home-activity-news-title"
       sx={{ bgcolor: '#f7f7f5', color: 'text.primary', py: { xs: 7, md: 11 } }}
     >
-      <Container maxWidth="lg">
+      <Container maxWidth={maxWidth}>
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
           alignItems={{ sm: 'flex-end' }}
@@ -137,7 +145,7 @@ export default function HomeArticle() {
             </Typography>
             <Typography color="text.secondary" sx={{ mt: 1, maxWidth: 640 }}>
               ติดตามกิจกรรม งานบุญ ข่าวประชาสัมพันธ์ และเรื่องราวที่เกิดขึ้นภายในวัด โรงเรียน
-              และชุมชนบ้านเหล่า
+              และชุมชนของ{templeName}
             </Typography>
           </Box>
 

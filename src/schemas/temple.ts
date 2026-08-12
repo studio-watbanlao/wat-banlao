@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { optionalImageFileSchema } from './common';
+import { optionalFaviconFileSchema, optionalImageFileSchema } from './common';
 
 import { PUBLIC_TEMPLATE_KEYS } from 'src/public-templates/catalog';
 
@@ -42,10 +42,13 @@ export const templeFormSchema = z
     fontFamily: z.string().trim().max(120, 'ชื่อฟอนต์ยาวเกินไป').default(''),
     adminTemplate: z.string().trim().min(1),
     publicTemplate: z.enum(PUBLIC_TEMPLATE_KEYS, { message: 'กรุณาเลือก Public Template' }),
-    faviconUrl: z.string().trim().max(2000, 'URL ยาวเกินไป').default(''),
     modules: z.array(z.string()).min(1, 'กรุณาเปิดอย่างน้อยหนึ่ง Module'),
     logoImage: optionalImageFileSchema.default(null),
     currentLogoUrl: z.string().default(''),
+    faviconImage: optionalFaviconFileSchema.default(null),
+    currentFaviconUrl: z.string().default(''),
+    ogImage: optionalImageFileSchema.default(null),
+    currentOgImageUrl: z.string().default(''),
     loginBackgroundImage: optionalImageFileSchema.default(null),
     currentLoginBackgroundUrl: z.string().default(''),
     bankCode: z.string().trim().max(20, 'รหัสธนาคารไม่ถูกต้อง').default(''),

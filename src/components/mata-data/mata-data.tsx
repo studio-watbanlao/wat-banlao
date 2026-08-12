@@ -70,7 +70,7 @@ const MataData = ({ data, url }: MataDataProps) => {
   }
   const canonicalUrl = `${baseUrl}${canonicalPath === '/' ? '' : canonicalPath}`;
   const imageUrl = absoluteUrl(
-    resolveContentImage(data?.imageUrl || temple?.branding.logoUrl),
+    resolveContentImage(data?.imageUrl || temple?.branding.ogImageUrl || temple?.branding.logoUrl),
     baseUrl
   );
   const faviconUrl = absoluteUrl(
