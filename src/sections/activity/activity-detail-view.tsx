@@ -1,6 +1,11 @@
 import { Box, Divider, Grid, Stack, Typography, useTheme } from '@mui/material';
 import { useParams } from 'next/navigation';
 import { useEffect } from 'react';
+
+import Banking from '../share/banking';
+
+import ActivityImageCarousel from './activity-image-carousel';
+
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import Iconify from 'src/components/iconify';
 import MataData from 'src/components/mata-data/mata-data';
@@ -11,15 +16,13 @@ import { usePostActivity } from 'src/queries/activity/mutation';
 import { paths } from 'src/routes/paths';
 import { fShortenNumber } from 'src/utils/format-number';
 import { fDateTime } from 'src/utils/format-time';
-import Banking from '../share/banking';
-import ActivityImageCarousel from './activity-image-carousel';
 
 const ActivityDetailsView = () => {
   const theme = useTheme();
   const params = useParams();
   const id = params?.id as string;
 
-  const { data, isLoading } = useGetActivityById(id);
+  const { data } = useGetActivityById(id);
 
   const { mutate } = usePostActivity();
 
@@ -35,7 +38,7 @@ const ActivityDetailsView = () => {
       <CustomBreadcrumbs
         links={[
           {
-            name: 'กิจกรรมต่างๆ',
+            name: data?.contentType === 'news' ? 'ข่าวสาร' : 'กิจกรรมต่างๆ',
             href: '/',
           },
           { name: data?.title },

@@ -9,6 +9,7 @@ const DHARMA_BUCKET = 'dharmas';
 const BRANDING_BUCKET = 'temple-branding';
 const TEMPLE_PAGE_BUCKET = 'temple-pages';
 const TEMPLE_DIRECTORY_BUCKET = 'temple-directory';
+const COMMUNITY_LEADER_BUCKET = 'community-leaders';
 
 export class SupabaseStorageError extends Error {
   constructor(
@@ -189,3 +190,9 @@ export const uploadTempleDirectoryImage = (path: string, buffer: Buffer, content
 
 export const deleteTempleDirectoryImages = (paths: string[]) =>
   deletePublicImages(TEMPLE_DIRECTORY_BUCKET, paths);
+
+export const uploadCommunityLeaderImage = (path: string, buffer: Buffer, contentType: string) =>
+  uploadPublicImage(COMMUNITY_LEADER_BUCKET, path, buffer, contentType);
+
+export const deleteCommunityLeaderImages = (paths: string[]) =>
+  deletePublicImages(COMMUNITY_LEADER_BUCKET, paths);

@@ -1,9 +1,21 @@
 export type TempleDirectoryStatus = 'DRAFT' | 'PUBLIC';
 
+export const TEMPLE_DIRECTORY_ENTRY_TYPES = [
+  { value: 'CURRENT_ABBOT', label: 'เจ้าอาวาสปัจจุบัน' },
+  { value: 'FORMER_ABBOT', label: 'อดีตเจ้าอาวาส' },
+  { value: 'MONK', label: 'พระสงฆ์' },
+  { value: 'NOVICE', label: 'สามเณร' },
+] as const;
+
+export type TempleDirectoryEntryType = (typeof TEMPLE_DIRECTORY_ENTRY_TYPES)[number]['value'];
+
 export type TempleDirectoryEntry = {
   id: string;
   fullName: string;
   displayTitle: string;
+  entryType: TempleDirectoryEntryType;
+  termStart: string;
+  termEnd: string;
   imageUrl: string;
   imageStoragePath?: string;
   birth: string;

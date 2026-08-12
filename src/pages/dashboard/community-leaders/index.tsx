@@ -1,3 +1,4 @@
+import { Box, Stack } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
@@ -8,7 +9,6 @@ import Container from '@mui/material/Container';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -31,39 +31,35 @@ import {
 import Layout from 'src/pages/dashboard/layout';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
-import {
-  TEMPLE_DIRECTORY_ENTRY_TYPES,
-  type TempleDirectoryEntry,
-  type TempleDirectoryEntryType,
-} from 'src/types/temple-directory';
+import { COMMUNITY_VILLAGES, type CommunityLeader } from 'src/types/community-leader';
 import axios from 'src/utils/axios';
 import { getErrorMessage } from 'src/utils/error-message';
 
 const TABLE_HEAD = [
-  { id: 'fullName', label: 'รายชื่อ', minWidth: 300 },
-  { id: 'entryType', label: 'ประเภท', minWidth: 170 },
-  { id: 'templeName', label: 'วัด / จังหวัด', minWidth: 240 },
-  { id: 'sortOrder', label: 'ลำดับ', width: 100, align: 'center' as const },
-  { id: 'status', label: 'สถานะ', width: 130 },
+  { id: 'fullName', label: 'ผู้นำชุมชน', minWidth: 280 },
+  { id: 'villageName', label: 'หมู่บ้าน', minWidth: 220 },
+  { id: 'role', label: 'ตำแหน่ง', minWidth: 220 },
+  { id: 'sortOrder', label: 'ลำดับ', width: 90, align: 'center' as const },
+  { id: 'status', label: 'สถานะ', width: 120 },
   { id: '', label: '', width: 120 },
 ];
 
-export default function TempleDirectoryPage() {
+export default function CommunityLeadersAdminPage() {
   const router = useRouter();
   const table = useTable({ defaultOrderBy: 'sortOrder', defaultRowsPerPage: 10 });
-  const [entries, setEntries] = useState<TempleDirectoryEntry[]>([]);
+  const [leaders, setLeaders] = useState<CommunityLeader[]>([]);
   const [search, setSearch] = useState('');
-  const [entryTypeFilter, setEntryTypeFilter] = useState<'ALL' | TempleDirectoryEntryType>('ALL');
+  const [village, setVillage] = useState('all');
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState('');
   const [error, setError] = useState('');
 
-  const loadEntries = useCallback(async () => {
+  const loadLeaders = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
-      const response = await axios.get('/api/admin/directory');
-      setEntries(response.data.entries);
+      const response = await axios.get('/api/admin/community-leaders');
+      setLeaders(response.data.leaders || []);
     } catch (requestError) {
       setError(getErrorMessage(requestError));
     } finally {
@@ -72,40 +68,42 @@ export default function TempleDirectoryPage() {
   }, []);
 
   useEffect(() => {
-    loadEntries();
-  }, [loadEntries]);
+    loadLeaders();
+  }, [loadLeaders]);
 
-  const filteredEntries = useMemo(() => {
+  const filteredLeaders = useMemo(() => {
     const keyword = search.trim().toLocaleLowerCase('th');
-    const comparator = getComparator<TempleDirectoryEntry>(
+    const comparator = getComparator<CommunityLeader>(
       table.order,
-      table.orderBy as keyof TempleDirectoryEntry
+      table.orderBy as keyof CommunityLeader
     );
-    const sorted = entries
-      .filter((entry) => entryTypeFilter === 'ALL' || entry.entryType === entryTypeFilter)
-      .map((entry, index) => [entry, index] as const)
+    return leaders
+      .filter((leader) => village === 'all' || leader.villageKey === village)
+      .filter((leader) =>
+        !keyword
+          ? true
+          : [leader.fullName, leader.villageName, leader.role, leader.responsibility]
+              .join(' ')
+              .toLocaleLowerCase('th')
+              .includes(keyword)
+      )
+      .map((leader, index) => [leader, index] as const)
       .sort((left, right) => comparator(left[0], right[0]) || left[1] - right[1])
-      .map(([entry]) => entry);
-    if (!keyword) return sorted;
-    return sorted.filter((entry) =>
-      [entry.fullName, entry.displayTitle, entry.templeName, entry.province, entry.affiliation]
-        .join(' ')
-        .toLocaleLowerCase('th')
-        .includes(keyword)
-    );
-  }, [entries, entryTypeFilter, search, table.order, table.orderBy]);
+      .map(([leader]) => leader);
+  }, [leaders, search, table.order, table.orderBy, village]);
 
-  const pageEntries = filteredEntries.slice(
+  const pageLeaders = filteredLeaders.slice(
     table.page * table.rowsPerPage,
     table.page * table.rowsPerPage + table.rowsPerPage
   );
-  const removeEntry = useCallback(async (entry: TempleDirectoryEntry) => {
-    if (!window.confirm(`ต้องการลบ “${entry.fullName}” ออกจากทำเนียบวัดหรือไม่?`)) return;
+
+  const removeLeader = useCallback(async (leader: CommunityLeader) => {
+    if (!window.confirm(`ต้องการลบ “${leader.fullName}” หรือไม่?`)) return;
     try {
-      setDeleting(entry.id);
+      setDeleting(leader.id);
       setError('');
-      await axios.delete('/api/admin/directory', { params: { id: entry.id } });
-      setEntries((current) => current.filter((item) => item.id !== entry.id));
+      await axios.delete('/api/admin/community-leaders', { params: { id: leader.id } });
+      setLeaders((current) => current.filter((item) => item.id !== leader.id));
     } catch (requestError) {
       setError(getErrorMessage(requestError));
     } finally {
@@ -117,31 +115,29 @@ export default function TempleDirectoryPage() {
     <Layout>
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Stack spacing={3}>
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            alignItems={{ sm: 'center' }}
-            justifyContent="space-between"
-            spacing={2}
-          >
+          <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" spacing={2}>
             <div>
-              <Typography variant="h4">จัดการทำเนียบวัด</Typography>
+              <Typography variant="h4">จัดการผู้นำชุมชนบ้านเหล่า</Typography>
               <Typography variant="body2" color="text.secondary">
-                จัดเก็บประวัติ การศึกษา ตำแหน่ง และสมณศักดิ์ของพระภายในวัด
+                เพิ่ม แก้ไข และจัดลำดับผู้นำของทั้ง 6 หมู่บ้าน ข้อมูลที่เผยแพร่จะแสดงบนเว็บไซต์ทันที
               </Typography>
             </div>
-            <Button
-              variant="contained"
-              startIcon={<Iconify icon="mingcute:add-line" />}
-              onClick={() => router.push(paths.dashboard.directoryNew)}
-            >
-              เพิ่มรายชื่อ
-            </Button>
+            <Box>
+              <Button
+                variant="contained"
+                size="medium"
+                startIcon={<Iconify icon="mingcute:add-line" />}
+                onClick={() => router.push(paths.dashboard.communityLeaderNew)}
+              >
+                เพิ่มผู้นำชุมชน
+              </Button>
+            </Box>
           </Stack>
 
           {error ? <Alert severity="error">{error}</Alert> : null}
 
           <Card>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ p: 2.5 }}>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ p: 2.5 }}>
               <TextField
                 fullWidth
                 value={search}
@@ -149,7 +145,7 @@ export default function TempleDirectoryPage() {
                   table.onResetPage();
                   setSearch(event.target.value);
                 }}
-                placeholder="ค้นหาชื่อ วัด จังหวัด หรือสังกัด"
+                placeholder="ค้นหาชื่อ หมู่บ้าน ตำแหน่ง หรือหน้าที่"
                 slotProps={{
                   input: {
                     startAdornment: (
@@ -159,22 +155,22 @@ export default function TempleDirectoryPage() {
                     ),
                   },
                 }}
-                sx={{ maxWidth: 480 }}
               />
               <TextField
                 select
-                label="ประเภทบุคคล"
-                value={entryTypeFilter}
+                fullWidth
+                label="หมู่บ้าน"
+                value={village}
                 onChange={(event) => {
                   table.onResetPage();
-                  setEntryTypeFilter(event.target.value as 'ALL' | TempleDirectoryEntryType);
+                  setVillage(event.target.value);
                 }}
-                sx={{ width: { xs: 1, sm: 240 } }}
+                sx={{ maxWidth: { md: 320 } }}
               >
-                <MenuItem value="ALL">ทั้งหมด</MenuItem>
-                {TEMPLE_DIRECTORY_ENTRY_TYPES.map((item) => (
-                  <MenuItem key={item.value} value={item.value}>
-                    {item.label}
+                <MenuItem value="all">ทุกหมู่บ้าน</MenuItem>
+                {COMMUNITY_VILLAGES.map((item) => (
+                  <MenuItem key={item.key} value={item.key}>
+                    {item.name}
                   </MenuItem>
                 ))}
               </TextField>
@@ -182,7 +178,7 @@ export default function TempleDirectoryPage() {
 
             <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
               <Scrollbar>
-                <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 1080 }}>
+                <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 1050 }}>
                   <TableHeadCustom
                     order={table.order}
                     orderBy={table.orderBy}
@@ -197,57 +193,36 @@ export default function TempleDirectoryPage() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      pageEntries.map((entry) => (
-                        <TableRow hover key={entry.id}>
+                      pageLeaders.map((leader) => (
+                        <TableRow hover key={leader.id}>
                           <TableCell>
                             <Stack direction="row" alignItems="center" spacing={2}>
-                              <Avatar src={entry.imageUrl} alt={entry.fullName} />
-                              <div>
-                                <Typography variant="subtitle2">{entry.fullName}</Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                  {entry.displayTitle || 'ยังไม่ได้ระบุชื่อที่ใช้แสดง'}
-                                </Typography>
-                              </div>
+                              <Avatar src={leader.imageUrl} alt={leader.fullName} />
+                              <Typography variant="subtitle2">{leader.fullName}</Typography>
                             </Stack>
                           </TableCell>
+                          <TableCell>{leader.villageName}</TableCell>
                           <TableCell>
-                            <Chip
-                              size="small"
-                              variant="soft"
-                              color={entry.entryType === 'CURRENT_ABBOT' ? 'primary' : 'default'}
-                              label={
-                                TEMPLE_DIRECTORY_ENTRY_TYPES.find(
-                                  (item) => item.value === entry.entryType
-                                )?.label || entry.entryType
-                              }
-                            />
-                            {entry.termStart || entry.termEnd ? (
-                              <Typography display="block" variant="caption" color="text.secondary">
-                                {[entry.termStart, entry.termEnd || 'ปัจจุบัน']
-                                  .filter(Boolean)
-                                  .join(' – ')}
-                              </Typography>
-                            ) : null}
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="body2">{entry.templeName || '-'}</Typography>
+                            <Typography variant="body2">{leader.role}</Typography>
                             <Typography variant="caption" color="text.secondary">
-                              {entry.province || 'ยังไม่ได้ระบุจังหวัด'}
+                              {leader.responsibility || 'ไม่ได้ระบุหน้าที่เพิ่มเติม'}
                             </Typography>
                           </TableCell>
-                          <TableCell align="center">{entry.sortOrder}</TableCell>
+                          <TableCell align="center">{leader.sortOrder}</TableCell>
                           <TableCell>
                             <Chip
                               size="small"
                               variant="soft"
-                              color={entry.status === 'PUBLIC' ? 'success' : 'default'}
-                              label={entry.status === 'PUBLIC' ? 'เผยแพร่' : 'แบบร่าง'}
+                              color={leader.status === 'PUBLIC' ? 'success' : 'default'}
+                              label={leader.status === 'PUBLIC' ? 'เผยแพร่' : 'แบบร่าง'}
                             />
                           </TableCell>
                           <TableCell align="right">
                             <Tooltip title="แก้ไขข้อมูล">
                               <IconButton
-                                onClick={() => router.push(paths.dashboard.directoryEdit(entry.id))}
+                                onClick={() =>
+                                  router.push(paths.dashboard.communityLeaderEdit(leader.id))
+                                }
                               >
                                 <Iconify icon="solar:pen-bold" />
                               </IconButton>
@@ -256,8 +231,8 @@ export default function TempleDirectoryPage() {
                               <span>
                                 <IconButton
                                   color="error"
-                                  disabled={deleting === entry.id}
-                                  onClick={() => removeEntry(entry)}
+                                  disabled={deleting === leader.id}
+                                  onClick={() => removeLeader(leader)}
                                 >
                                   <Iconify icon="solar:trash-bin-trash-bold" />
                                 </IconButton>
@@ -267,14 +242,14 @@ export default function TempleDirectoryPage() {
                         </TableRow>
                       ))
                     )}
-                    <TableNoData notFound={!loading && filteredEntries.length === 0} />
+                    <TableNoData notFound={!loading && filteredLeaders.length === 0} />
                   </TableBody>
                 </Table>
               </Scrollbar>
             </TableContainer>
 
             <TablePaginationCustom
-              count={filteredEntries.length}
+              count={filteredLeaders.length}
               page={table.page}
               rowsPerPage={table.rowsPerPage}
               rowsPerPageOptions={[5, 10, 25]}

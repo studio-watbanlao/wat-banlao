@@ -5,6 +5,7 @@ export const TEMPLE_MODULES = [
   'activities',
   'architectures',
   'directory',
+  'community_leaders',
   'festivals',
   'blogs',
   'dharmas',

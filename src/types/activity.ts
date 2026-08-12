@@ -1,5 +1,6 @@
 export type ActivityStatus = 'DRAFT' | 'PUBLIC';
 export type ActivityType = 'temple' | 'community' | 'school';
+export type ActivityContentType = 'activity' | 'news';
 
 export type ActivityGalleryImage = {
   src: string;
@@ -10,6 +11,7 @@ export type ActivityGalleryImage = {
 export type ActivityItem = {
   id: string;
   title: string;
+  contentType: ActivityContentType;
   type?: ActivityType;
   description: string;
   imageUrl: string;

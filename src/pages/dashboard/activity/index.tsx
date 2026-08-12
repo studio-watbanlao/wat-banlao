@@ -29,14 +29,15 @@ import { useCurrentTempleAccess } from 'src/hooks/use-current-temple-access';
 import Layout from 'src/pages/dashboard/layout';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
-import type { ActivityItem, ActivityType } from 'src/types/activity';
+import type { ActivityContentType, ActivityItem, ActivityType } from 'src/types/activity';
 import axios from 'src/utils/axios';
 import { getErrorMessage } from 'src/utils/error-message';
 import { fDateTime } from 'src/utils/format-time';
 
 const TABLE_HEAD = [
-  { id: 'title', label: 'กิจกรรม', minWidth: 320 },
-  { id: 'type', label: 'ประเภท', width: 140 },
+  { id: 'title', label: 'ชื่อเรื่อง', minWidth: 320 },
+  { id: 'contentType', label: 'ประเภทเนื้อหา', width: 150 },
+  { id: 'type', label: 'ส่วนงาน', width: 130 },
   { id: 'createdAt', label: 'วันที่สร้าง', width: 180 },
   { id: 'status', label: 'สถานะ', width: 130 },
   { id: '', label: '', width: 120 },
@@ -46,6 +47,11 @@ const TYPE_LABEL: Record<ActivityType, string> = {
   temple: 'วัด',
   community: 'ชุมชน',
   school: 'โรงเรียน',
+};
+
+const CONTENT_TYPE_LABEL: Record<ActivityContentType, string> = {
+  activity: 'กิจกรรม',
+  news: 'ข่าวสาร',
 };
 
 export default function ActivityManagementPage() {
@@ -101,9 +107,9 @@ export default function ActivityManagementPage() {
         <Stack spacing={3}>
           <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
             <div>
-              <Typography variant="h4">จัดการกิจกรรม</Typography>
+              <Typography variant="h4">จัดการกิจกรรมและข่าวสาร</Typography>
               <Typography variant="body2" color="text.secondary">
-                ข้อมูลหน้า Activity และกิจกรรมในหน้าแรก
+                จัดการกิจกรรม ข่าวประชาสัมพันธ์ และข้อมูลที่แสดงในหน้าแรก
               </Typography>
             </div>
             <Button
@@ -111,7 +117,7 @@ export default function ActivityManagementPage() {
               startIcon={<Iconify icon="mingcute:add-line" />}
               onClick={() => router.push(paths.dashboard.activityNew)}
             >
-              เพิ่มกิจกรรม
+              เพิ่มข้อมูล
             </Button>
           </Stack>
 
@@ -142,6 +148,14 @@ export default function ActivityManagementPage() {
                               />
                               <Typography variant="subtitle2">{activity.title}</Typography>
                             </Stack>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              size="small"
+                              variant="soft"
+                              color={activity.contentType === 'news' ? 'info' : 'primary'}
+                              label={CONTENT_TYPE_LABEL[activity.contentType || 'activity']}
+                            />
                           </TableCell>
                           <TableCell>{TYPE_LABEL[activity.type || 'temple']}</TableCell>
                           <TableCell>{fDateTime(activity.createdAt, 'dd/MM/yyyy HH:mm')}</TableCell>

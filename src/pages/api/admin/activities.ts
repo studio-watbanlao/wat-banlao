@@ -23,6 +23,7 @@ import {
 } from 'src/lib/supabase-storage';
 import type {
   ActivityGalleryImage,
+  ActivityContentType,
   ActivityImagePayload,
   ActivityItem,
   ActivityType,
@@ -30,6 +31,7 @@ import type {
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const ACTIVITY_TYPES: ActivityType[] = ['temple', 'community', 'school'];
+const CONTENT_TYPES: ActivityContentType[] = ['activity', 'news'];
 type ParsedImage = { buffer: Buffer; contentType: string; extension: string };
 
 const text = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
@@ -37,6 +39,8 @@ const isStatus = (value: unknown): value is ContentStatus =>
   value === 'DRAFT' || value === 'PUBLIC';
 const isActivityType = (value: unknown): value is ActivityType =>
   ACTIVITY_TYPES.includes(value as ActivityType);
+const isContentType = (value: unknown): value is ActivityContentType =>
+  CONTENT_TYPES.includes(value as ActivityContentType);
 
 const parseImage = (value: unknown): ParsedImage | null => {
   if (!value || typeof value !== 'object') return null;
@@ -90,6 +94,7 @@ const activityData = (value: Record<string, unknown>) => {
     typeof value.images === 'string' ? value.images : JSON.stringify(value.images || []);
   return {
     title: text(value.title),
+    contentType: isContentType(value.contentType) ? value.contentType : 'activity',
     type: isActivityType(value.type) ? value.type : 'temple',
     description: text(value.description),
     imageUrl: text(value.imageUrl),
@@ -112,7 +117,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const ownerId = contributorOwnerId(access, user);
 
     if (req.method === 'GET') {
-      const activities = await getAdminContent<ActivityItem>('activity', templeId, undefined, ownerId);
+      const activities = await getAdminContent<ActivityItem>(
+        'activity',
+        templeId,
+        undefined,
+        ownerId
+      );
       return res.status(200).json({ activities });
     }
 
@@ -123,6 +133,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (
         !text(req.body?.title) ||
         !isStatus(status) ||
+        !isContentType(req.body?.contentType) ||
         !isActivityType(req.body?.type) ||
         !cover
       ) {
@@ -131,7 +142,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const id = randomUUID();
       const coverStoragePath = `${templeId}/${id}/cover-${Date.now()}.${cover.extension}`;
       const imageUrl = await uploadActivityImage(coverStoragePath, cover.buffer, cover.contentType);
-      const images = await uploadGallery(`${templeId}/${id}`, newImages(req.body?.galleryImages, 8));
+      const images = await uploadGallery(
+        `${templeId}/${id}`,
+        newImages(req.body?.galleryImages, 8)
+      );
       const data = activityData({ ...req.body, imageUrl, coverStoragePath, images });
       const activity = await createAdminContent('activity', templeId, id, status, data, user.id);
       return res.status(201).json({ activity });
@@ -141,7 +155,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const id = text(req.body?.id);
       const status = req.body?.status;
       enforceContributorDraft(access, status);
-      if (!id || !isStatus(status) || !isActivityType(req.body?.type)) {
+      if (
+        !id ||
+        !isStatus(status) ||
+        !isContentType(req.body?.contentType) ||
+        !isActivityType(req.body?.type)
+      ) {
         return res.status(400).json({ message: 'ข้อมูลกิจกรรมไม่ถูกต้อง' });
       }
       const existing = await getAdminContent<ActivityItem>('activity', templeId, id, ownerId);

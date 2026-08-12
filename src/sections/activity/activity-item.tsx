@@ -17,7 +17,7 @@ import { fDate } from 'src/utils/format-time';
 import Iconify from 'src/components/iconify';
 import Image from 'src/components/image';
 import TextMaxLine from 'src/components/text-max-line';
-import type { ActivityItem as ActivityItemType, ActivityType } from 'src/types/activity';
+import type { ActivityContentType, ActivityItem as ActivityItemType } from 'src/types/activity';
 
 // --------------------
 // ✅ TYPE SAFE
@@ -31,12 +31,11 @@ type ActivityItemProps = {
 // ✅ MAP (แทน switch)
 // --------------------
 const ACTIVITY_TYPE_MAP: Record<
-  ActivityType,
+  ActivityContentType,
   { label: string; color: 'warning' | 'info' | 'success' }
 > = {
-  temple: { label: 'วัด', color: 'warning' },
-  community: { label: 'ชุมชน', color: 'info' },
-  school: { label: 'โรงเรียน', color: 'success' },
+  activity: { label: 'กิจกรรม', color: 'success' },
+  news: { label: 'ข่าวสาร', color: 'info' },
 };
 
 const ActivityItem = ({ data }: ActivityItemProps) => {
@@ -45,7 +44,7 @@ const ActivityItem = ({ data }: ActivityItemProps) => {
 
   const linkTo = paths.activity.details(data.id);
 
-  const activity = data.type && ACTIVITY_TYPE_MAP[data.type] ? ACTIVITY_TYPE_MAP[data.type] : null;
+  const activity = ACTIVITY_TYPE_MAP[data.contentType || 'activity'];
 
   return (
     <Card sx={{ position: 'relative' }}>

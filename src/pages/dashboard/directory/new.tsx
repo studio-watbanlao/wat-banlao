@@ -26,7 +26,11 @@ import {
   templeDirectoryFormSchema,
   type TempleDirectoryFormValues,
 } from 'src/schemas/temple-directory';
-import type { TempleDirectoryEntry, TempleDirectoryImagePayload } from 'src/types/temple-directory';
+import {
+  TEMPLE_DIRECTORY_ENTRY_TYPES,
+  type TempleDirectoryEntry,
+  type TempleDirectoryImagePayload,
+} from 'src/types/temple-directory';
 import axios from 'src/utils/axios';
 import { getErrorMessage } from 'src/utils/error-message';
 import { zodResolver } from 'src/utils/zod-resolver';
@@ -37,6 +41,9 @@ type PreviewFile = File & { preview?: string };
 const EMPTY_FORM: TempleDirectoryFormValues = {
   fullName: '',
   displayTitle: '',
+  entryType: 'MONK',
+  termStart: '',
+  termEnd: '',
   birth: '',
   age: '',
   ordination: '',
@@ -88,6 +95,9 @@ export default function TempleDirectoryFormPage({ entry }: Props) {
       ? {
           fullName: entry.fullName,
           displayTitle: entry.displayTitle,
+          entryType: entry.entryType,
+          termStart: entry.termStart,
+          termEnd: entry.termEnd,
           birth: entry.birth,
           age: entry.age,
           ordination: entry.ordination,
@@ -201,6 +211,13 @@ export default function TempleDirectoryFormPage({ entry }: Props) {
               <Divider sx={{ mt: 2 }} />
               <CardContent>
                 <Stack spacing={3}>
+                  <Field.Select name="entryType" required label="ประเภทบุคคล">
+                    {TEMPLE_DIRECTORY_ENTRY_TYPES.map((item) => (
+                      <MenuItem key={item.value} value={item.value}>
+                        {item.label}
+                      </MenuItem>
+                    ))}
+                  </Field.Select>
                   <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
                     <Field.Text name="fullName" required label="ชื่อ / สมณศักดิ์" />
                     <Field.Text
@@ -309,7 +326,19 @@ export default function TempleDirectoryFormPage({ entry }: Props) {
               />
               <Divider sx={{ mt: 2 }} />
               <CardContent>
-                <Stack spacing={1}>
+                <Stack spacing={2}>
+                  <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                    <Field.Text
+                      name="termStart"
+                      label="เริ่มดำรงตำแหน่ง"
+                      placeholder="เช่น พ.ศ. 2560"
+                    />
+                    <Field.Text
+                      name="termEnd"
+                      label="สิ้นสุดการดำรงตำแหน่ง"
+                      placeholder="เว้นว่างหากยังดำรงตำแหน่ง"
+                    />
+                  </Stack>
                   <Field.Editor name="administrativePositions" label="ตำแหน่ง / ฝ่ายปกครอง" />
                   <Field.Editor name="monasticRank" label="สมณศักดิ์" />
                 </Stack>

@@ -55,6 +55,7 @@ const MODULE_LABELS: Record<TempleModule, string> = {
   activities: 'กิจกรรม',
   architectures: 'สถาปัตย์',
   directory: 'ทำเนียบวัด',
+  community_leaders: 'ผู้นำชุมชน',
   festivals: 'งานประเพณี',
   blogs: 'บทความ',
   dharmas: 'ธรรมะ',
@@ -81,7 +82,8 @@ export default function TempleAccessManagement({ temple, section }: Props) {
   const [savingMember, setSavingMember] = useState(false);
 
   const availableModules = useMemo(
-    () => TEMPLE_MODULES.filter((module) => temple.modules[module]),
+    () =>
+      TEMPLE_MODULES.filter((module) => temple.modules[module] && module !== 'community_leaders'),
     [temple.modules]
   );
   const usersById = useMemo(() => new Map(users.map((user) => [user.id, user])), [users]);

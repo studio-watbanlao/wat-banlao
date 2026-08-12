@@ -13,6 +13,7 @@ import DialogContent from '@mui/material/DialogContent';
 import { CONFIG } from 'src/config-global';
 import Image from 'src/components/image';
 import Iconify from 'src/components/iconify';
+import HomeArticle from 'src/sections/home/home-article';
 
 // ----------------------------------------------------------------------
 
@@ -248,9 +249,7 @@ export function Template1HomeView() {
                 alignItems="center"
                 sx={{
                   color:
-                    index === heroIndex
-                      ? theme.palette.secondary.main
-                      : 'rgba(246,237,219,0.48)',
+                    index === heroIndex ? theme.palette.secondary.main : 'rgba(246,237,219,0.48)',
                   cursor: 'pointer',
                 }}
                 onClick={() => setHeroIndex(index)}
@@ -263,9 +262,7 @@ export function Template1HomeView() {
                     height: 2,
                     width: index === heroIndex ? 78 : 18,
                     bgcolor:
-                      index === heroIndex
-                        ? theme.palette.secondary.main
-                        : 'rgba(234,215,161,0.28)',
+                      index === heroIndex ? theme.palette.secondary.main : 'rgba(234,215,161,0.28)',
                   }}
                 />
               </Stack>
@@ -752,6 +749,8 @@ export function Template1HomeView() {
           </Box>
         </Box>
       </Box>
+
+      <HomeArticle />
 
       {/* <Box
         sx={{

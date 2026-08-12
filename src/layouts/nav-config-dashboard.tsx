@@ -37,7 +37,7 @@ export const navData: NavSectionProps['data'] = [
         deep: true,
       },
       {
-        title: 'จัดการกิจกรรม',
+        title: 'จัดการข่าวสาร/กิจกรรม',
         path: paths.dashboard.activity,
         icon: <RiCalendarLine />,
         featureKey: 'activities',
@@ -55,6 +55,13 @@ export const navData: NavSectionProps['data'] = [
         path: paths.dashboard.directory,
         icon: <RiTeamLine />,
         featureKey: 'directory',
+        deep: true,
+      },
+      {
+        title: 'จัดการผู้นำชุมชน',
+        path: paths.dashboard.communityLeaders,
+        icon: <RiTeamLine />,
+        featureKey: 'community_leaders',
         deep: true,
       },
       {

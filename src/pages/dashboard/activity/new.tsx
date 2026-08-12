@@ -29,6 +29,7 @@ export const metadata = {
 
 const EMPTY_FORM: ActivityFormValues = {
   title: '',
+  contentType: 'activity',
   type: 'temple',
   description: '',
   content: '',
@@ -85,6 +86,7 @@ export default function ActivityFormPage({ activity }: Props) {
     defaultValues: activity
       ? {
           title: activity.title,
+          contentType: activity.contentType || 'activity',
           type: activity.type || 'temple',
           description: activity.description || '',
           content: activity.content || '',
@@ -189,6 +191,7 @@ export default function ActivityFormPage({ activity }: Props) {
       const payload = {
         id: activity?.id,
         title: form.title.trim(),
+        contentType: form.contentType,
         type: form.type,
         description: form.description.trim(),
         content: form.content,
@@ -222,11 +225,13 @@ export default function ActivityFormPage({ activity }: Props) {
               <Iconify icon="ri:arrow-left-line" />
             </IconButton>
             <div>
-              <Typography variant="h4">{isEditing ? 'แก้ไขกิจกรรม' : 'เพิ่มกิจกรรม'}</Typography>
+              <Typography variant="h4">
+                {isEditing ? 'แก้ไขกิจกรรมหรือข่าวสาร' : 'เพิ่มกิจกรรมหรือข่าวสาร'}
+              </Typography>
               <Typography variant="body2" color="text.secondary">
                 {isEditing
-                  ? 'ปรับปรุงข้อมูลกิจกรรมสำหรับวัด ชุมชน หรือโรงเรียน'
-                  : 'สร้างกิจกรรมใหม่สำหรับวัด ชุมชน หรือโรงเรียน'}
+                  ? 'ปรับปรุงข้อมูลกิจกรรมหรือข่าวสารสำหรับวัด ชุมชน หรือโรงเรียน'
+                  : 'สร้างกิจกรรมหรือข่าวสารใหม่สำหรับวัด ชุมชน หรือโรงเรียน'}
               </Typography>
             </div>
           </Stack>
@@ -237,12 +242,16 @@ export default function ActivityFormPage({ activity }: Props) {
             <CardContent>
               <Form methods={methods} onSubmit={saveActivity}>
                 <Stack spacing={3}>
-                  <Typography variant="h6">ข้อมูลกิจกรรม</Typography>
+                  <Typography variant="h6">ข้อมูลกิจกรรมและข่าวสาร</Typography>
 
-                  <Field.Text name="title" required label="ชื่อกิจกรรม" />
+                  <Field.Text name="title" required label="ชื่อเรื่อง" />
 
                   <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                    <Field.Select name="type" label="ประเภท">
+                    <Field.Select name="contentType" required label="ประเภทเนื้อหา">
+                      <MenuItem value="activity">กิจกรรม</MenuItem>
+                      <MenuItem value="news">ข่าวสาร</MenuItem>
+                    </Field.Select>
+                    <Field.Select name="type" label="ส่วนงาน">
                       <MenuItem value="temple">วัด</MenuItem>
                       <MenuItem value="community">ชุมชน</MenuItem>
                       <MenuItem value="school">โรงเรียน</MenuItem>
@@ -255,7 +264,9 @@ export default function ActivityFormPage({ activity }: Props) {
 
                   <Field.Text name="description" multiline minRows={3} label="คำอธิบาย" />
                   {isContributor ? (
-                    <Alert severity="info">Contributor บันทึกได้เฉพาะแบบร่าง ผู้ดูแลวัดจะเป็นผู้ตรวจและเผยแพร่</Alert>
+                    <Alert severity="info">
+                      Contributor บันทึกได้เฉพาะแบบร่าง ผู้ดูแลวัดจะเป็นผู้ตรวจและเผยแพร่
+                    </Alert>
                   ) : null}
                   <Field.Editor name="content" label="เนื้อหา" />
 
@@ -282,10 +293,7 @@ export default function ActivityFormPage({ activity }: Props) {
                       multiple
                       thumbnail
                       name="galleryImages"
-                      files={[
-                        ...currentGallery.map((image) => image.image),
-                        ...galleryImages,
-                      ]}
+                      files={[...currentGallery.map((image) => image.image), ...galleryImages]}
                       maxFiles={8}
                       maxSize={8 * 1024 * 1024}
                       disabled={currentGallery.length + galleryImages.length >= 8}
@@ -315,7 +323,7 @@ export default function ActivityFormPage({ activity }: Props) {
                       loading={saving}
                       startIcon={<Iconify icon="ri:save-line" />}
                     >
-                      บันทึกกิจกรรม
+                      บันทึกข้อมูล
                     </LoadingButton>
                   </Stack>
                 </Stack>

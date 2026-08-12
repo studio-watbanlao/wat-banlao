@@ -50,6 +50,7 @@ const MODULE_LABELS: Record<TempleModule, string> = {
   activities: 'กิจกรรม',
   architectures: 'สถาปัตย์',
   directory: 'ทำเนียบวัด',
+  community_leaders: 'ผู้นำชุมชน',
   festivals: 'งานประเพณี',
   blogs: 'บทความ',
   dharmas: 'ธรรมะ',

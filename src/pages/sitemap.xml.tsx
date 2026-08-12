@@ -43,7 +43,8 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
     )
   );
   if (temple.modules.activities) queries.push(contentQuery('activities', '/activity'));
-  if (temple.modules.architectures) queries.push(contentQuery('architectures', '/banlao/architecture'));
+  if (temple.modules.architectures)
+    queries.push(contentQuery('architectures', '/banlao/architecture'));
   if (temple.modules.festivals) queries.push(contentQuery('festivals', '/fastival'));
   if (temple.modules.blogs) queries.push(contentQuery('blogs', '/article/blog'));
   if (temple.modules.dharmas) queries.push(contentQuery('dharmas', '/article/dharma'));
@@ -52,11 +53,19 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
   const staticPaths = ['/'];
   if (temple.modules.activities) staticPaths.push('/activity');
   if (temple.modules.architectures) staticPaths.push('/banlao/architecture');
+  if (temple.modules.directory) staticPaths.push('/banlao/abbot', '/banlao/monks');
   if (temple.modules.festivals) staticPaths.push('/fastival');
   if (temple.modules.blogs) staticPaths.push('/article/blog');
   if (temple.modules.dharmas) staticPaths.push('/article/dharma');
   if (temple.modules.contacts) staticPaths.push('/contact-us');
   if (temple.modules.sacred) staticPaths.push('/parents/sacred');
+  if (temple.slug === 'wat-banlao') {
+    staticPaths.push(
+      '/community/community-history',
+      '/community/community-leaders',
+      '/community/school'
+    );
+  }
   const entries = new Map<string, string | undefined>(staticPaths.map((path) => [path, undefined]));
   const dynamicEntries = (await Promise.all(queries)).flat();
   dynamicEntries.forEach((entry) => entries.set(entry.path, entry.updatedAt));

@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import { optionalImageFileSchema, requireImage, statusSchema } from './common';
 
+import { TEMPLE_DIRECTORY_ENTRY_TYPES } from 'src/types/temple-directory';
+
 const optionalText = (maximum = 10000) =>
   z.string().trim().max(maximum, 'ข้อความยาวเกินกำหนด').default('');
 
@@ -9,6 +11,9 @@ export const templeDirectoryFormSchema = z
   .object({
     fullName: z.string().trim().min(1, 'กรุณากรอกชื่อ').max(200, 'ชื่อยาวเกินไป'),
     displayTitle: optionalText(200),
+    entryType: z.enum(TEMPLE_DIRECTORY_ENTRY_TYPES.map((item) => item.value)),
+    termStart: optionalText(100),
+    termEnd: optionalText(100),
     birth: optionalText(200),
     age: optionalText(100),
     ordination: optionalText(200),

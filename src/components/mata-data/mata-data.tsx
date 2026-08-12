@@ -24,6 +24,8 @@ const ROUTE_TITLES: Record<string, string> = {
   '/activity': 'กิจกรรมและข่าวประชาสัมพันธ์',
   '/banlao/architecture': 'สถาปัตย์และสิ่งสำคัญ',
   '/banlao/history': 'ประวัติวัด',
+  '/banlao/abbot': 'เจ้าอาวาสวัดบ้านเหล่า',
+  '/banlao/monks': 'ทำเนียบพระสงฆ์',
   '/fastival': 'เทศกาลและงานประเพณี',
   '/article/blog': 'บทความ',
   '/article/dharma': 'ธรรมะ',
@@ -53,7 +55,9 @@ const MataData = ({ data, url }: MataDataProps) => {
     textValue(contact?.seoDescription) ||
     textValue(contact?.address) ||
     `เว็บไซต์อย่างเป็นทางการของ${templeName} รวมข่าวสาร กิจกรรม บทความ และข้อมูลของวัด`;
-  const domain = textValue(temple?.primaryDomain).replace(/^https?:\/\//, '').replace(/\/$/, '');
+  const domain = textValue(temple?.primaryDomain)
+    .replace(/^https?:\/\//, '')
+    .replace(/\/$/, '');
   const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL || CONFIG.websiteUrl;
   const baseUrl = domain ? `https://${domain}` : configuredUrl.replace(/\/$/, '');
   let canonicalPath = pathname;
@@ -65,8 +69,14 @@ const MataData = ({ data, url }: MataDataProps) => {
     }
   }
   const canonicalUrl = `${baseUrl}${canonicalPath === '/' ? '' : canonicalPath}`;
-  const imageUrl = absoluteUrl(resolveContentImage(data?.imageUrl || temple?.branding.logoUrl), baseUrl);
-  const faviconUrl = absoluteUrl(temple?.branding.faviconUrl || temple?.branding.logoUrl || '/favicon/favicon.ico', baseUrl);
+  const imageUrl = absoluteUrl(
+    resolveContentImage(data?.imageUrl || temple?.branding.logoUrl),
+    baseUrl
+  );
+  const faviconUrl = absoluteUrl(
+    temple?.branding.faviconUrl || temple?.branding.logoUrl || '/favicon/favicon.ico',
+    baseUrl
+  );
   const isArticle = Boolean(data?.title && pathname !== '/');
   const sameAs = [contact?.facebook, contact?.instagram, contact?.youtube]
     .map(textValue)

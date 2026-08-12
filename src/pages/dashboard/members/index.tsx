@@ -59,6 +59,7 @@ const MODULE_LABELS: Record<TempleModule, string> = {
   activities: 'กิจกรรม/ประกาศ',
   architectures: 'สถาปัตย์',
   directory: 'ทำเนียบวัด',
+  community_leaders: 'ผู้นำชุมชน',
   festivals: 'งานประเพณี',
   blogs: 'บทความ/ข่าว',
   dharmas: 'ธรรมะ',
@@ -108,9 +109,10 @@ export default function TempleMembersPage() {
     return TEMPLE_MODULES.filter(
       (module) =>
         temple.modules[module] &&
-        !['dashboard', 'members', 'domains', 'branding', 'contacts'].includes(module) &&
-        (editingMember.role !== 'temple_contributor' ||
-          TEMPLE_CONTRIBUTOR_MODULES.includes(module))
+        !['dashboard', 'members', 'domains', 'branding', 'contacts', 'community_leaders'].includes(
+          module
+        ) &&
+        (editingMember.role !== 'temple_contributor' || TEMPLE_CONTRIBUTOR_MODULES.includes(module))
     );
   }, [editingMember, temple]);
 
@@ -119,7 +121,14 @@ export default function TempleMembersPage() {
       TEMPLE_MODULES.filter(
         (module) =>
           temple?.modules[module] &&
-          !['dashboard', 'members', 'domains', 'branding', 'contacts'].includes(module) &&
+          ![
+            'dashboard',
+            'members',
+            'domains',
+            'branding',
+            'contacts',
+            'community_leaders',
+          ].includes(module) &&
           (inviteRole !== 'temple_contributor' || TEMPLE_CONTRIBUTOR_MODULES.includes(module))
       ),
     [inviteRole, temple]
@@ -314,7 +323,11 @@ export default function TempleMembersPage() {
                       />
                       {member.role !== 'temple_admin' ? (
                         <Stack direction="row" spacing={1}>
-                          <Button size="small" variant="soft" onClick={() => openPermissions(member)}>
+                          <Button
+                            size="small"
+                            variant="soft"
+                            onClick={() => openPermissions(member)}
+                          >
                             แก้ไขสิทธิ์
                           </Button>
                           <Button size="small" color="inherit" onClick={() => updateStatus(member)}>
@@ -463,7 +476,11 @@ export default function TempleMembersPage() {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button color="inherit" disabled={permissionsSaving} onClick={() => setEditingMember(null)}>
+          <Button
+            color="inherit"
+            disabled={permissionsSaving}
+            onClick={() => setEditingMember(null)}
+          >
             ยกเลิก
           </Button>
           <LoadingButton variant="contained" loading={permissionsSaving} onClick={savePermissions}>

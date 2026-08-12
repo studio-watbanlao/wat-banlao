@@ -1,14 +1,13 @@
 import type { NavMainProps } from './main/nav/types';
 
-import { paths } from 'src/routes/paths';
 import {
-  RiHome5Line,
-  RiMapPinLine,
   RiArticleLine,
-  RiCalendarLine,
   RiBuildingLine,
+  RiCalendarLine,
+  RiHome5Line,
   RiUserStarLine,
 } from 'src/components/remix-icon';
+import { paths } from 'src/routes/paths';
 
 export const navData: NavMainProps['data'] = [
   { title: 'หน้าหลัก', path: '/', icon: <RiHome5Line size={22} /> },
@@ -29,6 +28,8 @@ export const navData: NavMainProps['data'] = [
         items: [
           { title: 'ประวัติวัดบ้านเหล่า', path: paths.banlao.history },
           { title: 'สถาปัตย์และสิ่งสำคัญ', path: paths.banlao.architecture.root },
+          { title: 'เจ้าอาวาสวัดบ้านเหล่า', path: paths.banlao.abbot },
+          { title: 'ทำเนียบพระสงฆ์', path: paths.banlao.monks },
         ],
       },
     ],
@@ -65,15 +66,31 @@ export const navData: NavMainProps['data'] = [
     ],
   },
   {
-    title: 'กิจกรรมต่าง ๆ',
+    title: 'กิจกรรม และข่าวสาร',
     path: paths.activity.root,
     icon: <RiCalendarLine size={22} />,
     deepMatch: true,
   },
   {
-    title: 'ติดต่อสอบถาม',
-    path: paths.contact,
-    icon: <RiMapPinLine size={22} />,
+    title: 'ชุมชนบ้านเหล่า',
+    path: paths.community.root,
+    icon: <RiBuildingLine size={22} />,
     deepMatch: true,
+    children: [
+      {
+        subheader: '',
+        items: [
+          { title: 'ประวัติบ้านเหล่า', path: paths.community.communityHistory },
+          { title: 'ผู้นำชุมชน', path: paths.community.communityLeaders },
+          { title: 'โรงเรียนบ้านเหล่า', path: paths.community.school },
+        ],
+      },
+    ],
   },
+  // {
+  //   title: 'ติดต่อสอบถาม',
+  //   path: paths.contact,
+  //   icon: <RiMapPinLine size={22} />,
+  //   deepMatch: true,
+  // },
 ];

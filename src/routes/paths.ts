@@ -10,11 +10,20 @@ export const paths = {
   banlao: {
     root: `/banlao`,
     history: '/banlao/history',
+    abbot: '/banlao/abbot',
+    monks: '/banlao/monks',
 
     architecture: {
       root: `/banlao/architecture`,
       details: (id: string) => `/banlao/architecture/${id}`,
     },
+  },
+
+  community: {
+    root: `/community`,
+    communityHistory: '/community/community-history',
+    communityLeaders: '/community/community-leaders',
+    school: '/community/school',
   },
 
   parents: {
@@ -222,6 +231,9 @@ export const paths = {
     directory: `${ROOTS.DASHBOARD}/directory`,
     directoryNew: `${ROOTS.DASHBOARD}/directory/new`,
     directoryEdit: (id: string) => `${ROOTS.DASHBOARD}/directory/${id}/edit`,
+    communityLeaders: `${ROOTS.DASHBOARD}/community-leaders`,
+    communityLeaderNew: `${ROOTS.DASHBOARD}/community-leaders/new`,
+    communityLeaderEdit: (id: string) => `${ROOTS.DASHBOARD}/community-leaders/${id}/edit`,
     banners: `${ROOTS.DASHBOARD}/banners`,
     popupBanners: `${ROOTS.DASHBOARD}/popup-banners`,
     popupBannerNew: `${ROOTS.DASHBOARD}/popup-banners/new`,

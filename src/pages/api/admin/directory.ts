@@ -11,15 +11,15 @@ import {
   uploadTempleDirectoryImage,
 } from 'src/lib/supabase-storage';
 import { requireTempleContentAccess } from 'src/lib/temple-access';
-import type {
-  TempleDirectoryEntry,
-  TempleDirectoryImagePayload,
-} from 'src/types/temple-directory';
+import type { TempleDirectoryEntry, TempleDirectoryImagePayload } from 'src/types/temple-directory';
 
 type DirectoryRow = {
   id: string;
   full_name: string;
   display_title?: string;
+  entry_type: TempleDirectoryEntry['entryType'];
+  term_start?: string;
+  term_end?: string;
   image_url: string;
   image_storage_path?: string;
   birth?: string;
@@ -49,6 +49,9 @@ const text = (value: unknown, maximum = 50000) =>
 const isStatus = (value: unknown): value is TempleDirectoryEntry['status'] =>
   value === 'DRAFT' || value === 'PUBLIC';
 
+const isEntryType = (value: unknown): value is TempleDirectoryEntry['entryType'] =>
+  value === 'CURRENT_ABBOT' || value === 'FORMER_ABBOT' || value === 'MONK' || value === 'NOVICE';
+
 const parseImage = (value: unknown): ParsedImage | null => {
   if (!value || typeof value !== 'object') return null;
   const image = value as TempleDirectoryImagePayload;
@@ -68,6 +71,9 @@ const normalize = (row: DirectoryRow): TempleDirectoryEntry => ({
   id: row.id,
   fullName: row.full_name,
   displayTitle: row.display_title || '',
+  entryType: row.entry_type,
+  termStart: row.term_start || '',
+  termEnd: row.term_end || '',
   imageUrl: row.image_url,
   imageStoragePath: row.image_storage_path || '',
   birth: row.birth || '',
@@ -92,6 +98,9 @@ const normalize = (row: DirectoryRow): TempleDirectoryEntry => ({
 const rowData = (value: Record<string, unknown>) => ({
   full_name: text(value.fullName, 200),
   display_title: text(value.displayTitle, 200) || null,
+  entry_type: value.entryType,
+  term_start: text(value.termStart, 100) || null,
+  term_end: text(value.termEnd, 100) || null,
   birth: text(value.birth, 200) || null,
   age: text(value.age, 100) || null,
   ordination: text(value.ordination, 200) || null,
@@ -129,10 +138,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (req.method === 'POST') {
       const status = req.body?.status;
+      const entryType = req.body?.entryType;
       const image = parseImage(req.body?.profileImage);
       const fullName = text(req.body?.fullName, 200);
-      if (!fullName || !isStatus(status) || !image) {
-        return res.status(400).json({ message: 'กรุณากรอกชื่อ สถานะ และเลือกรูปประจำตัว' });
+      if (!fullName || !isStatus(status) || !isEntryType(entryType) || !image) {
+        return res.status(400).json({ message: 'กรุณากรอกชื่อ ประเภท สถานะ และเลือกรูปประจำตัว' });
       }
       const id = randomUUID();
       const imageStoragePath = `${templeId}/${id}/profile-${Date.now()}.${image.extension}`;
@@ -141,6 +151,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         image.buffer,
         image.contentType
       );
+      if (entryType === 'CURRENT_ABBOT') {
+        await supabaseRequest(
+          `temple_directory_entries?temple_id=eq.${encodeURIComponent(templeId)}&entry_type=eq.CURRENT_ABBOT`,
+          {
+            method: 'PATCH',
+            headers: { Prefer: 'return=minimal' },
+            body: JSON.stringify({ entry_type: 'FORMER_ABBOT' }),
+          }
+        );
+      }
       const rows = await supabaseRequest<DirectoryRow[]>('temple_directory_entries', {
         method: 'POST',
         headers: { Prefer: 'return=representation' },
@@ -160,7 +180,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'PATCH') {
       const id = text(req.body?.id, 64);
       const status = req.body?.status;
-      if (!id || !isStatus(status)) {
+      const entryType = req.body?.entryType;
+      if (!id || !isStatus(status) || !isEntryType(entryType)) {
         return res.status(400).json({ message: 'ข้อมูลที่ส่งมาไม่ถูกต้อง' });
       }
       const existingRows = await supabaseRequest<DirectoryRow[]>(
@@ -184,12 +205,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!data.full_name || !imageUrl) {
         return res.status(400).json({ message: 'กรุณากรอกชื่อและเลือกรูปประจำตัว' });
       }
+      if (entryType === 'CURRENT_ABBOT') {
+        await supabaseRequest(
+          `temple_directory_entries?temple_id=eq.${encodeURIComponent(templeId)}&entry_type=eq.CURRENT_ABBOT&id=neq.${encodeURIComponent(id)}`,
+          {
+            method: 'PATCH',
+            headers: { Prefer: 'return=minimal' },
+            body: JSON.stringify({ entry_type: 'FORMER_ABBOT' }),
+          }
+        );
+      }
       const rows = await supabaseRequest<DirectoryRow[]>(
         `temple_directory_entries?id=eq.${encodeURIComponent(id)}&temple_id=eq.${encodeURIComponent(templeId)}`,
         {
           method: 'PATCH',
           headers: { Prefer: 'return=representation' },
-          body: JSON.stringify({ ...data, status, image_url: imageUrl, image_storage_path: imageStoragePath }),
+          body: JSON.stringify({
+            ...data,
+            status,
+            image_url: imageUrl,
+            image_storage_path: imageStoragePath,
+          }),
         }
       );
       if (image && existing.image_storage_path) {

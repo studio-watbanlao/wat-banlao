@@ -1,0 +1,18 @@
+import MataData from 'src/components/mata-data/mata-data';
+import { MainLayout } from 'src/layouts/main';
+import { CommunityLeadersView } from 'src/sections/community/leaders/community-leaders-view';
+
+export default function CommunityLeadersPage() {
+  return (
+    <MainLayout>
+      <MataData
+        data={{
+          title: 'ผู้นำชุมชนบ้านเหล่า',
+          description:
+            'รายชื่อพร้อมรูปภาพผู้ใหญ่บ้าน ผู้ช่วยผู้ใหญ่บ้าน และสมาชิกสภาองค์การบริหารส่วนตำบล แยกตาม 6 หมู่บ้านในชุมชนบ้านเหล่า',
+        }}
+      />
+      <CommunityLeadersView />
+    </MainLayout>
+  );
+}

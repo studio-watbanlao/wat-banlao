@@ -60,6 +60,7 @@ const RESOURCE_CONFIG: Record<ContentResource, ResourceConfig> = {
     table: 'activities',
     columns: {
       title: 'title',
+      contentType: 'content_kind',
       type: 'activity_type',
       description: 'description',
       imageUrl: 'image_url',
