@@ -3,6 +3,8 @@ import { alpha } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import Stack, { StackProps } from '@mui/material/Stack';
 
+import Iconify from 'src/components/iconify';
+
 // ----------------------------------------------------------------------
 
 type EmptyContentProps = StackProps & {
@@ -39,12 +41,29 @@ export default function EmptyContent({
       }}
       {...other}
     >
-      <Box
-        component="img"
-        alt="empty content"
-        src={imgUrl || '/assets/icons/empty/ic_content.svg'}
-        sx={{ width: 1, maxWidth: 160 }}
-      />
+      {imgUrl ? (
+        <Box
+          component="img"
+          alt="empty content"
+          src={imgUrl}
+          sx={{ width: 1, maxWidth: 160 }}
+        />
+      ) : (
+        <Box
+          sx={(theme) => ({
+            width: 120,
+            height: 120,
+            display: 'grid',
+            placeItems: 'center',
+            borderRadius: '50%',
+            color: theme.vars.palette.text.disabled,
+            bgcolor: alpha(theme.palette.grey[500], 0.08),
+            border: `1px dashed ${alpha(theme.palette.grey[500], 0.2)}`,
+          })}
+        >
+          <Iconify icon="solar:inbox-line-bold-duotone" width={52} />
+        </Box>
+      )}
 
       {title && (
         <Typography

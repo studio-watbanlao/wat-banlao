@@ -26,7 +26,7 @@ export type NavItemDataProps = {
   featureKey?: string;
   children?: {
     subheader: string;
-    items: { title: string; path: string }[];
+    items: Pick<NavItemDataProps, 'title' | 'path' | 'deepMatch' | 'activePaths'>[];
   }[];
 };
 

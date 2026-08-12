@@ -1,137 +1,46 @@
 import LoadingButton from '@mui/lab/LoadingButton';
-import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardActions,
-  CardContent,
-  Chip,
-  Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  Grid,
-  IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material';
-import NextImage, { ImageLoaderProps } from 'next/image';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import Alert from '@mui/material/Alert';
+import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
+import Container from '@mui/material/Container';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableRow from '@mui/material/TableRow';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import { useCallback, useEffect, useState } from 'react';
 
-import { zodResolver } from 'src/utils/zod-resolver';
 import Iconify from 'src/components/iconify';
+import Scrollbar from 'src/components/scrollbar';
+import {
+  TableHeadCustom,
+  TableNoData,
+  TablePaginationCustom,
+  useTable,
+} from 'src/components/table';
+import { useCurrentTempleAccess } from 'src/hooks/use-current-temple-access';
 import Layout from 'src/pages/dashboard/layout';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
-import { activityFormSchema, type ActivityFormValues } from 'src/schemas/activity';
-import type {
-  ActivityGalleryImage,
-  ActivityImagePayload,
-  ActivityItem,
-  ActivityType,
-} from 'src/types/activity';
+import type { ActivityItem, ActivityType } from 'src/types/activity';
 import axios from 'src/utils/axios';
 import { getErrorMessage } from 'src/utils/error-message';
+import { fDateTime } from 'src/utils/format-time';
 
-const EMPTY_FORM: ActivityFormValues = {
-  title: '',
-  type: 'temple',
-  description: '',
-  content: '',
-  status: 'PUBLIC',
-  coverImage: null,
-  currentImageUrl: '',
-  galleryImages: [],
-};
-const imageLoader = ({ src }: ImageLoaderProps) => src;
-const toPayload = (file: File): Promise<ActivityImagePayload> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error(`อ่านไฟล์ ${file.name} ไม่สำเร็จ`));
-    reader.onload = () =>
-      resolve({
-        name: file.name,
-        type: file.type,
-        base64: String(reader.result).split(',')[1] || '',
-      });
-    reader.readAsDataURL(file);
-  });
-
-const usePreview = (file: File | null) => {
-  const preview = useMemo(() => (file ? URL.createObjectURL(file) : ''), [file]);
-  useEffect(
-    () => () => {
-      if (preview) URL.revokeObjectURL(preview);
-    },
-    [preview]
-  );
-  return preview;
-};
-
-function CoverInput({
-  file,
-  url,
-  error,
-  onChange,
-}: {
-  file: File | null;
-  url?: string;
-  error?: string;
-  onChange: (file: File | null) => void;
-}) {
-  const preview = usePreview(file) || url;
-  return (
-    <Stack spacing={1}>
-      <Typography variant="subtitle2">รูปหน้าปก *</Typography>
-      <Box
-        sx={{
-          height: 280,
-          position: 'relative',
-          overflow: 'hidden',
-          borderRadius: 2,
-          bgcolor: 'background.neutral',
-        }}
-      >
-        {preview ? (
-          <NextImage
-            loader={imageLoader}
-            src={preview}
-            alt="Activity cover preview"
-            fill
-            sizes="800px"
-            style={{ objectFit: 'cover' }}
-          />
-        ) : (
-          <Stack alignItems="center" justifyContent="center" sx={{ height: 1 }}>
-            <Iconify icon="solar:gallery-add-bold" width={48} />
-          </Stack>
-        )}
-      </Box>
-      <Button component="label" variant="outlined" startIcon={<Iconify icon="eva:upload-fill" />}>
-        {preview ? 'เปลี่ยนรูปหน้าปก' : 'เลือกรูปหน้าปก'}
-        <input
-          hidden
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          onChange={(event) => onChange(event.target.files?.[0] || null)}
-        />
-      </Button>
-      {error ? (
-        <Typography variant="caption" color="error">
-          {error}
-        </Typography>
-      ) : null}
-    </Stack>
-  );
-}
+const TABLE_HEAD = [
+  { id: 'title', label: 'กิจกรรม', minWidth: 320 },
+  { id: 'type', label: 'ประเภท', width: 140 },
+  { id: 'createdAt', label: 'วันที่สร้าง', width: 180 },
+  { id: 'status', label: 'สถานะ', width: 130 },
+  { id: '', label: '', width: 120 },
+];
 
 const TYPE_LABEL: Record<ActivityType, string> = {
   temple: 'วัด',
@@ -141,74 +50,35 @@ const TYPE_LABEL: Record<ActivityType, string> = {
 
 export default function ActivityManagementPage() {
   const router = useRouter();
+  const table = useTable({ defaultRowsPerPage: 10 });
+  const access = useCurrentTempleAccess();
+  const isContributor = access?.role === 'temple_contributor';
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState('');
   const [error, setError] = useState('');
-  const [open, setOpen] = useState(false);
-  const [editing] = useState<ActivityItem | null>(null);
-  const [currentGallery, setCurrentGallery] = useState<ActivityGalleryImage[]>([]);
-
-  const {
-    control,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm<ActivityFormValues>({
-    resolver: zodResolver(activityFormSchema),
-    defaultValues: EMPTY_FORM,
-    mode: 'onChange',
-  });
 
   const loadActivities = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
       const response = await axios.get('/api/admin/activities');
-      setActivities(response.data.activities);
+      setActivities(response.data.activities || []);
     } catch (requestError) {
       setError(getErrorMessage(requestError));
     } finally {
       setLoading(false);
     }
   }, []);
+
   useEffect(() => {
     loadActivities();
   }, [loadActivities]);
 
-  const edit = (activity: ActivityItem) =>
-    router.push(paths.dashboard.activityEdit(activity.id));
-
-  const save = handleSubmit(async (form) => {
-    try {
-      setSaving(true);
-      setError('');
-      const [coverImage, galleryImages] = await Promise.all([
-        form.coverImage ? toPayload(form.coverImage) : null,
-        Promise.all(form.galleryImages.map(toPayload)),
-      ]);
-      const payload = {
-        id: editing?.id,
-        title: form.title.trim(),
-        type: form.type,
-        description: form.description.trim(),
-        content: form.content,
-        status: form.status,
-        coverImage,
-        galleryImages,
-        keptGallerySources: currentGallery.map((image) => image.src),
-      };
-      if (editing) await axios.patch('/api/admin/activities', payload);
-      else await axios.post('/api/admin/activities', payload);
-      setOpen(false);
-      await loadActivities();
-    } catch (requestError) {
-      setError(getErrorMessage(requestError));
-    } finally {
-      setSaving(false);
-    }
-  });
+  const pageActivities = activities.slice(
+    table.page * table.rowsPerPage,
+    table.page * table.rowsPerPage + table.rowsPerPage
+  );
 
   const remove = async (activity: ActivityItem) => {
     if (!window.confirm(`ลบกิจกรรม “${activity.title}” หรือไม่?`)) return;
@@ -216,6 +86,7 @@ export default function ActivityManagementPage() {
       setDeletingId(activity.id);
       setError('');
       await axios.delete('/api/admin/activities', { params: { id: activity.id } });
+      table.onUpdatePageDeleteRow(pageActivities.length);
       setActivities((current) => current.filter((item) => item.id !== activity.id));
     } catch (requestError) {
       setError(getErrorMessage(requestError));
@@ -224,13 +95,11 @@ export default function ActivityManagementPage() {
     }
   };
 
-  const coverImage = watch('coverImage');
-
   return (
     <Layout>
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Stack spacing={3}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between">
+          <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
             <div>
               <Typography variant="h4">จัดการกิจกรรม</Typography>
               <Typography variant="body2" color="text.secondary">
@@ -245,237 +114,90 @@ export default function ActivityManagementPage() {
               เพิ่มกิจกรรม
             </Button>
           </Stack>
-          {error && <Alert severity="error">{error}</Alert>}
-          {loading && <Typography color="text.secondary">กำลังโหลด...</Typography>}
-          <Grid container spacing={3}>
-            {activities.map((activity) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={activity.id}>
-                <Card>
-                  <Box sx={{ height: 230, position: 'relative', bgcolor: 'background.neutral' }}>
-                    {activity.imageUrl && (
-                      <NextImage
-                        loader={imageLoader}
-                        src={activity.imageUrl}
-                        alt={activity.title}
-                        fill
-                        sizes="(max-width: 900px) 100vw, 33vw"
-                        style={{ objectFit: 'cover' }}
-                      />
+
+          {error ? <Alert severity="error">{error}</Alert> : null}
+
+          <Card>
+            <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
+              <Scrollbar>
+                <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 900 }}>
+                  <TableHeadCustom headLabel={TABLE_HEAD} />
+                  <TableBody>
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={TABLE_HEAD.length} align="center">
+                          <CircularProgress size={32} />
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      pageActivities.map((activity) => (
+                        <TableRow hover key={activity.id}>
+                          <TableCell>
+                            <Stack direction="row" spacing={2} alignItems="center">
+                              <Avatar
+                                variant="rounded"
+                                src={activity.imageUrl}
+                                alt={activity.title}
+                                sx={{ width: 64, height: 48 }}
+                              />
+                              <Typography variant="subtitle2">{activity.title}</Typography>
+                            </Stack>
+                          </TableCell>
+                          <TableCell>{TYPE_LABEL[activity.type || 'temple']}</TableCell>
+                          <TableCell>{fDateTime(activity.createdAt, 'dd/MM/yyyy HH:mm')}</TableCell>
+                          <TableCell>
+                            <Chip
+                              size="small"
+                              variant="soft"
+                              color={activity.status === 'PUBLIC' ? 'success' : 'default'}
+                              label={activity.status === 'PUBLIC' ? 'เผยแพร่' : 'แบบร่าง'}
+                            />
+                          </TableCell>
+                          <TableCell align="right">
+                            <Tooltip title="แก้ไข">
+                              <IconButton
+                                onClick={() =>
+                                  router.push(paths.dashboard.activityEdit(activity.id))
+                                }
+                              >
+                                <Iconify icon="solar:pen-bold" />
+                              </IconButton>
+                            </Tooltip>
+                            {!isContributor ? (
+                              <Tooltip title="ลบ">
+                                <LoadingButton
+                                  color="error"
+                                  loading={deletingId === activity.id}
+                                  onClick={() => remove(activity)}
+                                  sx={{ minWidth: 40, px: 1 }}
+                                >
+                                  <Iconify icon="solar:trash-bin-trash-bold" />
+                                </LoadingButton>
+                              </Tooltip>
+                            ) : null}
+                          </TableCell>
+                        </TableRow>
+                      ))
                     )}
-                  </Box>
-                  <CardContent>
-                    <Stack direction="row" justifyContent="space-between" spacing={1}>
-                      <div>
-                        <Typography variant="h6">{activity.title}</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {TYPE_LABEL[activity.type || 'temple']}
-                        </Typography>
-                      </div>
-                      <Chip
-                        size="small"
-                        label={activity.status === 'PUBLIC' ? 'เผยแพร่' : 'แบบร่าง'}
-                        color={activity.status === 'PUBLIC' ? 'success' : 'default'}
-                      />
-                    </Stack>
-                  </CardContent>
-                  <CardActions sx={{ justifyContent: 'flex-end' }}>
-                    <Button onClick={() => edit(activity)}>แก้ไข</Button>
-                    <LoadingButton
-                      color="error"
-                      loading={deletingId === activity.id}
-                      onClick={() => remove(activity)}
-                    >
-                      ลบ
-                    </LoadingButton>
-                  </CardActions>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-          {!loading && !activities.length && (
-            <Card sx={{ py: 8, textAlign: 'center' }}>
-              <Iconify icon="solar:gallery-wide-bold-duotone" width={64} />
-              <Typography variant="h6" sx={{ mt: 2 }}>
-                ยังไม่มีกิจกรรม
-              </Typography>
-            </Card>
-          )}
+                    <TableNoData notFound={!loading && activities.length === 0} />
+                  </TableBody>
+                </Table>
+              </Scrollbar>
+            </TableContainer>
+            <TablePaginationCustom
+              count={activities.length}
+              page={table.page}
+              rowsPerPage={table.rowsPerPage}
+              rowsPerPageOptions={[5, 10, 25]}
+              onPageChange={table.onChangePage}
+              onRowsPerPageChange={table.onChangeRowsPerPage}
+              labelRowsPerPage="รายการต่อหน้า:"
+              dense={table.dense}
+              onChangeDense={table.onChangeDense}
+            />
+          </Card>
         </Stack>
       </Container>
-
-      <Dialog open={open} onClose={() => !saving && setOpen(false)} fullWidth maxWidth="md">
-        <DialogTitle>{editing ? 'แก้ไขกิจกรรม' : 'เพิ่มกิจกรรม'}</DialogTitle>
-        <DialogContent>
-          <Stack spacing={3} sx={{ pt: 1 }} component="form" onSubmit={save}>
-            <Controller
-              name="title"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  required
-                  label="ชื่อกิจกรรม"
-                  error={!!errors.title}
-                  helperText={errors.title?.message}
-                />
-              )}
-            />
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-              <Controller
-                name="type"
-                control={control}
-                render={({ field }) => (
-                  <FormControl fullWidth>
-                    <InputLabel>ประเภท</InputLabel>
-                    <Select {...field} label="ประเภท">
-                      <MenuItem value="temple">วัด</MenuItem>
-                      <MenuItem value="community">ชุมชน</MenuItem>
-                      <MenuItem value="school">โรงเรียน</MenuItem>
-                    </Select>
-                  </FormControl>
-                )}
-              />
-              <Controller
-                name="status"
-                control={control}
-                render={({ field }) => (
-                  <FormControl fullWidth>
-                    <InputLabel>สถานะ</InputLabel>
-                    <Select {...field} label="สถานะ">
-                      <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
-                      <MenuItem value="DRAFT">แบบร่าง</MenuItem>
-                    </Select>
-                  </FormControl>
-                )}
-              />
-            </Stack>
-            <Controller
-              name="description"
-              control={control}
-              render={({ field }) => (
-                <TextField {...field} multiline minRows={2} label="คำอธิบาย" />
-              )}
-            />
-            <Controller
-              name="content"
-              control={control}
-              render={({ field }) => (
-                <TextField {...field} multiline minRows={6} label="เนื้อหา (รองรับ HTML)" />
-              )}
-            />
-            <Controller
-              name="coverImage"
-              control={control}
-              render={({ field }) => (
-                <CoverInput
-                  file={coverImage}
-                  url={editing?.imageUrl}
-                  error={errors.coverImage?.message}
-                  onChange={field.onChange}
-                />
-              )}
-            />
-            <Controller
-              name="galleryImages"
-              control={control}
-              render={({ field }) => (
-                <Stack spacing={1}>
-                  <Typography variant="subtitle2">รูป Gallery (สูงสุด 8 รูป)</Typography>
-                  <Grid container spacing={1}>
-                    {currentGallery.map((image) => (
-                      <Grid size={{ xs: 4, sm: 3 }} key={image.src}>
-                        <Box
-                          sx={{
-                            height: 110,
-                            position: 'relative',
-                            overflow: 'hidden',
-                            borderRadius: 1,
-                          }}
-                        >
-                          <NextImage
-                            loader={imageLoader}
-                            src={image.image}
-                            alt="Activity gallery"
-                            fill
-                            sizes="200px"
-                            style={{ objectFit: 'cover' }}
-                          />
-                          <IconButton
-                            size="small"
-                            onClick={() =>
-                              setCurrentGallery((current) =>
-                                current.filter((c) => c.src !== image.src)
-                              )
-                            }
-                            sx={{
-                              position: 'absolute',
-                              top: 4,
-                              right: 4,
-                              color: 'white',
-                              bgcolor: 'rgba(0,0,0,.55)',
-                            }}
-                          >
-                            <Iconify icon="mingcute:close-line" />
-                          </IconButton>
-                        </Box>
-                      </Grid>
-                    ))}
-                    {field.value.map((file, index) => (
-                      <Grid size={{ xs: 4, sm: 3 }} key={`${file.name}-${file.lastModified}`}>
-                        <Stack
-                          direction="row"
-                          alignItems="center"
-                          sx={{ height: 110, px: 1, bgcolor: 'background.neutral' }}
-                        >
-                          <Typography variant="caption" noWrap>
-                            {file.name}
-                          </Typography>
-                          <IconButton
-                            size="small"
-                            onClick={() =>
-                              field.onChange(field.value.filter((_, i) => i !== index))
-                            }
-                          >
-                            <Iconify icon="mingcute:close-line" />
-                          </IconButton>
-                        </Stack>
-                      </Grid>
-                    ))}
-                  </Grid>
-                  <Button
-                    component="label"
-                    variant="outlined"
-                    disabled={currentGallery.length + field.value.length >= 8}
-                  >
-                    เพิ่มรูป Gallery
-                    <input
-                      hidden
-                      multiple
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp"
-                      onChange={(event) => {
-                        const files = Array.from(event.target.files || []);
-                        field.onChange(
-                          [...field.value, ...files].slice(0, 8 - currentGallery.length)
-                        );
-                        event.target.value = '';
-                      }}
-                    />
-                  </Button>
-                </Stack>
-              )}
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button color="inherit" disabled={saving} onClick={() => setOpen(false)}>
-            ยกเลิก
-          </Button>
-          <LoadingButton variant="contained" loading={saving} onClick={save}>
-            บันทึก
-          </LoadingButton>
-        </DialogActions>
-      </Dialog>
     </Layout>
   );
 }

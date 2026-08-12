@@ -1,14 +1,13 @@
 'use client';
 
 import isEqual from 'lodash/isEqual';
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 
 import { SettingsValueProps } from '../types';
 
 import { SettingsContext } from './settings-context';
 
 import { useLocalStorage } from 'src/hooks/use-local-storage';
-import { localStorageGetItem } from 'src/utils/storage-available';
 
 
 // ----------------------------------------------------------------------
@@ -25,19 +24,10 @@ export function SettingsProvider({ children, defaultSettings }: SettingsProvider
 
   const [openDrawer, setOpenDrawer] = useState(false);
 
-  const isArabic = localStorageGetItem('i18nextLng') === 'ar';
-
-  useEffect(() => {
-    if (isArabic) {
-      onChangeDirectionByLang('ar');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isArabic]);
-
   // Direction by lang
   const onChangeDirectionByLang = useCallback(
-    (lang: string) => {
-      update('themeDirection', lang === 'ar' ? 'rtl' : 'ltr');
+    (_lang: string) => {
+      update('themeDirection', 'ltr');
     },
     [update]
   );

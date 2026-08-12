@@ -1,10 +1,14 @@
 const BANNER_BUCKET = 'banners';
+const POPUP_BANNER_BUCKET = 'popup-banners';
 const FESTIVAL_BUCKET = 'festivals';
 const SACRED_BUCKET = 'sacred';
 const ACTIVITY_BUCKET = 'activities';
 const ARCHITECTURE_BUCKET = 'architecture';
 const BLOG_BUCKET = 'blogs';
 const DHARMA_BUCKET = 'dharmas';
+const BRANDING_BUCKET = 'temple-branding';
+const TEMPLE_PAGE_BUCKET = 'temple-pages';
+const TEMPLE_DIRECTORY_BUCKET = 'temple-directory';
 
 export class SupabaseStorageError extends Error {
   constructor(
@@ -38,6 +42,26 @@ const getHeaders = (contentType?: string) => {
   return headers;
 };
 
+const parseStorageError = (raw: string) => {
+  try {
+    const data = JSON.parse(raw) as { message?: unknown; error?: unknown; code?: unknown };
+    return {
+      message:
+        (typeof data.message === 'string' && data.message) ||
+        (typeof data.error === 'string' && data.error) ||
+        raw,
+      code: typeof data.code === 'string' ? data.code : '',
+    };
+  } catch {
+    return { message: raw, code: '' };
+  }
+};
+
+const isMissingBucketResponse = (status: number, raw: string) => {
+  const error = parseStorageError(raw);
+  return status === 404 || error.code === 'NoSuchBucket' || /bucket not found/i.test(error.message);
+};
+
 const ensurePublicImageBucket = async (bucket: string) => {
   const { url } = getStorageConfig();
   const existing = await fetch(`${url}/storage/v1/bucket/${bucket}`, {
@@ -45,8 +69,9 @@ const ensurePublicImageBucket = async (bucket: string) => {
   });
 
   if (existing.ok) return;
-  if (existing.status !== 404) {
-    throw new SupabaseStorageError(await existing.text(), existing.status);
+  const existingError = await existing.text();
+  if (!isMissingBucketResponse(existing.status, existingError)) {
+    throw new SupabaseStorageError(parseStorageError(existingError).message, existing.status);
   }
 
   const created = await fetch(`${url}/storage/v1/bucket`, {
@@ -61,8 +86,12 @@ const ensurePublicImageBucket = async (bucket: string) => {
     }),
   });
 
-  if (!created.ok && created.status !== 409) {
-    throw new SupabaseStorageError(await created.text(), created.status);
+  if (!created.ok) {
+    const createdError = await created.text();
+    const parsed = parseStorageError(createdError);
+    const alreadyExists =
+      created.status === 409 || /already exists|duplicate/i.test(parsed.message);
+    if (!alreadyExists) throw new SupabaseStorageError(parsed.message, created.status);
   }
 };
 
@@ -81,7 +110,8 @@ const uploadPublicImage = async (
   });
 
   if (!response.ok) {
-    throw new SupabaseStorageError(await response.text(), response.status);
+    const uploadError = await response.text();
+    throw new SupabaseStorageError(parseStorageError(uploadError).message, response.status);
   }
 
   return `${url}/storage/v1/object/public/${bucket}/${path}`;
@@ -105,6 +135,12 @@ export const uploadBannerImage = (path: string, buffer: Buffer, contentType: str
   uploadPublicImage(BANNER_BUCKET, path, buffer, contentType);
 
 export const deleteBannerImages = (paths: string[]) => deletePublicImages(BANNER_BUCKET, paths);
+
+export const uploadPopupBannerImage = (path: string, buffer: Buffer, contentType: string) =>
+  uploadPublicImage(POPUP_BANNER_BUCKET, path, buffer, contentType);
+
+export const deletePopupBannerImages = (paths: string[]) =>
+  deletePublicImages(POPUP_BANNER_BUCKET, paths);
 
 export const uploadFestivalImage = (path: string, buffer: Buffer, contentType: string) =>
   uploadPublicImage(FESTIVAL_BUCKET, path, buffer, contentType);
@@ -136,3 +172,20 @@ export const uploadDharmaImage = (path: string, buffer: Buffer, contentType: str
   uploadPublicImage(DHARMA_BUCKET, path, buffer, contentType);
 
 export const deleteDharmaImages = (paths: string[]) => deletePublicImages(DHARMA_BUCKET, paths);
+
+export const uploadBrandingImage = (path: string, buffer: Buffer, contentType: string) =>
+  uploadPublicImage(BRANDING_BUCKET, path, buffer, contentType);
+
+export const deleteBrandingImages = (paths: string[]) => deletePublicImages(BRANDING_BUCKET, paths);
+
+export const uploadTemplePageImage = (path: string, buffer: Buffer, contentType: string) =>
+  uploadPublicImage(TEMPLE_PAGE_BUCKET, path, buffer, contentType);
+
+export const deleteTemplePageImages = (paths: string[]) =>
+  deletePublicImages(TEMPLE_PAGE_BUCKET, paths);
+
+export const uploadTempleDirectoryImage = (path: string, buffer: Buffer, contentType: string) =>
+  uploadPublicImage(TEMPLE_DIRECTORY_BUCKET, path, buffer, contentType);
+
+export const deleteTempleDirectoryImages = (paths: string[]) =>
+  deletePublicImages(TEMPLE_DIRECTORY_BUCKET, paths);

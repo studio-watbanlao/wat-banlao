@@ -1,8 +1,8 @@
 'use client';
 
 import { Container, Stack, Typography } from '@mui/material';
-import { CONFIG } from 'src/config-global';
-import { useGetBanner } from 'src/queries/banner';
+import dynamic from 'next/dynamic';
+
 import HomeAdvertisement from '../home-advertisement';
 import HomeAgencies from '../home-agencies';
 import HomeArticle from '../home-article';
@@ -15,7 +15,22 @@ import HomeMinimal from '../home-minimal';
 import HomeTeam from '../home-team';
 import HomeTempleFestival from '../home-temple-festival';
 
-const HomeView = () => {
+import { CONFIG } from 'src/config-global';
+import { useGetBanner } from 'src/queries/banner';
+import { resolvePublicTemplateKey } from 'src/public-templates/catalog';
+import { usePublicTemple } from 'src/public-templates/use-public-temple';
+
+const SereneHomeView = dynamic(() =>
+  import('src/public-templates/serene/serene-home-view').then((module) => module.SereneHomeView)
+);
+
+const Template1HomeView = dynamic(() =>
+  import('src/public-templates/template-1/template-1-home-view').then(
+    (module) => module.Template1HomeView
+  )
+);
+
+const ClassicHomeView = () => {
   const { data = [] } = useGetBanner();
 
   return (
@@ -42,7 +57,7 @@ const HomeView = () => {
           spacing={1}
           mt={5}
         >
-          <Typography variant="h3">" บวร "</Typography>
+          <Typography variant="h3">&quot; บวร &quot;</Typography>
           <Typography variant="body1">
             “ วัดจะดีมีหลักฐานเพราะบ้านช่วย บ้านจะสวยเพราะมีวัดดัดนิสัย
             บ้านกับวัดผลัดกันช่วยก็อวยชัย ถ้าขัดกันก็บรรลัยทั้งสองทาง ”
@@ -55,19 +70,19 @@ const HomeView = () => {
           </Typography>
           <Typography variant="body1">
             <Typography component={'span'} variant="subtitle1">
-              " บ "
+              &quot; บ &quot;
             </Typography>{' '}
             คือ บ้าน บ้านที่มีชาวบ้าน มีคนอาศัยอยู่ผู้ที่จะสืบสานวัฒนธรรม ศาสนา
             และซึมซับคำสอนจากพระสงฆ์เป็นผู้ส่งเสริมสนับสนุนให้พระพุทธศาสนาได้ยั่งยืนยาวนานอย่างถึงแก่นแท้{' '}
             <br />{' '}
             <Typography component={'span'} variant="subtitle1">
-              " ว "
+              &quot; ว &quot;
             </Typography>{' '}
             คือ วัด
             วัดที่มีพระสงฆ์ผู้ที่อาสาจะละกิเลสทางโลกมาศึกษาพระธรรมเพื่อเผยแผ่หลักพุทธศาสนาให้ชาวบ้านได้เข้าใจถึงการดำรงชีวิตอย่างสงบเป็นสุข
             <br />
             <Typography component={'span'} variant="subtitle1">
-              " ร "
+              &quot; ร &quot;
             </Typography>{' '}
             คือ โรงเรียน เดิมทีแหล่งที่ประสิทธิประสาทวิชาความรู้นั้นคือวัด
             ต่อมาได้แยกออกมาเป็นโรงเรียนที่เป็นสถานให้การศึกษาโดยตรงต่อทุกเพศ
@@ -108,6 +123,15 @@ const HomeView = () => {
       <HomeAdvertisement />
     </>
   );
+};
+
+const HomeView = () => {
+  const { data: temple } = usePublicTemple();
+  const template = resolvePublicTemplateKey(temple?.branding.publicTemplate);
+
+  if (template === 'serene') return <SereneHomeView />;
+  if (template === 'template-1') return <Template1HomeView />;
+  return <ClassicHomeView />;
 };
 
 export default HomeView;

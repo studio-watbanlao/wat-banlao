@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { getSafeApiError } from 'src/lib/api-error';
 import { createContactMessage } from 'src/lib/contact-repository';
+import { resolvePublicTemple } from 'src/lib/temple-access';
 
 const text = (value: unknown, maxLength: number) =>
   typeof value === 'string' ? value.trim().slice(0, maxLength) : '';
@@ -26,7 +27,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ message: 'กรุณากรอกชื่อ อีเมล และข้อความให้ถูกต้อง' });
     }
 
-    const contact = await createContactMessage({ name, email, subject, message });
+    const temple = await resolvePublicTemple(req);
+    const contact = await createContactMessage(temple.id, { name, email, subject, message });
     return res.status(201).json({ success: true, id: contact.id });
   } catch (error) {
     console.error('[api/contact]', error);

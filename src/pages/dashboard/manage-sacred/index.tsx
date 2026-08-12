@@ -1,19 +1,30 @@
 import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
+import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
-import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
 import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableRow from '@mui/material/TableRow';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import NextImage, { type ImageLoaderProps } from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
 
 import Iconify from 'src/components/iconify';
+import Scrollbar from 'src/components/scrollbar';
+import {
+  TableHeadCustom,
+  TableNoData,
+  TablePaginationCustom,
+  useTable,
+} from 'src/components/table';
 import Layout from 'src/pages/dashboard/layout';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
@@ -21,10 +32,17 @@ import type { SacredItem } from 'src/types/sacred';
 import axios from 'src/utils/axios';
 import { getErrorMessage } from 'src/utils/error-message';
 
-const imageLoader = ({ src }: ImageLoaderProps) => src;
+const TABLE_HEAD = [
+  { id: 'title', label: 'วัตถุมงคล', minWidth: 380 },
+  { id: 'year', label: 'ปี', width: 140 },
+  { id: 'view', label: 'ยอดเข้าชม', width: 120, align: 'center' as const },
+  { id: 'status', label: 'สถานะ', width: 130 },
+  { id: '', label: '', width: 120 },
+];
 
 export default function ManageSacredPage() {
   const router = useRouter();
+  const table = useTable({ defaultRowsPerPage: 10 });
   const [items, setItems] = useState<SacredItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState('');
@@ -35,7 +53,7 @@ export default function ManageSacredPage() {
       setLoading(true);
       setError('');
       const response = await axios.get('/api/admin/sacred');
-      setItems(response.data.items);
+      setItems(response.data.items || []);
     } catch (requestError) {
       setError(getErrorMessage(requestError));
     } finally {
@@ -47,12 +65,18 @@ export default function ManageSacredPage() {
     loadItems();
   }, [loadItems]);
 
+  const pageItems = items.slice(
+    table.page * table.rowsPerPage,
+    table.page * table.rowsPerPage + table.rowsPerPage
+  );
+
   const removeItem = async (item: SacredItem) => {
     if (!window.confirm(`ลบ “${item.title}” หรือไม่?`)) return;
     try {
       setDeletingId(item.id);
       setError('');
       await axios.delete('/api/admin/sacred', { params: { id: item.id } });
+      table.onUpdatePageDeleteRow(pageItems.length);
       setItems((current) => current.filter((value) => value.id !== item.id));
     } catch (requestError) {
       setError(getErrorMessage(requestError));
@@ -65,11 +89,11 @@ export default function ManageSacredPage() {
     <Layout>
       <Container maxWidth="xl" sx={{ py: 4 }}>
         <Stack spacing={3}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between">
+          <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
             <div>
               <Typography variant="h4">จัดการวัตถุมงคล</Typography>
               <Typography variant="body2" color="text.secondary">
-                ข้อมูลที่แสดงในหน้า Sacred
+                ข้อมูลที่แสดงในหน้าวัตถุมงคล
               </Typography>
             </div>
             <Button
@@ -82,64 +106,82 @@ export default function ManageSacredPage() {
           </Stack>
 
           {error ? <Alert severity="error">{error}</Alert> : null}
-          {loading ? <Typography color="text.secondary">กำลังโหลด...</Typography> : null}
 
-          <Grid container spacing={3}>
-            {items.map((item) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={item.id}>
-                <Card>
-                  <Box sx={{ height: 280, position: 'relative', bgcolor: 'background.neutral' }}>
-                    {item.imageUrl ? (
-                      <NextImage
-                        loader={imageLoader}
-                        src={item.imageUrl}
-                        alt={item.title}
-                        fill
-                        sizes="(max-width: 900px) 50vw, 25vw"
-                        style={{ objectFit: 'contain' }}
-                      />
-                    ) : null}
-                  </Box>
-                  <CardContent>
-                    <Stack direction="row" justifyContent="space-between" spacing={1}>
-                      <div>
-                        <Typography variant="h6">{item.title}</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          ปี {item.year || '-'}
-                        </Typography>
-                      </div>
-                      <Chip
-                        size="small"
-                        label={item.status === 'PUBLIC' ? 'เผยแพร่' : 'แบบร่าง'}
-                        color={item.status === 'PUBLIC' ? 'success' : 'default'}
-                      />
-                    </Stack>
-                  </CardContent>
-                  <CardActions sx={{ justifyContent: 'flex-end' }}>
-                    <Button onClick={() => router.push(paths.dashboard.sacredEdit(item.id))}>
-                      แก้ไข
-                    </Button>
-                    <LoadingButton
-                      color="error"
-                      loading={deletingId === item.id}
-                      onClick={() => removeItem(item)}
-                    >
-                      ลบ
-                    </LoadingButton>
-                  </CardActions>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-
-          {!loading && !items.length ? (
-            <Card sx={{ py: 8, textAlign: 'center' }}>
-              <Iconify icon="solar:gallery-wide-bold-duotone" width={64} />
-              <Typography variant="h6" sx={{ mt: 2 }}>
-                ยังไม่มีข้อมูลวัตถุมงคล
-              </Typography>
-            </Card>
-          ) : null}
+          <Card>
+            <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
+              <Scrollbar>
+                <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 900 }}>
+                  <TableHeadCustom headLabel={TABLE_HEAD} />
+                  <TableBody>
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={TABLE_HEAD.length} align="center">
+                          <CircularProgress size={32} />
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      pageItems.map((item) => (
+                        <TableRow hover key={item.id}>
+                          <TableCell>
+                            <Stack direction="row" spacing={2} alignItems="center">
+                              <Avatar
+                                variant="rounded"
+                                src={item.imageUrl}
+                                alt={item.title}
+                                sx={{ width: 56, height: 56 }}
+                              />
+                              <Typography variant="subtitle2">{item.title}</Typography>
+                            </Stack>
+                          </TableCell>
+                          <TableCell>{item.year || '-'}</TableCell>
+                          <TableCell align="center">{item.view || 0}</TableCell>
+                          <TableCell>
+                            <Chip
+                              size="small"
+                              variant="soft"
+                              color={item.status === 'PUBLIC' ? 'success' : 'default'}
+                              label={item.status === 'PUBLIC' ? 'เผยแพร่' : 'แบบร่าง'}
+                            />
+                          </TableCell>
+                          <TableCell align="right">
+                            <Tooltip title="แก้ไข">
+                              <IconButton
+                                onClick={() => router.push(paths.dashboard.sacredEdit(item.id))}
+                              >
+                                <Iconify icon="solar:pen-bold" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="ลบ">
+                              <LoadingButton
+                                color="error"
+                                loading={deletingId === item.id}
+                                onClick={() => removeItem(item)}
+                                sx={{ minWidth: 40, px: 1 }}
+                              >
+                                <Iconify icon="solar:trash-bin-trash-bold" />
+                              </LoadingButton>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                    <TableNoData notFound={!loading && items.length === 0} />
+                  </TableBody>
+                </Table>
+              </Scrollbar>
+            </TableContainer>
+            <TablePaginationCustom
+              count={items.length}
+              page={table.page}
+              rowsPerPage={table.rowsPerPage}
+              rowsPerPageOptions={[5, 10, 25]}
+              onPageChange={table.onChangePage}
+              onRowsPerPageChange={table.onChangeRowsPerPage}
+              labelRowsPerPage="รายการต่อหน้า:"
+              dense={table.dense}
+              onChangeDense={table.onChangeDense}
+            />
+          </Card>
         </Stack>
       </Container>
     </Layout>

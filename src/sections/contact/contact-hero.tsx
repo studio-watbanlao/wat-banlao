@@ -1,42 +1,29 @@
 import { m, MotionProps } from 'framer-motion';
-
 import Box, { BoxProps } from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/material/styles';
 
 import { MotionContainer, varFade } from 'src/components/animate';
+import { usePublicTemple } from 'src/public-templates/use-public-temple';
 
 // ----------------------------------------------------------------------
 
-const CONTACTS = [
-  {
-    country: 'ที่ตั้ง',
-    address:
-      'ปัจจุบันตั้งอยู่เลขที่ 114 บ้านเหล่า หมู่ 3 ตำบลเม็กดำ อำเภอพยัคฆภูมิพิสัย จังหวัด มหาสารคาม',
-    phoneNumber: '',
-  },
-  {
-    country: 'ช่วงเวลาทำการ',
-    address: '08:00 น - 17:00 น. ทุกวัน',
-    phoneNumber: '',
-  },
-  {
-    country: 'อีเมล',
-    address: 'studio.watbanlao@gmail.com',
-    phoneNumber: '',
-  },
-  // {
-  //   country: 'เบอร์โทร',
-  //   address: 'studio.watbanlao@gmail.com',
-  //   phoneNumber: '',
-  // },
-];
+const contactText = (contact: Record<string, unknown> | undefined, key: string) => {
+  const value = contact?.[key];
+  return typeof value === 'string' ? value : '';
+};
 
 // ----------------------------------------------------------------------
 
 export default function ContactHero() {
-  const theme = useTheme();
+  const { data: temple } = usePublicTemple();
+  const contact = temple?.branding.contact;
+  const nameEnglish = contactText(contact, 'nameEnglish');
+  const contacts = [
+    { label: 'ที่ตั้ง', value: contactText(contact, 'address') },
+    { label: 'ช่วงเวลาทำการ', value: contactText(contact, 'openingHours') },
+    { label: 'อีเมล', value: contactText(contact, 'email') },
+  ].filter((item) => item.value);
 
   return (
     <Box>
@@ -47,11 +34,15 @@ export default function ContactHero() {
           }}
         >
           <TextAnimate
-            text="วัดบ้านเหล่า "
+            text={temple?.name || 'เว็บไซต์วัด'}
             sx={{ color: 'primary.main' }}
             variants={varFade().inRight}
           />
-          <TextAnimate text="-สุขธัมมาราม" variants={varFade().inRight} />
+          {nameEnglish ? (
+            <Typography variant="h5" color="text.secondary" sx={{ mt: 1 }}>
+              {nameEnglish}
+            </Typography>
+          ) : null}
 
           <Stack
             spacing={5}
@@ -59,17 +50,17 @@ export default function ContactHero() {
             direction={{ xs: 'column', md: 'row' }}
             sx={{ mt: 5 }}
           >
-            {CONTACTS.map((contact, index) => (
-              <Stack key={contact.country} sx={{ maxWidth: index === 0 ? 300 : 200 }}>
+            {contacts.map((item, index) => (
+              <Stack key={item.label} sx={{ maxWidth: index === 0 ? 420 : 240 }}>
                 <m.div variants={varFade().in}>
                   <Typography variant="h6" gutterBottom>
-                    {contact.country}
+                    {item.label}
                   </Typography>
                 </m.div>
 
                 <m.div variants={varFade().inRight}>
                   <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                    {contact.address}
+                    {item.value}
                   </Typography>
                 </m.div>
               </Stack>

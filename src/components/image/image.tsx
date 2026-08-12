@@ -1,11 +1,16 @@
 import { forwardRef } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
 
 import { ImageProps } from './types';
 import { getRatio } from './utils';
+
+import {
+  applyDefaultContentImage,
+  DEFAULT_CONTENT_IMAGE,
+  resolveContentImage,
+} from 'src/constants/images';
 
 // ----------------------------------------------------------------------
 
@@ -23,7 +28,9 @@ const Image = forwardRef<HTMLSpanElement, ImageProps>(
       threshold,
       beforeLoad,
       delayMethod,
+      onError,
       placeholder,
+      placeholderSrc = DEFAULT_CONTENT_IMAGE,
       wrapperProps,
       scrollPosition,
       effect = 'blur',
@@ -36,6 +43,11 @@ const Image = forwardRef<HTMLSpanElement, ImageProps>(
     ref
   ) => {
     const theme = useTheme();
+
+    const handleError: NonNullable<ImageProps['onError']> = (event) => {
+      applyDefaultContentImage(event);
+      onError?.(event);
+    };
 
     const overlayStyles = !!overlay && {
       '&:before': {
@@ -55,12 +67,13 @@ const Image = forwardRef<HTMLSpanElement, ImageProps>(
         component={LazyLoadImage as React.ElementType}
         //
         alt={alt}
-        src={src}
+        src={resolveContentImage(typeof src === 'string' ? src : '')}
         afterLoad={afterLoad}
         delayTime={delayTime}
         threshold={threshold}
         beforeLoad={beforeLoad}
         delayMethod={delayMethod}
+        onError={handleError}
         placeholder={placeholder}
         wrapperProps={wrapperProps}
         scrollPosition={scrollPosition}
@@ -68,7 +81,7 @@ const Image = forwardRef<HTMLSpanElement, ImageProps>(
         effect={disabledEffect ? undefined : effect}
         useIntersectionObserver={useIntersectionObserver}
         wrapperClassName={wrapperClassName || 'component-image-wrapper'}
-        placeholderSrc={disabledEffect ? '/assets/transparent.png' : '/assets/placeholder.svg'}
+        placeholderSrc={placeholderSrc}
         //
         sx={{
           width: 1,
@@ -116,5 +129,7 @@ const Image = forwardRef<HTMLSpanElement, ImageProps>(
     );
   }
 );
+
+Image.displayName = 'Image';
 
 export default Image;

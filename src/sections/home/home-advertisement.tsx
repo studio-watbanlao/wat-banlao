@@ -1,22 +1,24 @@
 import { m } from 'framer-motion';
-
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import { useTheme } from '@mui/material/styles';
+import { Container, Typography } from '@mui/material';
 
 import { bgGradient } from 'src/theme/css';
-
-import { Container, Typography } from '@mui/material';
 import { MotionViewport, varFade } from 'src/components/animate';
 import Image from 'src/components/image';
 import { CONFIG } from 'src/config-global';
 import { useResponsive } from 'src/hooks/use-responsive';
+import { getDonationAccount, hasDonationAccount } from 'src/public-templates/donation-account';
+import { usePublicTemple } from 'src/public-templates/use-public-temple';
 
 // ----------------------------------------------------------------------
 
 export default function HomeAdvertisement() {
-  const theme = useTheme();
   const mdUp = useResponsive('up', 'md');
+  const { data: temple } = usePublicTemple();
+  const account = getDonationAccount(temple?.branding, temple?.slug);
+
+  if (!hasDonationAccount(account)) return null;
 
   const renderDescription = (
     <Box
@@ -36,12 +38,14 @@ export default function HomeAdvertisement() {
         sx={{ color: 'common.white', typography: 'h3' }}
       >
         <Stack>
-          <Image
-            src="/assets/images/qr-code.png"
-            alt="1"
-            ratio="1/1"
-            sx={{ height: 200, width: 200 }}
-          />
+          {account.qrCodeUrl ? (
+            <Image
+              src={account.qrCodeUrl}
+              alt={`QR Code บัญชี ${account.accountName}`}
+              ratio="1/1"
+              sx={{ height: 200, width: 200 }}
+            />
+          ) : null}
         </Stack>
       </Box>
 
@@ -51,9 +55,9 @@ export default function HomeAdvertisement() {
         sx={{ color: 'common.white', typography: 'h3', ml: mdUp ? 3 : 0 }}
       >
         <Typography variant="h4">ร่วมทำบุญผ่านธนาคาร</Typography>
-        <Typography variant="h3">บัญชีธนาคารกรุงไทย</Typography>
-        <Typography variant="h3">เลขที่บัญชี 423-0-71936-1</Typography>
-        <Typography variant="h5">ชื่อบัญชี : วัดบ้านเหล่า ( WAT BANLAO )</Typography>
+        <Typography variant="h3">บัญชี{account.bankName}</Typography>
+        <Typography variant="h3">เลขที่บัญชี {account.accountNumber}</Typography>
+        <Typography variant="h5">ชื่อบัญชี : {account.accountName}</Typography>
       </Box>
 
       {/* <Stack
@@ -113,7 +117,9 @@ export default function HomeAdvertisement() {
       />
        */}
 
-      <Image src="/assets/images/logo-bank.png" alt="bank" sx={{ height: 80 }} />
+      {account.bankLogoUrl ? (
+        <Image src={account.bankLogoUrl} alt={`โลโก้${account.bankName}`} sx={{ height: 80 }} />
+      ) : null}
     </Stack>
   );
 

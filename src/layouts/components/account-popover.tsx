@@ -30,6 +30,7 @@ import {
 } from 'src/components/remix-icon';
 
 import { useAuthContext } from 'src/auth/hooks';
+import { useCurrentTempleAccess } from 'src/hooks/use-current-temple-access';
 
 import { AccountButton } from './account-button';
 import { SignOutButton } from './sign-out-button';
@@ -46,6 +47,10 @@ export type AccountPopoverProps = IconButtonProps & {
 };
 
 const POSITION_FALLBACK: Record<string, string> = {
+  super_admin: 'ผู้ดูแลระบบสูงสุด',
+  temple_admin: 'ผู้ดูแลวัด',
+  temple_editor: 'บรรณาธิการ',
+  temple_contributor: 'ผู้เขียนเนื้อหา',
   master_admin: 'ผู้ดูแลระบบหลัก',
   school_admin: 'ผู้ดูแลโรงเรียน',
   teacher: 'ครู/บุคลากร',
@@ -59,7 +64,13 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
   const { open, anchorEl, onClose, onOpen } = usePopover();
 
   const { user } = useAuthContext();
-  const rawPositionTitle = user?.position_title || POSITION_FALLBACK[user?.role] || '-';
+  const templeAccess = useCurrentTempleAccess();
+  const rawPositionTitle =
+    POSITION_FALLBACK[templeAccess?.role] ||
+    POSITION_FALLBACK[user?.position_title] ||
+    user?.position_title ||
+    POSITION_FALLBACK[user?.role] ||
+    'ผู้ใช้งาน';
   const positionTitle = t(rawPositionTitle, { defaultValue: rawPositionTitle });
 
   const studentMenu = [

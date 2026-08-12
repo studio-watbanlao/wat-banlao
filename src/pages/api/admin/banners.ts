@@ -1,13 +1,14 @@
 import { randomUUID } from 'crypto';
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { getSafeApiError } from 'src/lib/api-error';
 
-import { isAdminUser, resolveSessionUser, SupabaseAuthError } from 'src/lib/supabase-auth';
+import type { NextApiRequest, NextApiResponse } from 'next';
+
+import { getSafeApiError } from 'src/lib/api-error';
+import { resolveSessionUser } from 'src/lib/supabase-auth';
+import { requireTempleContentAccess } from 'src/lib/temple-access';
 import {
   createAdminContent,
   deleteAdminContent,
   getAdminContent,
-  SupabaseRequestError,
   updateAdminContent,
   type ContentStatus,
 } from 'src/lib/supabase-rest';
@@ -61,12 +62,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const requester = await resolveSessionUser(req, res);
     if (!requester) return res.status(401).json({ message: 'Authentication required.' });
-    if (!isAdminUser(requester)) {
-      return res.status(403).json({ message: 'Admin permission is required.' });
-    }
+    const { temple } = await requireTempleContentAccess(req, requester, 'banners');
+    const templeId = temple.id;
 
     if (req.method === 'GET') {
-      const banners = await getAdminContent<BannerItem>('banner');
+      const banners = await getAdminContent<BannerItem>('banner', templeId);
       banners.sort((a, b) => a.sortOrder - b.sortOrder);
       return res.status(200).json({ banners });
     }
@@ -82,8 +82,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       const id = randomUUID();
-      const desktopStoragePath = `${id}/desktop-${Date.now()}.${desktopImage.extension}`;
-      const mobileStoragePath = `${id}/mobile-${Date.now()}.${mobileImage.extension}`;
+      const desktopStoragePath = `${templeId}/${id}/desktop-${Date.now()}.${desktopImage.extension}`;
+      const mobileStoragePath = `${templeId}/${id}/mobile-${Date.now()}.${mobileImage.extension}`;
       const [desktopImageUrl, mobileImageUrl] = await Promise.all([
         uploadBannerImage(desktopStoragePath, desktopImage.buffer, desktopImage.contentType),
         uploadBannerImage(mobileStoragePath, mobileImage.buffer, mobileImage.contentType),
@@ -97,7 +97,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         linkUrl: getText(req.body?.linkUrl),
         sortOrder: Number(req.body?.sortOrder) || 0,
       };
-      const banner = await createAdminContent('banner', id, status, data);
+      const banner = await createAdminContent('banner', templeId, id, status, data);
       return res.status(201).json({ banner });
     }
 
@@ -108,7 +108,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ message: 'ข้อมูล Banner ไม่ถูกต้อง' });
       }
 
-      const existing = await getAdminContent<BannerItem>('banner', id);
+      const existing = await getAdminContent<BannerItem>('banner', templeId, id);
       if (!existing) return res.status(404).json({ message: 'ไม่พบ Banner' });
 
       const desktopImage = parseImage(req.body?.desktopImage);
@@ -117,7 +117,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const replacedPaths: string[] = [];
 
       if (desktopImage) {
-        const path = `${id}/desktop-${Date.now()}.${desktopImage.extension}`;
+        const path = `${templeId}/${id}/desktop-${Date.now()}.${desktopImage.extension}`;
         data.desktopImageUrl = await uploadBannerImage(
           path,
           desktopImage.buffer,
@@ -128,7 +128,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       if (mobileImage) {
-        const path = `${id}/mobile-${Date.now()}.${mobileImage.extension}`;
+        const path = `${templeId}/${id}/mobile-${Date.now()}.${mobileImage.extension}`;
         data.mobileImageUrl = await uploadBannerImage(
           path,
           mobileImage.buffer,
@@ -142,7 +142,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ message: 'ข้อมูล Banner ไม่ครบถ้วน' });
       }
 
-      const banner = await updateAdminContent('banner', id, status, data);
+      const banner = await updateAdminContent('banner', templeId, id, status, data);
       if (!banner) return res.status(404).json({ message: 'ไม่พบ Banner' });
       await deleteBannerImages(replacedPaths).catch((error) =>
         console.error('[api/admin/banners] clean replaced images', error)
@@ -153,10 +153,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'DELETE') {
       const id = getText(req.query.id);
       if (!id) return res.status(400).json({ message: 'Banner ID is required.' });
-      const existing = await getAdminContent<BannerItem>('banner', id);
+      const existing = await getAdminContent<BannerItem>('banner', templeId, id);
       if (!existing) return res.status(404).json({ message: 'ไม่พบ Banner' });
 
-      await deleteAdminContent('banner', id);
+      await deleteAdminContent('banner', templeId, id);
       await deleteBannerImages(
         [existing.desktopStoragePath, existing.mobileStoragePath].filter(Boolean) as string[]
       ).catch((error) => console.error('[api/admin/banners] clean deleted images', error));

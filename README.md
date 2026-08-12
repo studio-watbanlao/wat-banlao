@@ -15,8 +15,51 @@ Content now follows this path:
    `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and `SUPABASE_SECRET_KEY` directly.
 3. Start the app with `yarn dev`.
 
+## Multi-tenant Temple Platform
+
+Run `supabase/migrations/20260812120000_create_multi_tenant_platform.sql` after the existing
+migrations. Existing content is assigned to the seeded `wat-banlao` tenant. Every content table is
+then scoped by `temple_id`.
+
+- Super Admin manages temples at `/dashboard/temples`.
+- Admin APIs select the active temple from the secure `wb_temple_id` cookie.
+- Public clients can call `/api/public/{templeSlug}/config` and
+  `/api/public/{templeSlug}/content/{resource}`.
+- Set `NEXT_PUBLIC_TEMPLE_SLUG` independently in each public website deployment.
+- Keep `SUPABASE_SECRET_KEY` server-only and never expose it through a `NEXT_PUBLIC_` variable.
+
+For independent custom domains, deploy each public frontend as a separate Vercel Project while
+sharing the same Supabase project and public API. Configure each custom domain in that project's
+Vercel Domain settings. Domain ownership and verification state are managed by Super Admin in the
+temple settings screen.
+
+### Tenant-managed pages
+
+Run `supabase/migrations/20260812130000_create_temple_pages.sql` after the multi-tenant migration.
+The default temple receives its six existing system pages; newly-created temples receive the
+standard Home, About, History, and Contact starter pack. Manage these and temple-specific custom
+pages at `/dashboard/pages`. Published custom pages resolve from their configured nested slug and
+can be added to the public navigation without creating a new React route.
+
+### Code-based public templates
+
+Run `supabase/migrations/20260812140000_create_public_template_catalog.sql` after the pages
+migration. Super Admin can manage template names, descriptions, lifecycle status, and temple
+assignments at `/dashboard/templates`. New templates start as DRAFT. Create their source scaffold
+locally with `npm run template:create -- <template-key>`, implement and register the code, deploy,
+then mark the template READY before assigning it to a temple.
+
 The service role key is server-only. Frontend code must use `/api/content/*` and must never access
 Supabase directly.
+
+### Temple member invitations
+
+Run `supabase/migrations/20260812150000_create_temple_invitations.sql`. Temple Admins can invite
+Editors and Contributors for their currently-selected temple at `/dashboard/members`. Add
+`http://localhost:3300/auth/invite` and the production equivalent to Supabase Auth Redirect URLs.
+Set `TEMPLE_INVITE_EXPIRY_HOURS` to the same duration configured under Supabase Auth Email OTP
+expiration (Supabase defaults to one hour). Contributors can create DRAFT activities, blogs, and
+dharmas, and can edit only records they created; Temple Admins retain publish permission.
 
 ## Admin login
 

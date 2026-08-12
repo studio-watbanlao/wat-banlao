@@ -1,17 +1,12 @@
 import type { Breakpoint } from '@mui/material/styles';
 import { varAlpha, mergeClasses } from 'minimal-shared/utils';
-import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
-import Avatar from '@mui/material/Avatar';
-import Skeleton from '@mui/material/Skeleton';
 import { styled } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
 
 import { layoutClasses } from '../core';
 import { NavToggleButton } from '../components/nav-toggle-button';
 
-import { useTranslate } from 'src/locales';
-import { Logo } from 'src/components/logo';
+import { DashboardTempleIdentity } from './temple-identity';
+
 import { Scrollbar } from 'src/components/scrollbar';
 import { NavSectionMini, NavSectionVertical } from 'src/components/nav-section';
 import type { NavSectionProps } from 'src/components/nav-section';
@@ -42,45 +37,9 @@ export function NavVertical({
   layoutQuery = 'md',
   ...other
 }: NavVerticalProps) {
-  const isMasterAdmin = false;
-  const isLoading = false;
-  const school = { name: 'วัดบ้านเหล่า', code: 'Wat Ban Lao', logo_url: '/logo/logo.png' };
-
   const renderNavVertical = () => (
     <>
-      {slots?.topArea ??
-        (isMasterAdmin ? (
-          <ProductIdentity />
-        ) : school ? (
-          <Box display="flex" alignItems="center" sx={{ pl: 3.5, pt: 2.5, pb: 1 }}>
-            <Avatar
-              src={school.logo_url ?? undefined}
-              alt={school.name}
-              variant="rounded"
-              sx={{
-                width: 50,
-                height: 50,
-                flexShrink: 0,
-                fontSize: 28,
-                color: 'primary.main',
-              }}
-            >
-              {school.name.charAt(0)}
-            </Avatar>
-            <Stack ml={2} sx={{ width: '70%' }}>
-              <Typography variant="subtitle1" noWrap>
-                {school.name}
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                {school.code}
-              </Typography>
-            </Stack>
-          </Box>
-        ) : isLoading ? (
-          <SchoolIdentitySkeleton />
-        ) : (
-          <SchoolIdentityFallback />
-        ))}
+      {slots?.topArea ?? <DashboardTempleIdentity />}
 
       <Scrollbar fillContent>
         <NavSectionVertical
@@ -98,22 +57,7 @@ export function NavVertical({
 
   const renderNavMini = () => (
     <>
-      {slots?.topArea ?? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 2.5 }}>
-          {!isMasterAdmin && school ? (
-            <Avatar
-              src={school.logo_url ?? undefined}
-              alt={school.name}
-              variant="rounded"
-              sx={{ width: 40, height: 40, color: 'primary.main' }}
-            >
-              {school.name.charAt(0)}
-            </Avatar>
-          ) : (
-            <Logo />
-          )}
-        </Box>
-      )}
+      {slots?.topArea ?? <DashboardTempleIdentity compact />}
 
       <NavSectionMini
         data={data}
@@ -155,56 +99,6 @@ export function NavVertical({
       />
       {isNavMini ? renderNavMini() : renderNavVertical()}
     </NavRoot>
-  );
-}
-
-// ----------------------------------------------------------------------
-
-function ProductIdentity() {
-  const { t } = useTranslate();
-
-  return (
-    <Box display="flex" alignItems="center" sx={{ pl: 3.5, pt: 2.5, pb: 1 }}>
-      <Logo />
-      <Stack ml={2} sx={{ minWidth: 0 }}>
-        <Typography variant="subtitle1" noWrap>
-          E-KRU
-        </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          {t('brand.scoreSystem')}
-        </Typography>
-      </Stack>
-    </Box>
-  );
-}
-
-function SchoolIdentitySkeleton() {
-  return (
-    <Box display="flex" alignItems="center" sx={{ pl: 3.5, pt: 2.5, pb: 1 }}>
-      <Skeleton variant="rounded" width={50} height={50} />
-      <Stack ml={2} spacing={0.75} sx={{ flex: 1, pr: 3 }}>
-        <Skeleton width="85%" height={22} />
-        <Skeleton width="45%" height={18} />
-      </Stack>
-    </Box>
-  );
-}
-
-function SchoolIdentityFallback() {
-  const { t } = useTranslate();
-
-  return (
-    <Box display="flex" alignItems="center" sx={{ pl: 3.5, pt: 2.5, pb: 1 }}>
-      <Avatar variant="rounded" sx={{ width: 50, height: 50, color: 'primary.main' }}>
-        ร
-      </Avatar>
-      <Stack ml={2} sx={{ minWidth: 0 }}>
-        <Typography variant="subtitle1">{t('school.information')}</Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          {t('errors.loadData')}
-        </Typography>
-      </Stack>
-    </Box>
   );
 }
 

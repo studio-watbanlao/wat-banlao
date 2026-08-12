@@ -1,7 +1,7 @@
 
 import { useBoolean } from 'minimal-shared/hooks';
 import { useRef, useEffect, useCallback } from 'react';
-import { isEqualPath, isActiveLink, isExternalLink } from 'minimal-shared/utils';
+import { isActiveLink, isExternalLink } from 'minimal-shared/utils';
 
 import type { NavListProps, NavSubListProps } from '../types';
 import { Nav, NavLi, NavUl, NavDropdown } from '../components';
@@ -128,7 +128,7 @@ function NavSubList({ data, subheader, sx, ...other }: NavSubListProps) {
                 subItem
                 title={item.title}
                 path={item.path}
-                active={isEqualPath(item.path, pathname)}
+                active={isActiveLink(pathname, item.path, item.deepMatch ?? true)}
               />
             </NavLi>
           )

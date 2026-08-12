@@ -1,7 +1,9 @@
 import { Container, Typography, useTheme } from '@mui/material';
+
 import { CONFIG } from 'src/config-global';
 import { MainLayout } from 'src/layouts/main';
 import { HistoryView } from 'src/sections/history/view';
+import { ManagedPageOverride } from 'src/sections/temple-page/temple-page-view';
 
 export const metadata = {
   title: 'History us',
@@ -10,7 +12,7 @@ export const metadata = {
 const HistoryPage = () => {
   const theme = useTheme();
   return (
-    <MainLayout>
+    <ManagedPageOverride pageKey="history"><MainLayout>
       <Container
         sx={{
           py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
@@ -24,7 +26,7 @@ const HistoryPage = () => {
         </Typography>
         <HistoryView />
       </Container>
-    </MainLayout>
+    </MainLayout></ManagedPageOverride>
   );
 };
 export default HistoryPage;

@@ -7,7 +7,8 @@ import {
   getContactMessages,
   updateContactMessage,
 } from 'src/lib/contact-repository';
-import { isAdminUser, resolveSessionUser } from 'src/lib/supabase-auth';
+import { resolveSessionUser } from 'src/lib/supabase-auth';
+import { requireTempleContentAccess } from 'src/lib/temple-access';
 import type { ContactStatus } from 'src/types/contact';
 
 const CONTACT_STATUSES: ContactStatus[] = ['NEW', 'READ', 'IN_PROGRESS', 'RESOLVED', 'ARCHIVED'];
@@ -21,10 +22,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const user = await resolveSessionUser(req, res);
     if (!user) return res.status(401).json({ message: 'กรุณาเข้าสู่ระบบ' });
-    if (!isAdminUser(user)) return res.status(403).json({ message: 'บัญชีนี้ไม่มีสิทธิ์แอดมิน' });
+    const { temple } = await requireTempleContentAccess(req, user, 'contacts');
+    const templeId = temple.id;
 
     if (req.method === 'GET') {
-      const contacts = await getContactMessages();
+      const contacts = await getContactMessages(templeId);
       return res.status(200).json({ contacts });
     }
 
@@ -40,11 +42,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!id || !name || !EMAIL_PATTERN.test(email) || !message || !isStatus(status)) {
         return res.status(400).json({ message: 'ข้อมูลการติดต่อไม่ถูกต้อง' });
       }
-      if (!(await getContactMessage(id))) {
+      if (!(await getContactMessage(templeId, id))) {
         return res.status(404).json({ message: 'ไม่พบข้อความติดต่อ' });
       }
 
-      const contact = await updateContactMessage(id, {
+      const contact = await updateContactMessage(templeId, id, {
         name,
         email,
         subject,
@@ -58,10 +60,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'DELETE') {
       const id = text(req.query.id, 64);
       if (!id) return res.status(400).json({ message: 'ไม่พบรหัสข้อความติดต่อ' });
-      if (!(await getContactMessage(id))) {
+      if (!(await getContactMessage(templeId, id))) {
         return res.status(404).json({ message: 'ไม่พบข้อความติดต่อ' });
       }
-      await deleteContactMessage(id);
+      await deleteContactMessage(templeId, id);
       return res.status(200).json({ success: true });
     }
 

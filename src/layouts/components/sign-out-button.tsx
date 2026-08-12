@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 
 import Button from '@mui/material/Button';
 
-import { useRouter } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
 
 import { useTranslate } from 'src/locales';
 
@@ -18,7 +18,6 @@ type Props = ButtonProps & {
 };
 
 export function SignOutButton({ onClose, sx, ...other }: Props) {
-  const router = useRouter();
   const { t } = useTranslate();
 
   const { logout } = useAuthContext();
@@ -28,16 +27,16 @@ export function SignOutButton({ onClose, sx, ...other }: Props) {
       await logout();
 
       onClose?.();
-      router.refresh();
+      window.location.replace(paths.auth.jwt.login);
     } catch (error) {
       console.error(error);
-      enqueueSnackbar(t('errors.signOut'), { variant: 'error' });
+      enqueueSnackbar(t('errors.signOut', { defaultValue: 'ออกจากระบบไม่สำเร็จ' }), { variant: 'error' });
     }
-  }, [logout, onClose, router, t]);
+  }, [logout, onClose, t]);
 
   return (
     <Button fullWidth variant="soft" size="large" color="error" onClick={handleLogout} sx={sx} {...other}>
-      {t('actions.signOut')}
+      {t('actions.signOut', { defaultValue: 'ออกจากระบบ' })}
     </Button>
   );
 }

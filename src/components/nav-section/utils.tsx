@@ -44,7 +44,15 @@ export function createNavItem({ path, icon, hasChild, externalLink }: CreateNavI
 }
 
 export function isNavDataActive(pathname: string, item: NavItemDataProps): boolean {
-  if (pathname === item.path || item.activePaths?.some((path) => pathname.startsWith(path))) {
+  const currentPath = pathname.replace(/\/+$/, '');
+  const itemPath = item.path.replace(/\/+$/, '');
+  const matchesDeepPath = item.deep && currentPath.startsWith(`${itemPath}/`);
+
+  if (
+    currentPath === itemPath ||
+    matchesDeepPath ||
+    item.activePaths?.some((path) => currentPath.startsWith(path.replace(/\/+$/, '')))
+  ) {
     return true;
   }
 

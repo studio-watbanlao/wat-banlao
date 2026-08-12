@@ -3,21 +3,26 @@ import {
   Alert,
   Button,
   Card,
-  CardActions,
-  CardContent,
   Chip,
+  CircularProgress,
   Container,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   FormControl,
-  Grid,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -25,6 +30,13 @@ import { Controller, useForm } from 'react-hook-form';
 
 import { zodResolver } from 'src/utils/zod-resolver';
 import Iconify from 'src/components/iconify';
+import Scrollbar from 'src/components/scrollbar';
+import {
+  TableHeadCustom,
+  TableNoData,
+  TablePaginationCustom,
+  useTable,
+} from 'src/components/table';
 import Layout from 'src/pages/dashboard/layout';
 import { contactAdminFormSchema, type ContactAdminFormValues } from 'src/schemas/contact';
 import type { ContactMessage, ContactStatus } from 'src/types/contact';
@@ -53,7 +65,16 @@ const STATUS_META: Record<
   ARCHIVED: { label: 'เก็บถาวร', color: 'default' },
 };
 
+const TABLE_HEAD = [
+  { id: 'subject', label: 'ข้อความติดต่อ', minWidth: 380 },
+  { id: 'sender', label: 'ผู้ส่ง', minWidth: 240 },
+  { id: 'createdAt', label: 'วันที่ส่ง', width: 180 },
+  { id: 'status', label: 'สถานะ', width: 150 },
+  { id: '', label: '', width: 120 },
+];
+
 export default function ContactManagementPage() {
+  const table = useTable({ defaultRowsPerPage: 10 });
   const [contacts, setContacts] = useState<ContactMessage[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
@@ -96,6 +117,10 @@ export default function ContactManagementPage() {
         : contacts.filter((contact) => contact.status === statusFilter),
     [contacts, statusFilter]
   );
+  const pageContacts = filteredContacts.slice(
+    table.page * table.rowsPerPage,
+    table.page * table.rowsPerPage + table.rowsPerPage
+  );
 
   const openDetail = (contact: ContactMessage) => {
     reset({
@@ -137,6 +162,7 @@ export default function ContactManagementPage() {
       setDeletingId(contact.id);
       setError('');
       await axios.delete('/api/admin/contacts', { params: { id: contact.id } });
+      table.onUpdatePageDeleteRow(pageContacts.length);
       setContacts((current) => current.filter((item) => item.id !== contact.id));
     } catch (requestError) {
       setError(getErrorMessage(requestError));
@@ -166,7 +192,10 @@ export default function ContactManagementPage() {
               <Select
                 value={statusFilter}
                 label="กรองสถานะ"
-                onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}
+                onChange={(event) => {
+                  table.onResetPage();
+                  setStatusFilter(event.target.value as StatusFilter);
+                }}
               >
                 <MenuItem value="ALL">ทั้งหมด</MenuItem>
                 {STATUS_OPTIONS.map((option) => (
@@ -179,61 +208,89 @@ export default function ContactManagementPage() {
           </Stack>
 
           {error ? <Alert severity="error">{error}</Alert> : null}
-          {loading ? <Typography color="text.secondary">กำลังโหลด...</Typography> : null}
-
-          <Grid container spacing={3}>
-            {filteredContacts.map((contact) => {
-              const status = STATUS_META[contact.status];
-              return (
-                <Grid size={{ xs: 12, md: 6, lg: 4 }} key={contact.id}>
-                  <Card sx={{ height: 1, display: 'flex', flexDirection: 'column' }}>
-                    <CardContent sx={{ flexGrow: 1 }}>
-                      <Stack direction="row" justifyContent="space-between" spacing={2}>
-                        <div>
-                          <Typography variant="h6">{contact.subject}</Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {contact.name} · {contact.email}
-                          </Typography>
-                        </div>
-                        <Chip size="small" label={status.label} color={status.color} />
-                      </Stack>
-                      <Typography variant="body2" sx={{ mt: 2 }}>
-                        {contact.message.length > 160
-                          ? `${contact.message.slice(0, 160)}…`
-                          : contact.message}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ mt: 2, display: 'block' }}
-                      >
-                        {fDateTime(contact.createdAt, 'dd/MM/yyyy HH:mm')}
-                      </Typography>
-                    </CardContent>
-                    <CardActions sx={{ justifyContent: 'flex-end' }}>
-                      <Button onClick={() => openDetail(contact)}>ดูและแก้ไข</Button>
-                      <LoadingButton
-                        color="error"
-                        loading={deletingId === contact.id}
-                        onClick={() => remove(contact)}
-                      >
-                        ลบ
-                      </LoadingButton>
-                    </CardActions>
-                  </Card>
-                </Grid>
-              );
-            })}
-          </Grid>
-
-          {!loading && !filteredContacts.length ? (
-            <Card sx={{ py: 8, textAlign: 'center' }}>
-              <Iconify icon="solar:inbox-line-bold-duotone" width={64} />
-              <Typography variant="h6" sx={{ mt: 2 }}>
-                ยังไม่มีข้อความติดต่อ
-              </Typography>
-            </Card>
-          ) : null}
+          <Card>
+            <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
+              <Scrollbar>
+                <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 980 }}>
+                  <TableHeadCustom headLabel={TABLE_HEAD} />
+                  <TableBody>
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={TABLE_HEAD.length} align="center">
+                          <CircularProgress size={32} />
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      pageContacts.map((contact) => {
+                        const status = STATUS_META[contact.status];
+                        return (
+                          <TableRow hover key={contact.id}>
+                            <TableCell>
+                              <Typography variant="subtitle2">{contact.subject}</Typography>
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                noWrap
+                                sx={{ display: 'block', maxWidth: 420 }}
+                              >
+                                {contact.message}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2">{contact.name}</Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {contact.email}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              {fDateTime(contact.createdAt, 'dd/MM/yyyy HH:mm')}
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                size="small"
+                                variant="soft"
+                                label={status.label}
+                                color={status.color}
+                              />
+                            </TableCell>
+                            <TableCell align="right">
+                              <Tooltip title="ดูและแก้ไข">
+                                <IconButton onClick={() => openDetail(contact)}>
+                                  <Iconify icon="solar:pen-bold" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="ลบ">
+                                <LoadingButton
+                                  color="error"
+                                  loading={deletingId === contact.id}
+                                  onClick={() => remove(contact)}
+                                  sx={{ minWidth: 40, px: 1 }}
+                                >
+                                  <Iconify icon="solar:trash-bin-trash-bold" />
+                                </LoadingButton>
+                              </Tooltip>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                    <TableNoData notFound={!loading && filteredContacts.length === 0} />
+                  </TableBody>
+                </Table>
+              </Scrollbar>
+            </TableContainer>
+            <TablePaginationCustom
+              count={filteredContacts.length}
+              page={table.page}
+              rowsPerPage={table.rowsPerPage}
+              rowsPerPageOptions={[5, 10, 25]}
+              onPageChange={table.onChangePage}
+              onRowsPerPageChange={table.onChangeRowsPerPage}
+              labelRowsPerPage="รายการต่อหน้า:"
+              dense={table.dense}
+              onChangeDense={table.onChangeDense}
+            />
+          </Card>
         </Stack>
       </Container>
 

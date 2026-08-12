@@ -4,20 +4,20 @@ import type { IconButtonProps } from '@mui/material/IconButton';
 import type { LangCode } from 'src/locales';
 
 import { m } from 'framer-motion';
-import { useCallback } from 'react';
 import { usePopover } from 'minimal-shared/hooks';
+import { useCallback } from 'react';
 
-import MenuList from '@mui/material/MenuList';
-import MenuItem from '@mui/material/MenuItem';
-import { useTheme } from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
+import MenuItem from '@mui/material/MenuItem';
+import MenuList from '@mui/material/MenuList';
+import { useTheme } from '@mui/material/styles';
 
 import { useTranslate } from 'src/locales';
 
+import { transitionTap, varHover, varTap } from 'src/components/animate';
+import { CustomPopover } from 'src/components/custom-popover';
 import { FlagIcon } from 'src/components/flag-icon';
 import { RiTranslate2 } from 'src/components/remix-icon';
-import { CustomPopover } from 'src/components/custom-popover';
-import { varTap, varHover, transitionTap } from 'src/components/animate';
 
 // ----------------------------------------------------------------------
 
@@ -58,7 +58,7 @@ export function LanguagePopover({
             selected={option.value === currentLang.value}
             onClick={() => handleChangeLang(option.value as LangCode)}
           >
-            <FlagIcon code={option.countryCode} />
+            <FlagIcon code={option.countryCode} sx={{ mr: 2 }} />
 
             {option.label}
           </MenuItem>

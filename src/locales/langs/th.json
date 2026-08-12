@@ -1,0 +1,48 @@
+{
+  "app": "แอปพลิเคชัน",
+  "job": "งาน",
+  "user": "ผู้ใช้งาน",
+  "list": "รายการ",
+  "edit": "แก้ไข",
+  "shop": "ร้านค้า",
+  "blog": "บทความ",
+  "post": "โพสต์",
+  "mail": "อีเมล",
+  "chat": "แชต",
+  "file": "ไฟล์",
+  "tour": "ทัวร์",
+  "cards": "การ์ด",
+  "blank": "หน้าว่าง",
+  "order": "คำสั่งซื้อ",
+  "lists": "รายการ",
+  "create": "สร้าง",
+  "kanban": "คัมบัง",
+  "general": "ทั่วไป",
+  "banking": "ธนาคาร",
+  "booking": "การจอง",
+  "profile": "โปรไฟล์",
+  "account": "บัญชี",
+  "product": "สินค้า",
+  "invoice": "ใบแจ้งหนี้",
+  "details": "รายละเอียด",
+  "checkout": "ชำระเงิน",
+  "calendar": "ปฏิทิน",
+  "overview": "ภาพรวม",
+  "analytics": "สถิติ",
+  "ecommerce": "อีคอมเมิร์ซ",
+  "management": "การจัดการ",
+  "description": "รายละเอียด",
+  "file_manager": "จัดการไฟล์",
+  "actions": {
+    "signOut": "ออกจากระบบ"
+  },
+  "errors": {
+    "signOut": "ออกจากระบบไม่สำเร็จ"
+  },
+  "language": {
+    "select": "เลือกภาษา"
+  },
+  "demo": {
+    "title": "ภาษาไทย"
+  }
+}

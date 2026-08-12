@@ -7,29 +7,31 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import { localStorageGetItem } from 'src/utils/storage-available';
 
 import { defaultLang } from './config-lang';
+import translationTh from './langs/th.json';
 import translationEn from './langs/en.json';
-import translationFr from './langs/fr.json';
-import translationVi from './langs/vi.json';
-import translationCn from './langs/cn.json';
-import translationAr from './langs/ar.json';
 
 // ----------------------------------------------------------------------
 
-const lng = localStorageGetItem('i18nextLng', defaultLang.value);
+const storedLang = localStorageGetItem('i18nextLng', defaultLang.value);
+const lng = storedLang === 'th' || storedLang === 'en' ? storedLang : defaultLang.value;
+
+if (typeof window !== 'undefined' && storedLang !== lng) {
+  window.localStorage.setItem('i18nextLng', lng);
+}
 
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: {
+      th: { translations: translationTh },
       en: { translations: translationEn },
-      fr: { translations: translationFr },
-      vi: { translations: translationVi },
-      cn: { translations: translationCn },
-      ar: { translations: translationAr },
     },
     lng,
-    fallbackLng: lng,
+    fallbackLng: defaultLang.value,
+    supportedLngs: ['th', 'en'],
+    load: 'languageOnly',
+    cleanCode: true,
     debug: false,
     ns: ['translations'],
     defaultNS: 'translations',

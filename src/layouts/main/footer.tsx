@@ -120,7 +120,7 @@ function BrandSummary() {
             {school?.name ?? 'วัดบ้านเหล่า'}
           </Typography>
           <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 700 }}>
-            วัดบ้านเหล่า - สุขธัมมาราม
+            เว็บไซต์อย่างเป็นทางการ
           </Typography>
         </Box>
       </Box>
@@ -185,6 +185,7 @@ function QuickLinks({ layoutQuery }: { layoutQuery: Breakpoint }) {
 
 function FooterBottom() {
   const year = new Date().getFullYear();
+  const { school } = useMainSchoolBrand();
 
   return (
     <>
@@ -208,7 +209,7 @@ function FooterBottom() {
         }}
       >
         <Typography variant="caption">
-          © {year} วัดบ้านเหล่า - สุขธัมมาราม
+          © {year} {school?.name ?? 'เว็บไซต์วัด'}
         </Typography>
         <Typography variant="caption">
           เวอร์ชัน {CONFIG.appVersion}

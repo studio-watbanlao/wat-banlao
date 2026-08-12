@@ -1,7 +1,9 @@
 import { Container, Typography } from '@mui/material';
+
 import { CONFIG } from 'src/config-global';
 import { MainLayout } from 'src/layouts/main';
 import LuangPuSaView from 'src/sections/parents/view/luang-pu-sa-view';
+import { ManagedPageOverride } from 'src/sections/temple-page/temple-page-view';
 
 export const metadata = {
   title: 'Activity',
@@ -9,7 +11,7 @@ export const metadata = {
 
 const LuangPuSaPage = () => {
   return (
-    <MainLayout>
+    <ManagedPageOverride pageKey="luang-pu-sa"><MainLayout>
       <Container
         sx={{
           py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
@@ -24,7 +26,7 @@ const LuangPuSaPage = () => {
 
         <LuangPuSaView />
       </Container>
-    </MainLayout>
+    </MainLayout></ManagedPageOverride>
   );
 };
 

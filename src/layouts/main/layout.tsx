@@ -1,10 +1,14 @@
 'use client';
 
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import IconButton from '@mui/material/IconButton';
 import type { Breakpoint } from '@mui/material/styles';
 import { useBoolean } from 'minimal-shared/hooks';
+import dynamic from 'next/dynamic';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 import { AccountPopover } from '../components/account-popover';
 import { LanguagePopover } from '../components/language-popover';
@@ -22,9 +26,29 @@ import { StudentBottomNav } from './nav/mobile/student-bottom-nav';
 import type { NavMainProps } from './nav/types';
 import { MainSchoolBrand } from './school-brand';
 
-import { RiFacebookFill, RiInstagramLine } from 'src/components/remix-icon';
+import { RiArticleLine, RiFacebookFill, RiInstagramLine } from 'src/components/remix-icon';
+import MataData from 'src/components/mata-data/mata-data';
 import { languageOptions, useTranslate, useTranslatedMainNav } from 'src/locales';
+import { RouterLink } from 'src/routes/components';
 import { usePathname } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
+import type { TemplePage } from 'src/types/temple-page';
+import axios from 'src/utils/axios';
+import { resolvePublicTemplateKey } from 'src/public-templates/catalog';
+import { usePublicTemple } from 'src/public-templates/use-public-temple';
+import { PublicPopupBanner } from 'src/public-templates/public-popup-banner';
+
+const SerenePublicLayout = dynamic(() =>
+  import('src/public-templates/serene/serene-public-layout').then(
+    (module) => module.SerenePublicLayout
+  )
+);
+
+const Template1PublicLayout = dynamic(() =>
+  import('src/public-templates/template-1/template-1-public-layout').then(
+    (module) => module.Template1PublicLayout
+  )
+);
 
 // ----------------------------------------------------------------------
 
@@ -68,14 +92,48 @@ export function MainLayout({
 }: MainLayoutProps) {
   const { t } = useTranslate('navbar');
   const pathname = usePathname();
+  const { data: publicTemple } = usePublicTemple();
 
   const { value: open, onFalse: onClose, onTrue: onOpen } = useBoolean();
 
   const isHomePage = pathname === '/';
 
-  const rawNavData = slotProps?.nav?.data ?? mainNavData;
+  const { data: customPages = [] } = useQuery({
+    queryKey: ['public-menu-pages'],
+    queryFn: async () => {
+      const response = await axios.get('/api/public/pages', { params: { menu: true } });
+      return response.data.pages as TemplePage[];
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+  const sourceNavData = slotProps?.nav?.data ?? mainNavData;
+  const rawNavData = useMemo(
+    () => [
+      ...sourceNavData,
+      ...customPages.map((page) => ({
+        title: page.title,
+        path: `/${page.slug}`,
+        icon: <RiArticleLine size={22} />,
+        deepMatch: true,
+      })),
+    ],
+    [customPages, sourceNavData]
+  );
   const navData = useTranslatedMainNav(rawNavData);
+  const desktopNavData = useMemo(
+    () => navData.filter((item) => item.path !== paths.contact),
+    [navData]
+  );
   const mobileBottom = slotProps?.nav?.mobileBottom ?? false;
+  const publicTemplate = resolvePublicTemplateKey(publicTemple?.branding.publicTemplate);
+  const publicContent = (
+    <>
+      <MataData />
+      <PublicPopupBanner />
+      {children}
+    </>
+  );
 
   const renderHeader = () => {
     const customHeaderSlots = slotProps?.header?.slots;
@@ -99,6 +157,20 @@ export function MainLayout({
             <MainSchoolBrand />
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Button
+                component={RouterLink}
+                href={paths.contact}
+                size="small"
+                sx={{
+                  mr: 0.5,
+                  px: 1,
+                  fontWeight: pathname === paths.contact ? 700 : 400,
+                  color: pathname === paths.contact ? 'primary.main' : 'text.secondary',
+                }}
+              >
+                ติดต่อสอบถาม
+              </Button>
+
               {SOCIAL_LINKS.map(({ label, href, color, icon: Icon }) => (
                 <IconButton
                   key={label}
@@ -169,7 +241,7 @@ export function MainLayout({
               justifyContent: 'start',
             }}
           >
-            <NavDesktop data={navData} />
+            <NavDesktop data={desktopNavData} />
           </Container>
         </Box>
       ),
@@ -238,9 +310,25 @@ export function MainLayout({
         },
       ]}
     >
-      {children}
+      {publicContent}
     </MainSection>
   );
+
+  if (publicTemplate === 'serene') {
+    return (
+      <SerenePublicLayout navData={navData} footerContent={slotProps?.footerContent}>
+        {publicContent}
+      </SerenePublicLayout>
+    );
+  }
+
+  if (publicTemplate === 'template-1') {
+    return (
+      <Template1PublicLayout navData={navData} footerContent={slotProps?.footerContent}>
+        {publicContent}
+      </Template1PublicLayout>
+    );
+  }
 
   return (
     <LayoutSection

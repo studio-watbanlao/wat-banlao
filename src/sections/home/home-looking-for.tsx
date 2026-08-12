@@ -1,7 +1,7 @@
+import { Grid } from '@mui/material';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/GridLegacy';
 import { m } from 'framer-motion';
 
 import { paths } from 'src/routes/paths';
@@ -84,18 +84,12 @@ const HomeLookingFor = () => {
         py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
       }}
     >
-      <Grid
-        container
-        direction={{ xs: 'column-reverse', md: 'row' }}
-        alignItems="center"
-        justifyContent="space-between"
-        spacing={{ xs: 5, md: 0 }}
-      >
-        <Grid xs={12} md={7}>
+      <Grid container direction={{ xs: 'column-reverse', md: 'row' }} spacing={{ xs: 5, md: 0 }}>
+        <Grid size={{ xs: 12, md: 5 }} sx={{ pr: { md: 4 } }}>
           {renderDescription}
         </Grid>
 
-        <Grid xs={12} md={5} sx={{ pl: 4 }}>
+        <Grid size={{ xs: 12, md: 5 }} sx={{ pl: 4 }}>
           <m.div variants={varFade().inUp}>
             <Image disabledEffect alt="pha" src="/assets/images/img-luang-pu-sa.png" />
           </m.div>

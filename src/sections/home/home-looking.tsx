@@ -1,8 +1,8 @@
 import { m } from 'framer-motion';
 
+import { Grid } from '@mui/material';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/GridLegacy';
 
 import { useResponsive } from 'src/hooks/use-responsive';
 
@@ -31,7 +31,7 @@ const HomeLooking = () => {
           justifyContent="space-between"
           spacing={{ xs: 5, md: 0 }}
         >
-          <Grid xs={12} md={5} spacing={3}>
+          <Grid size={{ xs: 12, md: 5 }} sx={{ pr: { md: 4 } }} spacing={3}>
             <Stack>
               <m.div variants={varFade().inUp}>
                 <Image
@@ -44,7 +44,7 @@ const HomeLooking = () => {
               </m.div>
             </Stack>
           </Grid>
-          <Grid xs={12} md={7}>
+          <Grid size={{ xs: 12, md: 7 }}>
             <Stack
               sx={{
                 pl: mdUp ? 3 : 0,

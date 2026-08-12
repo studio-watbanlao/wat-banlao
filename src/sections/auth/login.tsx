@@ -4,7 +4,6 @@ import * as Yup from 'yup';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-
 import Link from '@mui/material/Link';
 import Alert from '@mui/material/Alert';
 import Divider from '@mui/material/Divider';
@@ -14,19 +13,16 @@ import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 import InputAdornment from '@mui/material/InputAdornment';
 
-import { paths } from 'src/routes/paths';
-import { RouterLink } from 'src/routes/components';
+import GoogleSignInButton from './google-sign-in-button';
+
 import { useRouter, useSearchParams } from 'src/routes/hooks';
-
 import { useBoolean } from 'src/hooks/use-boolean';
-
 import { useAuthContext } from 'src/auth/hooks';
+import { getPostLoginPath } from 'src/auth/post-login-path';
 import { PATH_AFTER_LOGIN } from 'src/config-global';
 import { getErrorMessage } from 'src/utils/error-message';
-
 import Iconify from 'src/components/iconify';
 import { Form, RHFTextField } from 'src/components/hook-form';
-import GoogleSignInButton from './google-sign-in-button';
 
 // ----------------------------------------------------------------------
 
@@ -67,9 +63,7 @@ const LoginView = () => {
   const onSubmit = handleSubmit(async (data) => {
     try {
       const user = await login(data.email, data.password);
-      router.replace(
-        user?.role === 'user' ? '/auth/pending-approval' : returnTo || PATH_AFTER_LOGIN
-      );
+      router.replace(getPostLoginPath(user, returnTo || PATH_AFTER_LOGIN));
     } catch (error) {
       console.error(error);
       reset();
@@ -81,9 +75,7 @@ const LoginView = () => {
     try {
       setErrorMsg('');
       const user = await loginWithGoogle(credential);
-      router.replace(
-        user?.role === 'user' ? '/auth/pending-approval' : returnTo || PATH_AFTER_LOGIN
-      );
+      router.replace(getPostLoginPath(user, returnTo || PATH_AFTER_LOGIN));
     } catch (error) {
       console.error(error);
       setErrorMsg(getErrorMessage(error, 'เข้าสู่ระบบด้วย Google ไม่สำเร็จ'));
@@ -91,7 +83,7 @@ const LoginView = () => {
   };
 
   return (
-    <Stack sx={{ minWidth: '320px' }}>
+    <Stack sx={{ width: 1, minWidth: 0 }}>
       <Form methods={methods} onSubmit={onSubmit}>
         <Stack spacing={2} sx={{ mb: 5 }}>
           <Typography variant="h4">Sign in to Wat Ban lao</Typography>

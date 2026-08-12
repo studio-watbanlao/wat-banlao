@@ -3,6 +3,7 @@
 import type { Breakpoint } from '@mui/material/styles';
 import { merge } from 'es-toolkit';
 import { useBoolean } from 'minimal-shared/hooks';
+import { useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/material/styles';
@@ -25,12 +26,14 @@ import { NavHorizontal } from './nav-horizontal';
 import { NavVertical } from './nav-vertical';
 import { VerticalDivider } from './content';
 import { NavMobile } from './nav-mobile';
+import { TempleSwitcher } from './temple-switcher';
 
 import { useAuthContext } from 'src/auth/hooks';
 import { useSettingsContext } from 'src/components/settings';
 import { Logo } from 'src/components/logo';
 import { languageOptions, useTranslatedNavSections } from 'src/locales';
 import type { NavSectionProps } from 'src/components/nav-section';
+import type { TempleAccess, TempleModule } from 'src/types/temple';
 
 // ----------------------------------------------------------------------
 
@@ -65,13 +68,36 @@ export function DashboardLayout({
 
   const { user } = useAuthContext();
 
+  const accesses = (user?.templeAccesses || []) as TempleAccess[];
+  const currentAccess =
+    accesses.find((access) => access.temple.id === user?.currentTempleId) || accesses[0];
+
   const settings = useSettingsContext();
 
   const navVars = dashboardNavColorVars(theme, settings.state.navColor, settings.state.navLayout);
 
   const { value: open, onFalse: onClose, onTrue: onOpen } = useBoolean();
 
-  const rawNavData = slotProps?.nav?.data ?? dashboardNavData;
+  const sourceNavData = slotProps?.nav?.data ?? dashboardNavData;
+  const currentRole = typeof user?.role === 'string' ? user.role : '';
+  const rawNavData = useMemo(
+    () =>
+      sourceNavData
+        .map((section) => ({
+          ...section,
+          items: section.items.filter((item) => {
+            if (item.roles && !item.roles.includes(currentRole)) return false;
+            if (!item.featureKey || !currentAccess) return true;
+            const module = item.featureKey as TempleModule;
+            if (module === 'dashboard') return true;
+            if (!currentAccess.temple.modules[module]) return false;
+            if (currentAccess.role === 'super_admin') return true;
+            return currentAccess.permissions[module]?.includes('read') ?? false;
+          }),
+        }))
+        .filter((section) => section.items.length > 0),
+    [currentAccess, currentRole, sourceNavData]
+  );
   const navData = useTranslatedNavSections(rawNavData);
   const headerIdentity = slotProps?.nav?.headerIdentity;
   const mobileHeaderIdentity = slotProps?.nav?.mobileHeaderIdentity;
@@ -84,7 +110,7 @@ export function DashboardLayout({
   const horizontalNavQuery = tabletHorizontalNav ? tabletQuery : layoutQuery;
   const mobileNavQuery = tabletHorizontalNav ? tabletQuery : layoutQuery;
   const navItemSlotProps = {
-    currentRole: typeof user?.role === 'string' ? user.role : undefined,
+    currentRole: currentRole || undefined,
   };
 
   const renderHeader = () => {
@@ -197,6 +223,7 @@ export function DashboardLayout({
       ),
       rightArea: (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0, sm: 0.75 } }}>
+          <TempleSwitcher />
           {/** @slot Searchbar */}
           {/* <Searchbar data={navData} /> */}
 

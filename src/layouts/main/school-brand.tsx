@@ -5,19 +5,36 @@ import Typography from '@mui/material/Typography';
 
 import { RouterLink } from 'src/routes/components';
 import { Logo } from 'src/components/logo';
+import { usePublicTemple } from 'src/public-templates/use-public-temple';
 
 // ----------------------------------------------------------------------
 
 export function useMainSchoolBrand() {
+  const { data: temple, isLoading } = usePublicTemple();
+  const nameEnglish = temple?.branding.contact?.nameEnglish;
+
   return {
     user: null,
-    school: { name: 'วัดบ้านเหล่า', logo_url: '/logo/logo.png' },
-    isLoading: false,
+    school: {
+      name: temple?.name || 'วัดบ้านเหล่า',
+      code: typeof nameEnglish === 'string' ? nameEnglish.trim() : '',
+      logo_url: temple?.branding.logoUrl || '/logo/logo.png',
+    },
+    isLoading,
   };
 }
 
 export function MainSchoolLogo({ size = 40 }: { size?: number }) {
-  return <Logo href="/" sx={{ width: size, height: size }} />;
+  const { school } = useMainSchoolBrand();
+
+  return (
+    <Logo
+      href="/"
+      src={school.logo_url}
+      alt={school.name}
+      sx={{ width: size, height: size, objectFit: 'contain' }}
+    />
+  );
 }
 
 type MainSchoolBrandProps = {
@@ -26,12 +43,13 @@ type MainSchoolBrandProps = {
 
 export function MainSchoolBrand({ compact = false }: MainSchoolBrandProps) {
   const logoSize = compact ? 36 : 42;
+  const { school } = useMainSchoolBrand();
 
   return (
     <Box
       component={RouterLink}
       href="/"
-      aria-label="วัดบ้านเหล่า - สุขธัมมาราม"
+      aria-label={school.name}
       sx={{
         gap: compact ? 1 : 1.25,
         minWidth: 0,
@@ -41,21 +59,45 @@ export function MainSchoolBrand({ compact = false }: MainSchoolBrandProps) {
         textDecoration: 'none',
       }}
     >
-      <Logo disabledLink sx={{ width: logoSize, height: logoSize, flexShrink: 0 }} />
+      <Logo
+        disabledLink
+        src={school.logo_url}
+        alt={school.name}
+        sx={{ width: logoSize, height: logoSize, flexShrink: 0, objectFit: 'contain' }}
+      />
 
-      <Typography
-        component="span"
-        sx={{
-          fontWeight: 700,
-          whiteSpace: 'nowrap',
-          fontSize: compact ? '1rem' : '1.75rem',
-          lineHeight: 1.2,
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        วัดบ้านเหล่า - สุขธัมมาราม
-      </Typography>
+      <Box component="span" sx={{ minWidth: 0 }}>
+        <Typography
+          component="span"
+          sx={{
+            display: 'block',
+            fontWeight: 700,
+            whiteSpace: 'nowrap',
+            fontSize: compact ? '1rem' : '1.75rem',
+            lineHeight: 1.2,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {school.name}
+        </Typography>
+        {school.code ? (
+          <Typography
+            component="span"
+            sx={{
+              display: 'block',
+              color: 'text.secondary',
+              fontSize: compact ? '0.75rem' : '0.875rem',
+              lineHeight: 1.35,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {school.code}
+          </Typography>
+        ) : null}
+      </Box>
     </Box>
   );
 }

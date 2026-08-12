@@ -1,6 +1,8 @@
 import { Container } from '@mui/material';
+
 import { fetchFastivalById } from 'src/api/fastival';
 import { CONFIG } from 'src/config-global';
+import { DEFAULT_CONTENT_IMAGE } from 'src/constants/images';
 import { MainLayout } from 'src/layouts/main';
 import FastivalDetailsView from 'src/sections/fastival/fastival-detail-view';
 
@@ -25,9 +27,7 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
     };
   }
 
-  const ogImage =
-    data?.imageUrl ||
-    'https://imagedelivery.net/EEuP_or275XVr8IHP_-n6Q/06be70c1-e5c2-4e43-d23d-878e656e4700/public';
+  const ogImage = data?.imageUrl || DEFAULT_CONTENT_IMAGE;
 
   return {
     title: data.title,

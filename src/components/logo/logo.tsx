@@ -8,16 +8,19 @@ export type LogoProps = BoxProps & {
   disabledLink?: boolean;
   href?: string;
   isSingle?: boolean;
+  src?: string;
+  alt?: string;
 };
 
 const Logo = forwardRef<HTMLImageElement, LogoProps>(
-  ({ disabledLink = false, href = '/', isSingle: _isSingle, sx, ...other }, ref) => {
+  ({ disabledLink = false, href = '/', isSingle = false, src = '/logo/logo.png', alt = 'Logo', sx, ...other }, ref) => {
     const logo = (
       <Box
         ref={ref}
         component="img"
-        src="/logo/logo.png"
-        alt="Wat Ban Lao"
+        src={src}
+        alt={alt}
+        data-single={isSingle || undefined}
         sx={{ width: 40, height: 40, cursor: 'pointer', ...sx }}
         {...other}
       />
@@ -34,5 +37,7 @@ const Logo = forwardRef<HTMLImageElement, LogoProps>(
     );
   }
 );
+
+Logo.displayName = 'Logo';
 
 export default Logo;

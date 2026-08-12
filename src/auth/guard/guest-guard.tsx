@@ -1,11 +1,12 @@
 import { useEffect, useCallback } from 'react';
 
+import { useAuthContext } from '../hooks';
+import { getPostLoginPath } from '../post-login-path';
+
 import { paths } from 'src/routes/paths';
 import { useRouter, useSearchParams } from 'src/routes/hooks';
-
 import { SplashScreen } from 'src/components/loading-screen';
 
-import { useAuthContext } from '../hooks';
 
 // ----------------------------------------------------------------------
 
@@ -32,9 +33,9 @@ function Container({ children }: Props) {
 
   const check = useCallback(() => {
     if (authenticated) {
-      router.replace(user?.role === 'user' ? '/auth/pending-approval' : returnTo);
+      router.replace(getPostLoginPath(user, returnTo));
     }
-  }, [authenticated, returnTo, router, user?.role]);
+  }, [authenticated, returnTo, router, user]);
 
   useEffect(() => {
     check();

@@ -1,22 +1,20 @@
 'use client';
 
 import type { Theme, CSSObject, Breakpoint } from '@mui/material/styles';
-import type { AuthCenteredContentProps } from './content';
-import type { MainSectionProps, HeaderSectionProps, LayoutSectionProps } from '../core';
-
 import { merge } from 'es-toolkit';
-
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 
-import { CONFIG } from 'src/config-global';
-import { languageOptions } from 'src/locales';
-
-import { Logo } from 'src/components/logo';
-
-import { AuthCenteredContent } from './content';
+import type { MainSectionProps, HeaderSectionProps, LayoutSectionProps } from '../core';
 import { LanguagePopover } from '../components/language-popover';
 import { MainSection, LayoutSection, HeaderSection } from '../core';
+
+import { AuthCenteredContent } from './content';
+import type { AuthCenteredContentProps } from './content';
+
+import { Logo } from 'src/components/logo';
+import { languageOptions } from 'src/locales';
+import { CONFIG } from 'src/config-global';
 
 // ----------------------------------------------------------------------
 
@@ -86,7 +84,7 @@ export function AuthCenteredLayout({
         slots={{ ...headerSlots, ...customHeaderSlots, leftArea: headerSlots.leftArea }}
         slotProps={merge(headerSlotProps, slotProps?.header?.slotProps ?? {})}
         sx={[
-          { position: { [layoutQuery]: 'fixed' }, color: 'text.primary' },
+          { position: 'fixed', color: 'text.primary' },
           ...(Array.isArray(slotProps?.header?.sx) ? slotProps.header.sx : [slotProps?.header?.sx]),
         ]}
       />
@@ -101,9 +99,10 @@ export function AuthCenteredLayout({
       sx={[
         (theme) => ({
           alignItems: 'center',
-          p: theme.spacing(3, 2, 10, 2),
+          justifyContent: 'center',
+          minHeight: '100dvh',
+          p: theme.spacing(10, 2),
           [theme.breakpoints.up(layoutQuery)]: {
-            justifyContent: 'center',
             p: theme.spacing(10, 0, 10, 0),
           },
         }),

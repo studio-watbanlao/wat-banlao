@@ -63,7 +63,10 @@ export function NavList({ data, sx, ...other }: NavListProps) {
     !!data.children && (
       <Collapse in={open}>
         <NavSectionVertical
-          data={data.children}
+          data={data.children.map((section) => ({
+            ...section,
+            items: section.items.map((item) => ({ ...item, deep: item.deepMatch ?? true })),
+          }))}
           sx={{ px: 1.5 }}
           slotProps={{
             rootItem: [

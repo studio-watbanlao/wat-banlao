@@ -1,9 +1,9 @@
 import { m } from 'framer-motion';
 
+import { Grid } from '@mui/material';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/GridLegacy';
 
 import { paths } from 'src/routes/paths';
 
@@ -93,8 +93,8 @@ const HomeHistory = () => {
         py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
       }}
     >
-      <Grid container alignItems="center" justifyContent="space-between" spacing={{ xs: 5, md: 8 }}>
-        <Grid xs={12} md={6} sx={{ pl: 4 }}>
+      <Grid container spacing={{ xs: 5, md: 8 }}>
+        <Grid size={{ xs: 12, md: 6 }} sx={{ pl: 4 }}>
           <m.div variants={varFade().inUp}>
             <Image
               disabledEffect
@@ -105,9 +105,7 @@ const HomeHistory = () => {
           </m.div>
         </Grid>
 
-        <Grid xs={12} md={6}>
-          {renderDescription}
-        </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>{renderDescription}</Grid>
       </Grid>
     </Container>
   );

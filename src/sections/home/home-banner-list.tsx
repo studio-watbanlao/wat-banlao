@@ -3,6 +3,11 @@ import { SxProps, Theme } from '@mui/material/styles';
 import NextImage, { ImageLoaderProps } from 'next/image';
 
 import Carousel, { CarouselDots, useCarousel } from 'src/components/carousel';
+import {
+  applyDefaultContentImage,
+  DEFAULT_CONTENT_IMAGE,
+  resolveContentImage,
+} from 'src/constants/images';
 import type { BannerItem } from 'src/types/banner';
 
 type Props = {
@@ -11,6 +16,15 @@ type Props = {
 };
 
 const passthroughLoader = ({ src }: ImageLoaderProps) => src;
+
+const DEFAULT_BANNER: BannerItem = {
+  id: 'default-banner',
+  title: 'ภาพประกอบเว็บไซต์วัด',
+  desktopImageUrl: DEFAULT_CONTENT_IMAGE,
+  mobileImageUrl: DEFAULT_CONTENT_IMAGE,
+  sortOrder: 0,
+  status: 'PUBLIC',
+};
 
 const HomeBannerList = ({ list, sx }: Props) => {
   const carousel = useCarousel({
@@ -27,7 +41,7 @@ const HomeBannerList = ({ list, sx }: Props) => {
     }),
   });
 
-  if (!list.length) return null;
+  const banners = list.length ? list : [DEFAULT_BANNER];
 
   return (
     <Box
@@ -53,11 +67,9 @@ const HomeBannerList = ({ list, sx }: Props) => {
       }}
     >
       <Carousel {...carousel.carouselSettings}>
-        {list.map((banner, index) => {
-          const desktopImage = banner.desktopImageUrl || banner.imageUrl;
-          const mobileImage = banner.mobileImageUrl || desktopImage;
-
-          if (!desktopImage || !mobileImage) return null;
+        {banners.map((banner, index) => {
+          const desktopImage = resolveContentImage(banner.desktopImageUrl || banner.imageUrl);
+          const mobileImage = resolveContentImage(banner.mobileImageUrl || desktopImage);
 
           return (
             <Box
@@ -82,6 +94,7 @@ const HomeBannerList = ({ list, sx }: Props) => {
                   alt={banner.title}
                   fill
                   priority={index === 0}
+                  onError={applyDefaultContentImage}
                   sizes="100vw"
                   style={{ objectFit: 'cover' }}
                 />
@@ -93,6 +106,7 @@ const HomeBannerList = ({ list, sx }: Props) => {
                   alt={banner.title}
                   fill
                   priority={index === 0}
+                  onError={applyDefaultContentImage}
                   sizes="(max-width: 1200px) 100vw, 1200px"
                   style={{ objectFit: 'cover' }}
                 />

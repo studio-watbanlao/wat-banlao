@@ -1,13 +1,18 @@
 import { randomUUID } from 'crypto';
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { getSafeApiError } from 'src/lib/api-error';
 
-import { isAdminUser, resolveSessionUser, SupabaseAuthError } from 'src/lib/supabase-auth';
+import type { NextApiRequest, NextApiResponse } from 'next';
+
+import { getSafeApiError } from 'src/lib/api-error';
+import { resolveSessionUser } from 'src/lib/supabase-auth';
+import {
+  contributorOwnerId,
+  enforceContributorDraft,
+  requireTempleContentAccess,
+} from 'src/lib/temple-access';
 import {
   createAdminContent,
   deleteAdminContent,
   getAdminContent,
-  SupabaseRequestError,
   updateAdminContent,
   type ContentStatus,
 } from 'src/lib/supabase-rest';
@@ -83,25 +88,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const requester = await resolveSessionUser(req, res);
     if (!requester) return res.status(401).json({ message: 'Authentication required.' });
-    if (!isAdminUser(requester)) {
-      return res.status(403).json({ message: 'Admin permission is required.' });
-    }
+    const access = await requireTempleContentAccess(req, requester, 'festivals');
+    const { temple } = access;
+    const templeId = temple.id;
+    const ownerId = contributorOwnerId(access, requester);
 
     if (req.method === 'GET') {
-      const festivals = await getAdminContent<FestivalItem>('fastival');
+      const festivals = await getAdminContent<FestivalItem>(
+        'fastival',
+        templeId,
+        undefined,
+        ownerId
+      );
       festivals.sort((a, b) => Number(b.year) - Number(a.year));
       return res.status(200).json({ festivals });
     }
 
     if (req.method === 'POST') {
       const status = req.body?.status;
+      enforceContributorDraft(access, status);
       const cover = parseImage(req.body?.coverImage);
       if (!getText(req.body?.title) || !getText(req.body?.year) || !isStatus(status) || !cover) {
         return res.status(400).json({ message: 'กรุณากรอกชื่อ ปี สถานะ และเลือกรูปหน้าปก' });
       }
 
       const id = randomUUID();
-      const coverStoragePath = `${id}/cover-${Date.now()}.${cover.extension}`;
+      const coverStoragePath = `${templeId}/${id}/cover-${Date.now()}.${cover.extension}`;
       const imageUrl = await uploadFestivalImage(coverStoragePath, cover.buffer, cover.contentType);
       const galleryPayloads: ParsedImage[] = Array.isArray(req.body?.galleryImages)
         ? req.body.galleryImages
@@ -112,7 +124,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const images = await Promise.all(
         galleryPayloads.map(async (image, index) => {
           if (!image) throw new SupabaseStorageError('ไฟล์ Gallery ไม่ถูกต้อง', 400);
-          const storagePath = `${id}/gallery-${Date.now()}-${index}.${image.extension}`;
+          const storagePath = `${templeId}/${id}/gallery-${Date.now()}-${index}.${image.extension}`;
           return {
             src: `${id}-${index}`,
             image: await uploadFestivalImage(storagePath, image.buffer, image.contentType),
@@ -121,24 +133,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         })
       );
       const data = getFestivalData({ ...req.body, imageUrl, coverStoragePath, images });
-      const festival = await createAdminContent('fastival', id, status, data);
+      const festival = await createAdminContent(
+        'fastival',
+        templeId,
+        id,
+        status,
+        data,
+        requester.id
+      );
       return res.status(201).json({ festival });
     }
 
     if (req.method === 'PATCH') {
       const id = getText(req.body?.id);
       const status = req.body?.status;
+      enforceContributorDraft(access, status);
       if (!id || !isStatus(status)) {
         return res.status(400).json({ message: 'ข้อมูล Festival ไม่ถูกต้อง' });
       }
-      const existing = await getAdminContent<FestivalItem>('fastival', id);
+      const existing = await getAdminContent<FestivalItem>('fastival', templeId, id, ownerId);
       if (!existing) return res.status(404).json({ message: 'ไม่พบ Festival' });
 
       const data = getFestivalData({ ...existing, ...req.body });
       const replacedPaths: string[] = [];
       const cover = parseImage(req.body?.coverImage);
       if (cover) {
-        const path = `${id}/cover-${Date.now()}.${cover.extension}`;
+        const path = `${templeId}/${id}/cover-${Date.now()}.${cover.extension}`;
         data.imageUrl = await uploadFestivalImage(path, cover.buffer, cover.contentType);
         if (data.coverStoragePath) replacedPaths.push(data.coverStoragePath);
         data.coverStoragePath = path;
@@ -165,7 +185,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const addedGallery = await Promise.all(
         galleryPayloads.map(async (image, index) => {
           if (!image) throw new SupabaseStorageError('ไฟล์ Gallery ไม่ถูกต้อง', 400);
-          const storagePath = `${id}/gallery-${Date.now()}-${index}.${image.extension}`;
+          const storagePath = `${templeId}/${id}/gallery-${Date.now()}-${index}.${image.extension}`;
           return {
             src: `${id}-${Date.now()}-${index}`,
             image: await uploadFestivalImage(storagePath, image.buffer, image.contentType),
@@ -179,7 +199,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!data.title || !data.year || !data.imageUrl) {
         return res.status(400).json({ message: 'ข้อมูล Festival ไม่ครบถ้วน' });
       }
-      const festival = await updateAdminContent('fastival', id, status, data);
+      const festival = await updateAdminContent('fastival', templeId, id, status, data);
       if (!festival) return res.status(404).json({ message: 'ไม่พบ Festival' });
       await deleteFestivalImages([...replacedPaths, ...removedPaths]).catch((error) =>
         console.error('[api/admin/festivals] clean replaced images', error)
@@ -190,10 +210,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'DELETE') {
       const id = getText(req.query.id);
       if (!id) return res.status(400).json({ message: 'Festival ID is required.' });
-      const existing = await getAdminContent<FestivalItem>('fastival', id);
+      const existing = await getAdminContent<FestivalItem>('fastival', templeId, id);
       if (!existing) return res.status(404).json({ message: 'ไม่พบ Festival' });
 
-      await deleteAdminContent('fastival', id);
+      await deleteAdminContent('fastival', templeId, id);
       const paths = [
         existing.coverStoragePath,
         ...parseGallery(existing.images).map((image) => image.storagePath),

@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 
-import { paths } from 'src/routes/paths';
-import { useRouter } from 'src/routes/hooks';
+import { useAuthContext } from '../hooks';
+import { getPostLoginPath } from '../post-login-path';
 
+import { paths } from 'src/routes/paths';
+import { usePathname, useRouter } from 'src/routes/hooks';
 import { SplashScreen } from 'src/components/loading-screen';
 
-import { useAuthContext } from '../hooks';
 
 // ----------------------------------------------------------------------
 
@@ -32,12 +33,15 @@ export default function AuthGuard({ children }: Props) {
 
 function Container({ children }: Props) {
   const router = useRouter();
+  const pathname = usePathname();
 
   const { authenticated, method, user } = useAuthContext();
 
   const [checked, setChecked] = useState(false);
 
   const check = useCallback(() => {
+    setChecked(false);
+
     if (!authenticated) {
       const searchParams = new URLSearchParams({
         returnTo: window.location.pathname,
@@ -51,18 +55,25 @@ function Container({ children }: Props) {
       return;
     }
 
-    if (!['admin', 'super_admin'].includes(user?.role)) {
+    const hasTempleAccess = Boolean(user?.templeAccesses?.length);
+
+    if (!['admin', 'super_admin'].includes(user?.role) && !hasTempleAccess) {
       router.replace(paths.page403);
       return;
     }
 
+    const allowedPath = getPostLoginPath(user, pathname);
+    if (allowedPath !== pathname) {
+      router.replace(allowedPath);
+      return;
+    }
+
     setChecked(true);
-  }, [authenticated, method, router, user?.role]);
+  }, [authenticated, method, pathname, router, user]);
 
   useEffect(() => {
     check();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [check]);
 
   if (!checked) {
     return null;

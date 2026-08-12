@@ -21,6 +21,7 @@ import type { ActivityGalleryImage, ActivityImagePayload, ActivityItem } from 's
 import axios from 'src/utils/axios';
 import { getErrorMessage } from 'src/utils/error-message';
 import { zodResolver } from 'src/utils/zod-resolver';
+import { useCurrentTempleAccess } from 'src/hooks/use-current-temple-access';
 
 export const metadata = {
   title: 'เพิ่มกิจกรรม',
@@ -69,6 +70,8 @@ const fileToPayload = (file: File): Promise<ActivityImagePayload> =>
 
 export default function ActivityFormPage({ activity }: Props) {
   const router = useRouter();
+  const access = useCurrentTempleAccess();
+  const isContributor = access?.role === 'temple_contributor';
   const previewUrls = useRef(new Set<string>());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -97,6 +100,10 @@ export default function ActivityFormPage({ activity }: Props) {
   const { handleSubmit, setValue, watch } = methods;
   const coverImage = watch('coverImage');
   const galleryImages = watch('galleryImages');
+
+  useEffect(() => {
+    if (isContributor) setValue('status', 'DRAFT', { shouldValidate: true });
+  }, [isContributor, setValue]);
 
   const addPreview = useCallback((file: File): PreviewFile => {
     const preview = URL.createObjectURL(file);
@@ -185,7 +192,7 @@ export default function ActivityFormPage({ activity }: Props) {
         type: form.type,
         description: form.description.trim(),
         content: form.content,
-        status: form.status,
+        status: isContributor ? 'DRAFT' : form.status,
         coverImage: coverPayload,
         galleryImages: galleryPayloads,
         keptGallerySources: currentGallery.map((image) => image.src),
@@ -241,12 +248,15 @@ export default function ActivityFormPage({ activity }: Props) {
                       <MenuItem value="school">โรงเรียน</MenuItem>
                     </Field.Select>
                     <Field.Select name="status" label="สถานะ">
-                      <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
+                      {!isContributor ? <MenuItem value="PUBLIC">เผยแพร่</MenuItem> : null}
                       <MenuItem value="DRAFT">แบบร่าง</MenuItem>
                     </Field.Select>
                   </Stack>
 
                   <Field.Text name="description" multiline minRows={3} label="คำอธิบาย" />
+                  {isContributor ? (
+                    <Alert severity="info">Contributor บันทึกได้เฉพาะแบบร่าง ผู้ดูแลวัดจะเป็นผู้ตรวจและเผยแพร่</Alert>
+                  ) : null}
                   <Field.Editor name="content" label="เนื้อหา" />
 
                   <Stack spacing={1}>

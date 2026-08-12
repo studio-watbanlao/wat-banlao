@@ -1,6 +1,9 @@
 import type { CommonColors, Direction, Theme, ThemeProviderProps } from '@mui/material/styles';
+import { createPaletteChannel } from 'minimal-shared/utils';
+
 import type { PaletteColorKey, PaletteColorNoChannels } from './core/palette';
 import type { ThemeCssVariables } from './types';
+
 
 // ----------------------------------------------------------------------
 
@@ -114,3 +117,52 @@ export const themeConfig: ThemeConfig = {
     },
   },
 };
+
+// ----------------------------------------------------------------------
+
+const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
+
+const mixHexColor = (source: string, target: string, targetWeight: number) => {
+  const sourceValue = Number.parseInt(source.slice(1), 16);
+  const targetValue = Number.parseInt(target.slice(1), 16);
+  const channel = (shift: number) => {
+    const from = (sourceValue >> shift) & 255;
+    const to = (targetValue >> shift) & 255;
+    return Math.round(from + (to - from) * targetWeight);
+  };
+
+  return `#${[channel(16), channel(8), channel(0)]
+    .map((value) => value.toString(16).padStart(2, '0'))
+    .join('')}`.toUpperCase();
+};
+
+const getContrastText = (color: string) => {
+  const value = Number.parseInt(color.slice(1), 16);
+  const channels = [16, 8, 0].map((shift) => ((value >> shift) & 255) / 255);
+  const [red, green, blue] = channels.map((channel) =>
+    channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4
+  );
+  const luminance = 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+  const whiteContrast = 1.05 / (luminance + 0.05);
+  const blackContrast = (luminance + 0.05) / 0.05;
+
+  return whiteContrast >= blackContrast ? '#FFFFFF' : '#1A1A1A';
+};
+
+const createBrandColor = (value: string | undefined, fallback: PaletteColorNoChannels) => {
+  const main = value && HEX_COLOR_PATTERN.test(value) ? value.toUpperCase() : fallback.main;
+
+  return createPaletteChannel({
+    lighter: mixHexColor(main, '#FFFFFF', 0.82),
+    light: mixHexColor(main, '#FFFFFF', 0.38),
+    main,
+    dark: mixHexColor(main, '#000000', 0.24),
+    darker: mixHexColor(main, '#000000', 0.48),
+    contrastText: getContrastText(main),
+  });
+};
+
+export const createTemplePalette = (primaryColor?: string, secondaryColor?: string) => ({
+  primary: createBrandColor(primaryColor, themeConfig.palette.primary),
+  secondary: createBrandColor(secondaryColor, themeConfig.palette.secondary),
+});

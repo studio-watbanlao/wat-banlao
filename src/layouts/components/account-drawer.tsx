@@ -2,43 +2,48 @@
 
 import type { IconButtonProps } from '@mui/material/IconButton';
 
-import { varAlpha } from 'minimal-shared/utils';
 import { useBoolean } from 'minimal-shared/hooks';
+import { varAlpha } from 'minimal-shared/utils';
 
-import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
 import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
-import MenuList from '@mui/material/MenuList';
-import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
+import Link from '@mui/material/Link';
+import MenuItem from '@mui/material/MenuItem';
+import MenuList from '@mui/material/MenuList';
+import Typography from '@mui/material/Typography';
 
-import { paths } from 'src/routes/paths';
-import { usePathname } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
+import { usePathname } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
 
 import { useTranslate } from 'src/locales';
 
 import { Label } from 'src/components/label';
-import { Scrollbar } from 'src/components/scrollbar';
 import {
-  RiTeamLine,
-  RiGuideLine,
+  RiArrowRightSLine,
+  RiBuildingLine,
   RiCloseLine,
-  RiHome5Line,
-  RiUser3Line,
-  RiSchoolLine,
   RiContractLine,
   RiFileTextLine,
-  RiShieldUserLine,
-  RiArrowRightSLine,
+  RiGraduationCapLine,
+  RiGuideLine,
+  RiHome5Line,
+  RiImageLine,
+  RiMenuLine,
+  RiSchoolLine,
+  RiSettings3Line,
   RiShieldCheckLine,
   RiShieldKeyholeLine,
-  RiGraduationCapLine,
+  RiShieldUserLine,
+  RiTeamLine,
+  RiUser3Line,
 } from 'src/components/remix-icon';
+import { Scrollbar } from 'src/components/scrollbar';
 
 import { useAuthContext } from 'src/auth/hooks';
+import { useCurrentTempleAccess } from 'src/hooks/use-current-temple-access';
 
 import { AccountButton } from './account-button';
 import { SignOutButton } from './sign-out-button';
@@ -55,6 +60,10 @@ export type AccountDrawerProps = IconButtonProps & {
 };
 
 const ROLE_LABEL: Record<string, string> = {
+  super_admin: 'ผู้ดูแลระบบสูงสุด',
+  temple_admin: 'ผู้ดูแลวัด',
+  temple_editor: 'บรรณาธิการ',
+  temple_contributor: 'ผู้เขียนเนื้อหา',
   master_admin: 'ผู้ดูแลระบบหลัก',
   school_admin: 'ผู้ดูแลโรงเรียน',
   teacher: 'ครูผู้สอน',
@@ -67,13 +76,81 @@ export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
   const pathname = usePathname();
   const { t } = useTranslate('navbar');
   const { user } = useAuthContext();
+  const templeAccess = useCurrentTempleAccess();
   const { value: open, onFalse: onClose, onTrue: onOpen } = useBoolean();
 
-  const isAdmin = user?.role === 'school_admin' || user?.role === 'master_admin';
+  const isSuperAdmin = user?.role === 'super_admin' || templeAccess?.role === 'super_admin';
+  const isTempleAccount = Boolean(templeAccess) || isSuperAdmin;
+  const isAdmin = isTempleAccount || user?.role === 'school_admin' || user?.role === 'master_admin';
   const avatarUrl = user?.avatar_url ?? user?.photoURL;
   const displayName = user?.displayName || user?.username || t('ผู้ใช้งาน');
-  const rawRoleLabel = ROLE_LABEL[user?.role] ?? 'ผู้ใช้งาน';
+  const accountRole = isSuperAdmin ? 'super_admin' : templeAccess?.role || user?.role;
+  const rawRoleLabel = ROLE_LABEL[accountRole] ?? 'ผู้ใช้งาน';
   const roleLabel = t(rawRoleLabel, { defaultValue: rawRoleLabel });
+
+  const canReadTempleModule = (module: 'members' | 'pages' | 'branding') =>
+    isSuperAdmin ||
+    templeAccess?.role === 'temple_admin' ||
+    templeAccess?.permissions[module]?.includes('read');
+
+  const templeMenu: NonNullable<AccountDrawerProps['data']> = [
+    {
+      label: 'ภาพรวม',
+      href: paths.dashboard.root,
+      icon: <RiHome5Line />,
+    },
+    {
+      label: 'โปรไฟล์ของฉัน',
+      href: paths.dashboard.profile,
+      icon: <RiUser3Line />,
+    },
+    ...(isSuperAdmin
+      ? [
+          {
+            label: 'จัดการวัดและสิทธิ์',
+            href: paths.dashboard.temples,
+            icon: <RiBuildingLine />,
+          },
+          {
+            label: 'จัดการผู้ใช้งาน',
+            href: paths.dashboard.users,
+            icon: <RiTeamLine />,
+          },
+          {
+            label: 'จัดการธีมเว็บไซต์',
+            href: paths.dashboard.templates,
+            icon: <RiImageLine />,
+          },
+        ]
+      : []),
+    ...(!isSuperAdmin && templeAccess?.temple && canReadTempleModule('branding')
+      ? [
+          {
+            label: 'ข้อมูลและ Branding วัด',
+            href: paths.dashboard.templeEdit(templeAccess.temple.id),
+            icon: <RiSettings3Line />,
+          },
+        ]
+      : []),
+    ...(!isSuperAdmin && canReadTempleModule('members')
+      ? [
+          {
+            label: 'สมาชิกวัด',
+            href: paths.dashboard.members,
+            icon: <RiTeamLine />,
+          },
+        ]
+      : []),
+    ...(!isSuperAdmin && canReadTempleModule('pages')
+      ? [
+          {
+            label: 'จัดการเมนูเว็บ',
+            href: paths.dashboard.menus,
+            icon: <RiMenuLine />,
+          },
+        ]
+      : []),
+  ];
 
   const adminMenu: NonNullable<AccountDrawerProps['data']> =
     user?.role === 'master_admin'
@@ -185,7 +262,13 @@ export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
     },
   ];
 
-  const menuData = isAdmin ? adminMenu : user?.role === 'teacher' ? teacherMenu : data;
+  const menuData = isTempleAccount
+    ? templeMenu
+    : isAdmin
+      ? adminMenu
+      : user?.role === 'teacher'
+        ? teacherMenu
+        : data;
 
   return (
     <>
@@ -312,9 +395,11 @@ export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
                   bgcolor: (theme) => varAlpha(theme.vars.palette.common.whiteChannel, 0.08),
                 }}
               >
-                <RiShieldCheckLine size={20} />
+                {isTempleAccount ? <RiBuildingLine size={20} /> : <RiShieldCheckLine size={20} />}
                 <Typography variant="caption" sx={{ opacity: 0.84 }}>
-                  {t('คุณกำลังใช้งานพื้นที่จัดการระบบของโรงเรียน')}
+                  {isTempleAccount
+                    ? `กำลังจัดการ ${templeAccess?.temple.name || 'ระบบวัด'}`
+                    : t('คุณกำลังใช้งานพื้นที่จัดการระบบของโรงเรียน')}
                 </Typography>
               </Box>
             )}
@@ -325,7 +410,7 @@ export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
               variant="overline"
               sx={{ px: 1.5, mb: 1, display: 'block', color: 'text.disabled' }}
             >
-              {isAdmin ? t('เมนูผู้ดูแล') : t('เมนูบัญชี')}
+              {isTempleAccount ? 'เมนูบัญชีและวัด' : isAdmin ? t('เมนูผู้ดูแล') : t('เมนูบัญชี')}
             </Typography>
             <MenuList
               disablePadding

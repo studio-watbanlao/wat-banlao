@@ -1,13 +1,18 @@
 import { randomUUID } from 'crypto';
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { getSafeApiError } from 'src/lib/api-error';
 
-import { isAdminUser, resolveSessionUser, SupabaseAuthError } from 'src/lib/supabase-auth';
+import type { NextApiRequest, NextApiResponse } from 'next';
+
+import { getSafeApiError } from 'src/lib/api-error';
+import { resolveSessionUser } from 'src/lib/supabase-auth';
+import {
+  contributorOwnerId,
+  enforceContributorDraft,
+  requireTempleContentAccess,
+} from 'src/lib/temple-access';
 import {
   createAdminContent,
   deleteAdminContent,
   getAdminContent,
-  SupabaseRequestError,
   updateAdminContent,
   type ContentStatus,
 } from 'src/lib/supabase-rest';
@@ -96,44 +101,65 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const user = await resolveSessionUser(req, res);
     if (!user) return res.status(401).json({ message: 'Authentication required.' });
-    if (!isAdminUser(user))
-      return res.status(403).json({ message: 'Admin permission is required.' });
+    const access = await requireTempleContentAccess(req, user, 'architectures');
+    const { temple } = access;
+    const templeId = temple.id;
+    const ownerId = contributorOwnerId(access, user);
 
     if (req.method === 'GET') {
-      const architectures = await getAdminContent<ArchitectureItem>('architecture');
+      const architectures = await getAdminContent<ArchitectureItem>(
+        'architecture',
+        templeId,
+        undefined,
+        ownerId
+      );
       architectures.sort((a, b) => Number(b.year) - Number(a.year));
       return res.status(200).json({ architectures });
     }
 
     if (req.method === 'POST') {
       const status = req.body?.status;
+      enforceContributorDraft(access, status);
       const cover = parseImage(req.body?.coverImage);
       if (!text(req.body?.title) || !isStatus(status) || !cover)
         return res.status(400).json({ message: 'กรุณากรอกชื่อ สถานะ และเลือกรูปหน้าปก' });
       const id = randomUUID();
-      const coverStoragePath = `${id}/cover-${Date.now()}.${cover.extension}`;
+      const coverStoragePath = `${templeId}/${id}/cover-${Date.now()}.${cover.extension}`;
       const imageUrl = await uploadArchitectureImage(
         coverStoragePath,
         cover.buffer,
         cover.contentType
       );
-      const images = await uploadGallery(id, parseNew(req.body?.galleryImages, 8));
+      const images = await uploadGallery(`${templeId}/${id}`, parseNew(req.body?.galleryImages, 8));
       const data = contentData({ ...req.body, imageUrl, coverStoragePath, images });
-      const architecture = await createAdminContent('architecture', id, status, data);
+      const architecture = await createAdminContent(
+        'architecture',
+        templeId,
+        id,
+        status,
+        data,
+        user.id
+      );
       return res.status(201).json({ architecture });
     }
 
     if (req.method === 'PATCH') {
       const id = text(req.body?.id);
       const status = req.body?.status;
+      enforceContributorDraft(access, status);
       if (!id || !isStatus(status)) return res.status(400).json({ message: 'ข้อมูลไม่ถูกต้อง' });
-      const existing = await getAdminContent<ArchitectureItem>('architecture', id);
+      const existing = await getAdminContent<ArchitectureItem>(
+        'architecture',
+        templeId,
+        id,
+        ownerId
+      );
       if (!existing) return res.status(404).json({ message: 'ไม่พบข้อมูลสถาปัตย์' });
       const data = contentData({ ...existing, ...req.body });
       const deletePaths: string[] = [];
       const cover = parseImage(req.body?.coverImage);
       if (cover) {
-        const path = `${id}/cover-${Date.now()}.${cover.extension}`;
+        const path = `${templeId}/${id}/cover-${Date.now()}.${cover.extension}`;
         data.imageUrl = await uploadArchitectureImage(path, cover.buffer, cover.contentType);
         if (data.coverStoragePath) deletePaths.push(data.coverStoragePath);
         data.coverStoragePath = path;
@@ -147,14 +173,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .filter((image) => !keptSources.includes(image.src) && image.storagePath)
         .forEach((image) => deletePaths.push(image.storagePath as string));
       const added = await uploadGallery(
-        id,
+        `${templeId}/${id}`,
         parseNew(req.body?.galleryImages, Math.max(0, 8 - kept.length))
       );
       const next = [...kept, ...added];
       data.images = next.length ? JSON.stringify(next) : '';
       if (!data.title || !data.imageUrl)
         return res.status(400).json({ message: 'ข้อมูลไม่ครบถ้วน' });
-      const architecture = await updateAdminContent('architecture', id, status, data);
+      const architecture = await updateAdminContent('architecture', templeId, id, status, data);
       await deleteArchitectureImages(deletePaths).catch((error) =>
         console.error('[api/admin/architectures] clean images', error)
       );
@@ -164,9 +190,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'DELETE') {
       const id = text(req.query.id);
       if (!id) return res.status(400).json({ message: 'Architecture ID is required.' });
-      const existing = await getAdminContent<ArchitectureItem>('architecture', id);
+      const existing = await getAdminContent<ArchitectureItem>('architecture', templeId, id);
       if (!existing) return res.status(404).json({ message: 'ไม่พบข้อมูลสถาปัตย์' });
-      await deleteAdminContent('architecture', id);
+      await deleteAdminContent('architecture', templeId, id);
       const paths = [
         existing.coverStoragePath,
         ...parseGallery(existing.images).map((image) => image.storagePath),

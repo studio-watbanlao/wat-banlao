@@ -1,18 +1,15 @@
-import type { NavSectionProps } from 'src/components/nav-section';
-
 import { useEffect } from 'react';
 import { mergeClasses } from 'minimal-shared/utils';
-
-import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 
-import { usePathname } from 'src/routes/hooks';
+import { layoutClasses } from '../core';
 
-import { Logo } from 'src/components/logo';
+import { DashboardTempleIdentity } from './temple-identity';
+
+import { usePathname } from 'src/routes/hooks';
 import { Scrollbar } from 'src/components/scrollbar';
 import { NavSectionVertical } from 'src/components/nav-section';
-
-import { layoutClasses } from '../core';
+import type { NavSectionProps } from 'src/components/nav-section';
 
 // ----------------------------------------------------------------------
 
@@ -62,11 +59,7 @@ export function NavMobile({
         },
       }}
     >
-      {slots?.topArea ?? (
-        <Box sx={{ pl: 3.5, pt: 2.5, pb: 1 }}>
-          <Logo />
-        </Box>
-      )}
+      {slots?.topArea ?? <DashboardTempleIdentity />}
 
       <Scrollbar fillContent>
         <NavSectionVertical

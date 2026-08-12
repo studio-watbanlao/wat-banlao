@@ -21,6 +21,8 @@ import type { EditorialImagePayload, EditorialItem, EditorialResource } from 'sr
 import axios from 'src/utils/axios';
 import { getErrorMessage } from 'src/utils/error-message';
 import { zodResolver } from 'src/utils/zod-resolver';
+import { useCurrentTempleAccess } from 'src/hooks/use-current-temple-access';
+import { useAuthContext } from 'src/auth/hooks';
 
 type PreviewFile = File & { preview?: string };
 
@@ -28,14 +30,6 @@ type Props = {
   resource: EditorialResource;
   title: string;
   item?: EditorialItem;
-};
-
-const toDateTimeLocal = (value?: string) => {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  const offset = date.getTimezoneOffset() * 60_000;
-  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
 };
 
 const fileToPayload = (file: File): Promise<EditorialImagePayload> =>
@@ -53,6 +47,9 @@ const fileToPayload = (file: File): Promise<EditorialImagePayload> =>
 
 export default function EditorialFormPage({ resource, title, item }: Props) {
   const router = useRouter();
+  const { user } = useAuthContext();
+  const access = useCurrentTempleAccess();
+  const isContributor = access?.role === 'temple_contributor';
   const previewUrls = useRef(new Set<string>());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -66,8 +63,8 @@ export default function EditorialFormPage({ resource, title, item }: Props) {
       title: item?.title || '',
       description: item?.description || '',
       content: item?.content || '',
-      author: item?.author || '',
-      createdDate: toDateTimeLocal(item?.createdDate || new Date().toISOString()),
+      author: item ? item.author || '' : user?.penName || user?.displayName || '',
+      createdDate: item?.createdDate || new Date().toISOString(),
       status: item?.status === 'DRAFT' ? 'DRAFT' : 'PUBLIC',
       coverImage: null,
       currentImageUrl: item?.imageUrl || '',
@@ -77,6 +74,10 @@ export default function EditorialFormPage({ resource, title, item }: Props) {
 
   const { handleSubmit, setValue, watch } = methods;
   const coverImage = watch('coverImage');
+
+  useEffect(() => {
+    if (isContributor) setValue('status', 'DRAFT', { shouldValidate: true });
+  }, [isContributor, setValue]);
 
   const revokePreview = useCallback((file?: File | null) => {
     const preview = (file as PreviewFile | null)?.preview;
@@ -126,7 +127,7 @@ export default function EditorialFormPage({ resource, title, item }: Props) {
         content: form.content,
         author: form.author.trim(),
         createdDate: form.createdDate ? new Date(form.createdDate).toISOString() : undefined,
-        status: form.status,
+        status: isContributor ? 'DRAFT' : form.status,
         coverImage: coverPayload,
       };
 
@@ -153,9 +154,7 @@ export default function EditorialFormPage({ resource, title, item }: Props) {
               <Iconify icon="ri:arrow-left-line" />
             </IconButton>
             <div>
-              <Typography variant="h4">
-                {isEditing ? `แก้ไข${title}` : `เพิ่ม${title}`}
-              </Typography>
+              <Typography variant="h4">{isEditing ? `แก้ไข${title}` : `เพิ่ม${title}`}</Typography>
               <Typography variant="body2" color="text.secondary">
                 {isEditing ? `ปรับปรุงข้อมูล${title}` : `สร้าง${title}ใหม่สำหรับเว็บไซต์`}
               </Typography>
@@ -171,18 +170,31 @@ export default function EditorialFormPage({ resource, title, item }: Props) {
                   <Field.Text name="title" required label={`ชื่อ${title}`} />
 
                   <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                    <Field.Text name="author" label="ผู้เขียน" />
                     <Field.Text
+                      name="author"
+                      label="ผู้เขียน"
+                      disabled={isContributor}
+                      helperText={
+                        isContributor ? 'ใช้จากนามปากกาในโปรไฟล์ของคุณอัตโนมัติ' : undefined
+                      }
+                    />
+                    <Field.DatePicker
                       name="createdDate"
-                      type="datetime-local"
                       label="วันที่เผยแพร่"
-                      InputLabelProps={{ shrink: true }}
+                      format="dd/MM/yyyy"
+                      slotProps={{ textField: { fullWidth: true } }}
                     />
                     <Field.Select name="status" label="สถานะ">
-                      <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
+                      {!isContributor ? <MenuItem value="PUBLIC">เผยแพร่</MenuItem> : null}
                       <MenuItem value="DRAFT">แบบร่าง</MenuItem>
                     </Field.Select>
                   </Stack>
+
+                  {isContributor ? (
+                    <Alert severity="info">
+                      ผู้เขียนเนื้อหาบันทึกได้เฉพาะแบบร่าง ผู้ดูแลวัดจะเป็นผู้ตรวจและเผยแพร่
+                    </Alert>
+                  ) : null}
 
                   <Field.Text name="description" multiline minRows={3} label="คำอธิบายย่อ" />
                   <Field.Editor name="content" label="เนื้อหา" />

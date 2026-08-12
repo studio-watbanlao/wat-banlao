@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 export const ADMIN_ACCESS_COOKIE = 'wb_admin_access_token';
 export const ADMIN_REFRESH_COOKIE = 'wb_admin_refresh_token';
+export const ADMIN_ROLE_COOKIE = 'wb_admin_role';
 
 export type AuthRole = 'user' | 'admin' | 'super_admin';
 
@@ -120,13 +121,15 @@ export const toAdminUser = (user: SupabaseUser) => ({
 
 const serializeCookie = (name: string, value: string, maxAge: number) => {
   const secure = process.env.NODE_ENV === 'production' ? '; Secure' : '';
-  return `${name}=${encodeURIComponent(value)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure}`;
+  const expires = maxAge === 0 ? '; Expires=Thu, 01 Jan 1970 00:00:00 GMT' : '';
+  return `${name}=${encodeURIComponent(value)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${expires}${secure}`;
 };
 
 export const setAdminSessionCookies = (res: NextApiResponse, session: SupabaseSession) => {
   res.setHeader('Set-Cookie', [
     serializeCookie(ADMIN_ACCESS_COOKIE, session.access_token, session.expires_in),
     serializeCookie(ADMIN_REFRESH_COOKIE, session.refresh_token, 60 * 60 * 24 * 30),
+    serializeCookie(ADMIN_ROLE_COOKIE, getUserRole(session.user), 60 * 60 * 24 * 30),
   ]);
 };
 
@@ -134,6 +137,7 @@ export const clearAdminSessionCookies = (res: NextApiResponse) => {
   res.setHeader('Set-Cookie', [
     serializeCookie(ADMIN_ACCESS_COOKIE, '', 0),
     serializeCookie(ADMIN_REFRESH_COOKIE, '', 0),
+    serializeCookie(ADMIN_ROLE_COOKIE, '', 0),
   ]);
 };
 
@@ -194,6 +198,24 @@ const adminRequest = async <T>(path: string, init?: RequestInit): Promise<T> => 
   return response.json() as Promise<T>;
 };
 
+const secretAuthRequest = async <T>(path: string, init?: RequestInit): Promise<T> => {
+  const { url, secretKey } = getSecretConfig();
+  const headers = new Headers(init?.headers);
+  headers.set('apikey', secretKey);
+  headers.set('Authorization', `Bearer ${secretKey}`);
+  headers.set('Content-Type', 'application/json');
+  const response = await fetch(`${url}/auth/v1/${path}`, { ...init, headers });
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new SupabaseAuthError(
+      body?.msg || body?.message || 'Supabase Auth request failed.',
+      response.status
+    );
+  }
+  if (response.status === 204) return undefined as T;
+  return response.json() as Promise<T>;
+};
+
 export const listAuthUsers = (page = 1, perPage = 100) =>
   adminRequest<{ users: SupabaseUser[] }>(`users?page=${page}&per_page=${perPage}`);
 
@@ -220,5 +242,28 @@ export const updateAuthUserRole = (
     body: JSON.stringify({ app_metadata: { ...currentAppMetadata, role } }),
   });
 
+export const updateAuthUserMetadata = (userId: string, userMetadata: Record<string, unknown>) =>
+  adminRequest<{ user?: SupabaseUser } | SupabaseUser>(`users/${encodeURIComponent(userId)}`, {
+    method: 'PUT',
+    body: JSON.stringify({ user_metadata: userMetadata }),
+  });
+
 export const deleteAuthUser = (userId: string) =>
   adminRequest<void>(`users/${encodeURIComponent(userId)}`, { method: 'DELETE' });
+
+export const inviteAuthUserByEmail = (
+  email: string,
+  redirectTo: string,
+  data: Record<string, unknown>
+) =>
+  secretAuthRequest<{ user?: SupabaseUser } | SupabaseUser>(
+    `invite?redirect_to=${encodeURIComponent(redirectTo)}`,
+    { method: 'POST', body: JSON.stringify({ email, data }) }
+  );
+
+export const updateCurrentAuthPassword = (accessToken: string, password: string) =>
+  authRequest<SupabaseUser>('user', {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify({ password }),
+  });

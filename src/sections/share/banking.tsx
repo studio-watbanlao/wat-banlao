@@ -1,9 +1,11 @@
 import Box, { BoxProps } from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
-
 import { Typography } from '@mui/material';
+
 import Image from 'src/components/image';
+import { getDonationAccount, hasDonationAccount } from 'src/public-templates/donation-account';
+import { usePublicTemple } from 'src/public-templates/use-public-temple';
 import { bgGradient } from 'src/theme/css';
 
 // ----------------------------------------------------------------------
@@ -17,6 +19,13 @@ interface Props extends BoxProps {
 
 export default function Banking({ img, price, title, description, sx, ...other }: Props) {
   const theme = useTheme();
+  const { data: temple } = usePublicTemple();
+  const account = getDonationAccount(temple?.branding, temple?.slug);
+  void price;
+  void title;
+  void description;
+
+  if (!hasDonationAccount(account)) return null;
 
   return (
     <Box {...other}>
@@ -53,23 +62,31 @@ export default function Banking({ img, price, title, description, sx, ...other }
 
         <Box sx={{ mt: 2 }}>
           <Box sx={{ color: 'common.white', typography: 'h3' }}>
-            <Typography variant="h6">บัญชีธนาคารกรุงไทย</Typography>
-            <Typography variant="h6">เลขที่บัญชี 423-0-71936-1</Typography>
-            <Typography variant="body2">ชื่อบัญชี : วัดบ้านเหล่า ( WAT BANLAO )</Typography>
+            <Typography variant="h6">บัญชี{account.bankName}</Typography>
+            <Typography variant="h6">เลขที่บัญชี {account.accountNumber}</Typography>
+            <Typography variant="body2">ชื่อบัญชี : {account.accountName}</Typography>
           </Box>
 
-          <Stack mt={2}>
-            <Image
-              src="/assets/images/qr-code.png"
-              alt="1"
-              ratio="1/1"
-              sx={{ height: 'auto', width: '100%', borderRadius: 2 }}
-            />
-          </Stack>
+          {account.qrCodeUrl ? (
+            <Stack mt={2}>
+              <Image
+                src={account.qrCodeUrl}
+                alt={`QR Code บัญชี ${account.accountName}`}
+                ratio="1/1"
+                sx={{ height: 'auto', width: '100%', borderRadius: 2 }}
+              />
+            </Stack>
+          ) : null}
 
-          <Stack alignItems="center" mt={2}>
-            <Image src="/assets/images/logo-bank.png" alt="bank" sx={{ height: 60 }} />
-          </Stack>
+          {account.bankLogoUrl ? (
+            <Stack alignItems="center" mt={2}>
+              <Image
+                src={account.bankLogoUrl}
+                alt={`โลโก้${account.bankName}`}
+                sx={{ height: 60 }}
+              />
+            </Stack>
+          ) : null}
         </Box>
       </Box>
     </Box>

@@ -16,11 +16,13 @@ export const navData: NavMainProps['data'] = [
     title: 'เทศกาลงานบุญวัดบ้านเหล่า',
     path: paths.fastival.root,
     icon: <RiCalendarLine size={22} />,
+    deepMatch: true,
   },
   {
     title: 'รู้จักวัดบ้านเหล่า',
     path: paths.banlao.root,
     icon: <RiBuildingLine size={22} />,
+    deepMatch: true,
     children: [
       {
         subheader: '',
@@ -35,6 +37,7 @@ export const navData: NavMainProps['data'] = [
     title: 'ชีวประวัติบูรพาจารย์',
     path: paths.parents.root,
     icon: <RiUserStarLine size={22} />,
+    deepMatch: true,
     children: [
       {
         subheader: '',
@@ -50,6 +53,7 @@ export const navData: NavMainProps['data'] = [
     title: 'บทความ/ธรรมะ',
     path: paths.article.root,
     icon: <RiArticleLine size={22} />,
+    deepMatch: true,
     children: [
       {
         subheader: '',
@@ -60,6 +64,16 @@ export const navData: NavMainProps['data'] = [
       },
     ],
   },
-  { title: 'กิจกรรมต่าง ๆ', path: paths.activity.root, icon: <RiCalendarLine size={22} /> },
-  { title: 'ติดต่อสอบถาม', path: paths.contact, icon: <RiMapPinLine size={22} /> },
+  {
+    title: 'กิจกรรมต่าง ๆ',
+    path: paths.activity.root,
+    icon: <RiCalendarLine size={22} />,
+    deepMatch: true,
+  },
+  {
+    title: 'ติดต่อสอบถาม',
+    path: paths.contact,
+    icon: <RiMapPinLine size={22} />,
+    deepMatch: true,
+  },
 ];

@@ -17,6 +17,7 @@ type Row = Record<string, unknown> & {
   view?: number;
   created_at: string;
   updated_at: string;
+  created_by?: string;
 };
 
 type ResourceConfig = {
@@ -159,7 +160,9 @@ export const supabaseRequest = async <T>(path: string, init?: RequestInit): Prom
     throw new SupabaseRequestError(`Supabase request failed: ${body}`, response.status);
   }
   if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
+
+  const body = await response.text();
+  return body ? (JSON.parse(body) as T) : (undefined as T);
 };
 
 const parseImages = (value: unknown) => {
@@ -204,13 +207,22 @@ const normalizeContent = (resource: ContentResource, row: Row) => {
     view: row.view ?? 0,
     createdAt: data.createdAt ?? row.created_at,
     updatedAt: data.updatedAt ?? row.updated_at,
+    createdBy: row.created_by ?? '',
   };
 };
 
 const tableFor = (resource: ContentResource) => RESOURCE_CONFIG[resource].table;
 
-export const getPublicContent = async (resource: ContentResource, id?: string) => {
-  const query = new URLSearchParams({ select: '*', status: 'eq.PUBLIC' });
+export const getPublicContent = async (
+  resource: ContentResource,
+  templeId: string,
+  id?: string
+) => {
+  const query = new URLSearchParams({
+    select: '*',
+    status: 'eq.PUBLIC',
+    temple_id: `eq.${templeId}`,
+  });
   if (id) query.set('id', `eq.${id}`);
   else query.set('order', 'created_at.desc');
   const rows = await supabaseRequest<Row[]>(`${tableFor(resource)}?${query.toString()}`);
@@ -218,21 +230,41 @@ export const getPublicContent = async (resource: ContentResource, id?: string) =
   return id ? (content[0] ?? null) : content;
 };
 
-export const incrementContentView = async (resource: ContentResource, id: string) => {
+export const incrementContentView = async (
+  resource: ContentResource,
+  templeId: string,
+  id: string
+) => {
   const result = await supabaseRequest<Row | Row[]>('rpc/increment_content_view', {
     method: 'POST',
-    body: JSON.stringify({ p_resource: resource, p_id: id }),
+    body: JSON.stringify({ p_resource: resource, p_id: id, p_temple_id: templeId }),
   });
   const row = Array.isArray(result) ? result[0] : result;
   return row ? normalizeContent(resource, row) : null;
 };
 
-export function getAdminContent<T>(resource: ContentResource, id: string): Promise<T | null>;
-export function getAdminContent<T>(resource: ContentResource, id?: undefined): Promise<T[]>;
-export async function getAdminContent<T>(resource: ContentResource, id?: string) {
-  const query = new URLSearchParams({ select: '*' });
+export function getAdminContent<T>(
+  resource: ContentResource,
+  templeId: string,
+  id: string,
+  createdBy?: string
+): Promise<T | null>;
+export function getAdminContent<T>(
+  resource: ContentResource,
+  templeId: string,
+  id?: undefined,
+  createdBy?: string
+): Promise<T[]>;
+export async function getAdminContent<T>(
+  resource: ContentResource,
+  templeId: string,
+  id?: string,
+  createdBy?: string
+) {
+  const query = new URLSearchParams({ select: '*', temple_id: `eq.${templeId}` });
   if (id) query.set('id', `eq.${id}`);
   else query.set('order', 'created_at.desc');
+  if (createdBy) query.set('created_by', `eq.${createdBy}`);
   const rows = await supabaseRequest<Row[]>(`${tableFor(resource)}?${query.toString()}`);
   const content = rows.map((row) => normalizeContent(resource, row)) as T[];
   return id ? (content[0] ?? null) : content;
@@ -240,25 +272,34 @@ export async function getAdminContent<T>(resource: ContentResource, id?: string)
 
 export const createAdminContent = async (
   resource: ContentResource,
+  templeId: string,
   id: string,
   status: ContentStatus,
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
+  createdBy?: string
 ) => {
   const rows = await supabaseRequest<Row[]>(tableFor(resource), {
     method: 'POST',
     headers: { Prefer: 'return=representation' },
-    body: JSON.stringify({ id, status, ...toDatabaseData(resource, data) }),
+    body: JSON.stringify({
+      id,
+      temple_id: templeId,
+      status,
+      created_by: createdBy || null,
+      ...toDatabaseData(resource, data),
+    }),
   });
   return normalizeContent(resource, rows[0]);
 };
 
 export const updateAdminContent = async (
   resource: ContentResource,
+  templeId: string,
   id: string,
   status: ContentStatus,
   data: Record<string, unknown>
 ) => {
-  const query = new URLSearchParams({ id: `eq.${id}` });
+  const query = new URLSearchParams({ id: `eq.${id}`, temple_id: `eq.${templeId}` });
   const rows = await supabaseRequest<Row[]>(`${tableFor(resource)}?${query.toString()}`, {
     method: 'PATCH',
     headers: { Prefer: 'return=representation' },
@@ -267,7 +308,11 @@ export const updateAdminContent = async (
   return rows[0] ? normalizeContent(resource, rows[0]) : null;
 };
 
-export const deleteAdminContent = async (resource: ContentResource, id: string) => {
-  const query = new URLSearchParams({ id: `eq.${id}` });
+export const deleteAdminContent = async (
+  resource: ContentResource,
+  templeId: string,
+  id: string
+) => {
+  const query = new URLSearchParams({ id: `eq.${id}`, temple_id: `eq.${templeId}` });
   await supabaseRequest<void>(`${tableFor(resource)}?${query.toString()}`, { method: 'DELETE' });
 };

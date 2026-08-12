@@ -2,10 +2,8 @@ import type { TimePickerProps } from '@mui/x-date-pickers/TimePicker';
 import type { DatePickerProps } from '@mui/x-date-pickers/DatePicker';
 import type { DateTimePickerProps } from '@mui/x-date-pickers/DateTimePicker';
 import type { PickersTextFieldProps } from '@mui/x-date-pickers/PickersTextField';
-
 import { RiCalendarLine } from '@remixicon/react';
 import { Controller, useFormContext } from 'react-hook-form';
-
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
@@ -21,6 +19,7 @@ function DatePickerOpenIcon({
   ownerState: _ownerState,
   ...props
 }: React.ComponentProps<typeof RiCalendarLine> & { ownerState?: unknown }) {
+  void _ownerState;
   return <RiCalendarLine {...props} />;
 }
 
@@ -33,8 +32,8 @@ function normalizeDateValue(value: DateInput): Date | null {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-function serializeDateValue(value: Date | null): string | null {
-  return value && !Number.isNaN(value.getTime()) ? value.toISOString() : null;
+function serializeDateValue(value: Date | null): string {
+  return value && !Number.isNaN(value.getTime()) ? value.toISOString() : '';
 }
 
 // ----------------------------------------------------------------------

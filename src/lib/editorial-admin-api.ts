@@ -1,13 +1,20 @@
 import { randomUUID } from 'crypto';
+
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { getSafeApiError } from 'src/lib/api-error';
-import { isAdminUser, resolveSessionUser } from 'src/lib/supabase-auth';
+import { resolveSessionUser } from 'src/lib/supabase-auth';
+import {
+  contributorOwnerId,
+  enforceContributorDraft,
+  requireTempleContentAccess,
+} from 'src/lib/temple-access';
 import {
   createAdminContent,
   deleteAdminContent,
   getAdminContent,
   updateAdminContent,
+  supabaseRequest,
   type ContentStatus,
 } from 'src/lib/supabase-rest';
 import {
@@ -76,15 +83,23 @@ export const createEditorialAdminHandler = (resource: EditorialResource) => {
     try {
       const user = await resolveSessionUser(req, res);
       if (!user) return res.status(401).json({ message: 'กรุณาเข้าสู่ระบบ' });
-      if (!isAdminUser(user)) return res.status(403).json({ message: 'บัญชีนี้ไม่มีสิทธิ์แอดมิน' });
+      const access = await requireTempleContentAccess(
+        req,
+        user,
+        resource === 'blog' ? 'blogs' : 'dharmas'
+      );
+      const { temple } = access;
+      const templeId = temple.id;
+      const ownerId = contributorOwnerId(access, user);
 
       if (req.method === 'GET') {
-        const items = await getAdminContent<EditorialItem>(resource);
+        const items = await getAdminContent<EditorialItem>(resource, templeId, undefined, ownerId);
         return res.status(200).json({ [options.listKey]: items });
       }
 
       if (req.method === 'POST') {
         const status = req.body?.status;
+        enforceContributorDraft(access, status);
         const cover = parseImage(req.body?.coverImage);
         if (!text(req.body?.title) || !isStatus(status) || !cover) {
           return res
@@ -92,33 +107,49 @@ export const createEditorialAdminHandler = (resource: EditorialResource) => {
             .json({ message: `กรุณากรอกชื่อ สถานะ และเลือกรูปปก${options.label}` });
         }
         const id = randomUUID();
-        const coverStoragePath = `${id}/cover-${Date.now()}.${cover.extension}`;
+        const coverStoragePath = `${templeId}/${id}/cover-${Date.now()}.${cover.extension}`;
         const imageUrl = await options.upload(coverStoragePath, cover.buffer, cover.contentType);
-        const data = editorialData({ ...req.body, imageUrl, coverStoragePath });
-        const item = await createAdminContent(resource, id, status, data);
+        let author = req.body?.author;
+        let authorImageUrl = req.body?.authorImageUrl;
+        if (access.role === 'temple_contributor') {
+          const profiles = await supabaseRequest<
+            Array<{ display_name?: string; pen_name?: string; avatar_url?: string }>
+          >(`profiles?select=*&id=eq.${encodeURIComponent(user.id)}&limit=1`);
+          author = profiles[0]?.pen_name || profiles[0]?.display_name || user.email || '';
+          authorImageUrl = profiles[0]?.avatar_url || '';
+        }
+        const data = editorialData({
+          ...req.body,
+          author,
+          authorImageUrl,
+          imageUrl,
+          coverStoragePath,
+        });
+        const item = await createAdminContent(resource, templeId, id, status, data, user.id);
         return res.status(201).json({ [options.singularKey]: item });
       }
 
       if (req.method === 'PATCH') {
         const id = text(req.body?.id);
         const status = req.body?.status;
+        enforceContributorDraft(access, status);
         if (!id || !text(req.body?.title) || !isStatus(status)) {
           return res.status(400).json({ message: `ข้อมูล${options.label}ไม่ถูกต้อง` });
         }
-        const existing = await getAdminContent<EditorialItem>(resource, id);
+        const existing = await getAdminContent<EditorialItem>(resource, templeId, id, ownerId);
         if (!existing) return res.status(404).json({ message: `ไม่พบ${options.label}` });
 
         const data = editorialData({ ...existing, ...req.body });
         const oldCoverPath = data.coverStoragePath;
         const cover = parseImage(req.body?.coverImage);
         if (cover) {
-          const path = `${id}/cover-${Date.now()}.${cover.extension}`;
+          const path = `${templeId}/${id}/cover-${Date.now()}.${cover.extension}`;
           data.imageUrl = await options.upload(path, cover.buffer, cover.contentType);
           data.coverStoragePath = path;
         }
         if (!data.imageUrl) return res.status(400).json({ message: 'กรุณาเลือกรูปหน้าปก' });
 
-        const item = await updateAdminContent(resource, id, status, data);
+        const item = await updateAdminContent(resource, templeId, id, status, data);
         if (cover && oldCoverPath) {
           await options
             .removeImages([oldCoverPath])
@@ -130,9 +161,9 @@ export const createEditorialAdminHandler = (resource: EditorialResource) => {
       if (req.method === 'DELETE') {
         const id = text(req.query.id);
         if (!id) return res.status(400).json({ message: `ไม่พบรหัส${options.label}` });
-        const existing = await getAdminContent<EditorialItem>(resource, id);
+        const existing = await getAdminContent<EditorialItem>(resource, templeId, id);
         if (!existing) return res.status(404).json({ message: `ไม่พบ${options.label}` });
-        await deleteAdminContent(resource, id);
+        await deleteAdminContent(resource, templeId, id);
         if (existing.coverStoragePath) {
           await options
             .removeImages([existing.coverStoragePath])
