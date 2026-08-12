@@ -72,11 +72,14 @@ export function TemplePageContent({ page }: { page: TemplePage }) {
                 {page.excerpt}
               </Typography>
             ) : null}
-            <Image
-              src={page.heroImageUrl}
-              alt={page.title}
-              sx={{ width: '100%', maxHeight: 560, objectFit: 'cover', borderRadius: 2 }}
-            />
+            {page.heroImageUrl ? (
+              <Image
+                src={page.heroImageUrl}
+                alt={page.title}
+                visibleByDefault
+                sx={{ width: '100%', maxHeight: 560, objectFit: 'cover', borderRadius: 2 }}
+              />
+            ) : null}
             {page.content ? (
               <Box
                 sx={{
@@ -109,7 +112,10 @@ export function ManagedPageOverride({
     staleTime: 5 * 60 * 1000,
   });
   const page = data?.page;
-  const shouldUseManagedPage = !page?.useLegacyContent;
+  const hasManagedContent = Boolean(
+    page?.heroImageUrl || page?.content || page?.excerpt || page?.eyebrow
+  );
+  const shouldUseManagedPage = Boolean(page && !page.useLegacyContent && hasManagedContent);
   return shouldUseManagedPage && page ? <TemplePageContent page={page} /> : children;
 }
 

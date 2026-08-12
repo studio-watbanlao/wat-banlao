@@ -3,21 +3,23 @@ import 'src/components/editor/components/code-highlight-block.css';
 import 'src/locales/i18n';
 
 import Script from 'next/script';
+import { useState } from 'react';
+import { QueryClientProvider } from '@tanstack/react-query';
+import type { AppProps } from 'next/app';
 
 import { LocalizationProvider } from 'src/locales';
 import ThemeProvider from 'src/theme';
-
-import { QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from 'src/auth/context/jwt';
 import { MotionLazy } from 'src/components/animate/motion-lazy';
 import ProgressBar from 'src/components/progress-bar';
 import { SettingsDrawer, SettingsProvider } from 'src/components/settings';
 import SnackbarProvider from 'src/components/snackbar/snackbar-provider';
-
-import type { AppProps } from 'next/app';
-import queryClient from 'src/queries/client';
+import { PublicTempleInitialDataContext } from 'src/public-templates/use-public-temple';
+import { createQueryClient } from 'src/queries/client';
 
 const App = ({ Component, pageProps }: AppProps) => {
+  const [queryClient] = useState(createQueryClient);
+
   return (
     <>
       <Script
@@ -35,30 +37,32 @@ const App = ({ Component, pageProps }: AppProps) => {
       </Script>
 
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <LocalizationProvider>
-            <SettingsProvider
-              defaultSettings={{
-                themeMode: 'light',
-                themeDirection: 'ltr',
-                themeContrast: 'default',
-                themeLayout: 'vertical',
-                themeColorPresets: 'default',
-                themeStretch: false,
-              }}
-            >
-              <ThemeProvider>
-                <MotionLazy>
-                  <SnackbarProvider>
-                    <SettingsDrawer />
-                    <ProgressBar />
-                    <Component {...pageProps} />
-                  </SnackbarProvider>
-                </MotionLazy>
-              </ThemeProvider>
-            </SettingsProvider>
-          </LocalizationProvider>
-        </AuthProvider>
+        <PublicTempleInitialDataContext.Provider value={pageProps.publicTemple}>
+          <AuthProvider>
+            <LocalizationProvider>
+              <SettingsProvider
+                defaultSettings={{
+                  themeMode: 'light',
+                  themeDirection: 'ltr',
+                  themeContrast: 'default',
+                  themeLayout: 'vertical',
+                  themeColorPresets: 'default',
+                  themeStretch: false,
+                }}
+              >
+                <ThemeProvider>
+                  <MotionLazy>
+                    <SnackbarProvider>
+                      <SettingsDrawer />
+                      <ProgressBar />
+                      <Component {...pageProps} />
+                    </SnackbarProvider>
+                  </MotionLazy>
+                </ThemeProvider>
+              </SettingsProvider>
+            </LocalizationProvider>
+          </AuthProvider>
+        </PublicTempleInitialDataContext.Provider>
       </QueryClientProvider>
     </>
   );

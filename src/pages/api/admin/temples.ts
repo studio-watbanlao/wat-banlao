@@ -33,6 +33,7 @@ const STANDARD_PAGE_PACK = [
     status: 'PUBLIC',
     show_in_menu: true,
     sort_order: 10,
+    use_legacy_content: true,
   },
   {
     page_key: 'about',

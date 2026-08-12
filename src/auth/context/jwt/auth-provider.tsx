@@ -1,14 +1,13 @@
 'use client';
 
 import { useMemo, useEffect, useReducer, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { AuthUserType, ActionMapType, AuthStateType } from '../../types';
 
 import { AuthContext } from './auth-context';
 
 import axios, { endpoints } from 'src/utils/axios';
-import queryClient from 'src/queries/client';
-
 
 // ----------------------------------------------------------------------
 
@@ -83,6 +82,7 @@ type Props = {
 
 export function AuthProvider({ children }: Props) {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const queryClient = useQueryClient();
 
   const initialize = useCallback(async () => {
     try {
@@ -106,35 +106,41 @@ export function AuthProvider({ children }: Props) {
   }, [initialize]);
 
   // LOGIN
-  const login = useCallback(async (email: string, password: string) => {
-    const data = {
-      email,
-      password,
-    };
+  const login = useCallback(
+    async (email: string, password: string) => {
+      const data = {
+        email,
+        password,
+      };
 
-    await axios.post(endpoints.auth.login, data);
+      await axios.post(endpoints.auth.login, data);
 
-    const sessionResponse = await axios.get(endpoints.auth.me);
-    const { user } = sessionResponse.data;
-    queryClient.clear();
+      const sessionResponse = await axios.get(endpoints.auth.me);
+      const { user } = sessionResponse.data;
+      queryClient.clear();
 
-    dispatch({
-      type: Types.LOGIN,
-      payload: { user },
-    });
+      dispatch({
+        type: Types.LOGIN,
+        payload: { user },
+      });
 
-    return user;
-  }, []);
+      return user;
+    },
+    [queryClient]
+  );
 
-  const loginWithGoogle = useCallback(async (credential: string) => {
-    await axios.post(endpoints.auth.googleToken, { credential });
-    const sessionResponse = await axios.get(endpoints.auth.me);
-    const { user } = sessionResponse.data;
-    queryClient.clear();
+  const loginWithGoogle = useCallback(
+    async (credential: string) => {
+      await axios.post(endpoints.auth.googleToken, { credential });
+      const sessionResponse = await axios.get(endpoints.auth.me);
+      const { user } = sessionResponse.data;
+      queryClient.clear();
 
-    dispatch({ type: Types.LOGIN, payload: { user } });
-    return user;
-  }, []);
+      dispatch({ type: Types.LOGIN, payload: { user } });
+      return user;
+    },
+    [queryClient]
+  );
 
   // REGISTER
   const register = useCallback(
@@ -167,7 +173,7 @@ export function AuthProvider({ children }: Props) {
     dispatch({
       type: Types.LOGOUT,
     });
-  }, []);
+  }, [queryClient]);
 
   // ----------------------------------------------------------------------
 

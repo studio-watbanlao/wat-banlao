@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const temple = await resolvePublicTemple(req);
     const items = await getTempleNavigation(temple.id);
     const visibleItems = filterTempleNavigation(items, temple.modules);
-    setPublicCacheControl(req, res, 'private, no-store, max-age=0');
+    setPublicCacheControl(req, res, 'public, s-maxage=60, stale-while-revalidate=300');
     return res.status(200).json({ temple: temple.slug, items: visibleItems });
   } catch (error) {
     const { status, message } = getSafeApiError(error);

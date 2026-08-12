@@ -1,22 +1,19 @@
-import type { NavMainProps } from '../types';
-
 import { useEffect } from 'react';
-
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 
+import type { NavMainProps } from '../types';
+import { Nav, NavUl } from '../components';
+
+import { NavList } from './nav-mobile-list';
+
 import { usePathname } from 'src/routes/hooks';
-
 import { useTranslate } from 'src/locales';
-
 import { Logo } from 'src/components/logo';
 import { Scrollbar } from 'src/components/scrollbar';
 import { RiCloseLine } from 'src/components/remix-icon';
 
-import { Nav, NavUl } from '../components';
-import { NavList } from './nav-mobile-list';
-import { SignInButton } from '../../../components/sign-in-button';
 
 // ----------------------------------------------------------------------
 
@@ -104,18 +101,7 @@ export function NavMobile({ data, open, onClose, slots, sx }: NavMobileProps) {
         </Nav>
       </Scrollbar>
 
-      {slots?.bottomArea ?? (
-        <Box
-          sx={{
-            py: 3,
-            px: 2.5,
-            gap: 1.5,
-            display: 'flex',
-          }}
-        >
-          <SignInButton fullWidth />
-        </Box>
-      )}
+      {slots?.bottomArea ?? null}
     </Drawer>
   );
 }

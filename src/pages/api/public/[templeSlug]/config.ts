@@ -10,9 +10,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   try {
     const temple = await resolvePublicTemple(req);
-    // Branding and the selected public template are edited from the admin UI.
-    // Do not let the CDN keep serving the previous temple configuration after save.
-    setPublicCacheControl(req, res, 'private, no-store, max-age=0');
+    // Tenant settings change infrequently. Keep a short edge cache so every page view
+    // does not repeat the same domain, branding, module and domain database lookups.
+    setPublicCacheControl(req, res, 'public, s-maxage=60, stale-while-revalidate=300');
     return res.status(200).json({
       temple: {
         id: temple.id,

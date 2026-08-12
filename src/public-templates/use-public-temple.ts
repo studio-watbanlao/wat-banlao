@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
+import { createContext, useContext } from 'react';
 
 import { isPublicTemplateKey } from 'src/public-templates/catalog';
 import type { TempleBranding } from 'src/types/temple';
@@ -16,9 +17,13 @@ export type PublicTempleConfig = {
 };
 
 export const PUBLIC_TEMPLE_QUERY_KEY = ['public-temple-config'] as const;
+export const PublicTempleInitialDataContext = createContext<PublicTempleConfig | undefined>(
+  undefined
+);
 
 export function usePublicTemple() {
   const router = useRouter();
+  const initialTemple = useContext(PublicTempleInitialDataContext);
   const isPreviewRoute = router.pathname === '/dashboard/templates/preview';
   const templeId = typeof router.query.templeId === 'string' ? router.query.templeId : '';
   const requestedTemplate =
@@ -54,10 +59,11 @@ export function usePublicTemple() {
       return response.data.temple as PublicTempleConfig;
     },
     enabled: !isPreviewRoute || router.isReady,
-    // Template/branding changes must be visible as soon as an admin saves them.
-    staleTime: 0,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
+    initialData: isPreviewRoute ? undefined : initialTemple,
+    // Avoid fetching the same tenant configuration again for every layout component.
+    staleTime: 5 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
     retry: false,
   });
 }

@@ -4,16 +4,16 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import IconButton from '@mui/material/IconButton';
+import Skeleton from '@mui/material/Skeleton';
+import Typography from '@mui/material/Typography';
 import type { Breakpoint } from '@mui/material/styles';
 import { useQuery } from '@tanstack/react-query';
 import { useBoolean } from 'minimal-shared/hooks';
 import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
 
-import { AccountPopover } from '../components/account-popover';
 import { LanguagePopover } from '../components/language-popover';
 import { MenuButton } from '../components/menu-button';
-import { SignInButton } from '../components/sign-in-button';
 import type { HeaderSectionProps, LayoutSectionProps, MainSectionProps } from '../core';
 import { HeaderSection, LayoutSection, MainSection } from '../core';
 
@@ -100,6 +100,48 @@ export type MainLayoutProps = LayoutBaseProps & {
   };
 };
 
+function PublicSiteLoading({ failed = false }: { failed?: boolean }) {
+  return (
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      <Box
+        component="header"
+        sx={{ height: { xs: 72, md: 96 }, borderBottom: '1px solid', borderColor: 'divider' }}
+      >
+        <Container
+          maxWidth="xl"
+          sx={{ height: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Skeleton variant="circular" width={44} height={44} />
+            <Skeleton variant="rounded" width={160} height={24} />
+          </Box>
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2 }}>
+            {[88, 112, 96, 124].map((width) => (
+              <Skeleton key={width} variant="rounded" width={width} height={20} />
+            ))}
+          </Box>
+        </Container>
+      </Box>
+
+      <Box sx={{ minHeight: { xs: 560, md: 720 }, display: 'grid', placeItems: 'center', p: 3 }}>
+        {failed ? (
+          <Typography color="text.secondary" align="center">
+            ไม่สามารถโหลดข้อมูลเว็บไซต์ได้ กรุณาลองรีเฟรชอีกครั้ง
+          </Typography>
+        ) : (
+          <Container maxWidth="xl">
+            <Skeleton
+              variant="rounded"
+              animation="wave"
+              sx={{ width: 1, height: { xs: 420, md: 600 }, borderRadius: 3 }}
+            />
+          </Container>
+        )}
+      </Box>
+    </Box>
+  );
+}
+
 export function MainLayout({
   sx,
   cssVars,
@@ -109,7 +151,7 @@ export function MainLayout({
 }: MainLayoutProps) {
   const { t } = useTranslate('navbar');
   const pathname = usePathname();
-  const { data: publicTemple } = usePublicTemple();
+  const { data: publicTemple, isError: isPublicTempleError } = usePublicTemple();
   const tenantKey = usePublicTenantKey();
 
   const { value: open, onFalse: onClose, onTrue: onOpen } = useBoolean();
@@ -128,8 +170,8 @@ export function MainLayout({
         pages: pagesResponse.data.pages as TemplePage[],
       };
     },
-    staleTime: 0,
-    refetchOnWindowFocus: true,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
     retry: false,
   });
   const navigationItems = publicNavigation?.items || [];
@@ -153,9 +195,7 @@ export function MainLayout({
             path: item.path,
             icon: navigationIcon(item.itemKey),
             deepMatch: item.deepMatch,
-            children: childItems.length
-              ? [{ subheader: '', items: childItems }]
-              : undefined,
+            children: childItems.length ? [{ subheader: '', items: childItems }] : undefined,
           };
         }),
     [navigationItems]
@@ -187,6 +227,11 @@ export function MainLayout({
       {children}
     </>
   );
+
+  // Never paint the generic/classic tenant while the real domain configuration
+  // is unresolved. The home page normally receives this data during SSR; this
+  // neutral state protects direct visits to other public routes as well.
+  if (!publicTemple) return <PublicSiteLoading failed={isPublicTempleError} />;
 
   const renderHeader = () => {
     const customHeaderSlots = slotProps?.header?.slots;
@@ -268,10 +313,6 @@ export function MainLayout({
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 } }}>
           {/** @slot Settings button */}
           {/* <SettingsButton /> */}
-
-          {/** @slot Sign in button */}
-          <SignInButton />
-          <AccountPopover />
 
           {/** @slot Language popover */}
           <LanguagePopover showTranslateIcon data={languageOptions} />

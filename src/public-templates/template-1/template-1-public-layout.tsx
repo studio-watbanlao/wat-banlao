@@ -9,9 +9,7 @@ import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
 import { useBoolean } from 'minimal-shared/hooks';
 
-import { AccountPopover } from 'src/layouts/components/account-popover';
 import { MenuButton } from 'src/layouts/components/menu-button';
-import { SignInButton } from 'src/layouts/components/sign-in-button';
 import { LayoutSection, MainSection } from 'src/layouts/core';
 import { MainSchoolBrand, MainSchoolLogo } from 'src/layouts/main/school-brand';
 import { NavDesktop } from 'src/layouts/main/nav/desktop';
@@ -100,11 +98,6 @@ export function Template1PublicLayout({ children, navData, footerContent }: Prop
               }}
             >
               <NavDesktop data={navData} sx={{ '& ul': { gap: 2 } }} />
-            </Box>
-
-            <Box sx={{ ml: { xs: 'auto', md: 2 }, display: 'flex', alignItems: 'center' }}>
-              <SignInButton />
-              <AccountPopover />
             </Box>
           </Container>
         </Box>
