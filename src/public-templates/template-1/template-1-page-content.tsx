@@ -23,7 +23,7 @@ export function Template1PageContent({ page }: { page: TemplePage }) {
             'radial-gradient(circle at 78% 0%, rgba(214,173,92,0.22), transparent 36%)',
         }}
       >
-        <Container maxWidth="lg" sx={{ py: { xs: 8, md: 13 } }}>
+        <Container maxWidth="xl" sx={{ py: { xs: 8, md: 13 } }}>
           <Stack spacing={2} alignItems={isLanding ? 'center' : 'flex-start'}>
             {page.eyebrow ? (
               <Typography variant="overline" sx={{ color: 'secondary.main', letterSpacing: 3 }}>
@@ -55,7 +55,7 @@ export function Template1PageContent({ page }: { page: TemplePage }) {
         </Container>
       </Box>
 
-      <Container maxWidth="lg" sx={{ mt: { xs: 4, md: 7 } }}>
+      <Container maxWidth="xl" sx={{ mt: { xs: 4, md: 7 } }}>
         <Box
           sx={{
             position: 'relative',
@@ -77,7 +77,7 @@ export function Template1PageContent({ page }: { page: TemplePage }) {
       </Container>
 
       {page.content ? (
-        <Container maxWidth="md" sx={{ py: { xs: 7, md: 11 } }}>
+        <Container maxWidth="xl" sx={{ py: { xs: 7, md: 11 } }}>
           <Box
             sx={{
               typography: 'body1',

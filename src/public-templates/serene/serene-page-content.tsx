@@ -61,7 +61,7 @@ export function SerenePageContent({ page }: { page: TemplePage }) {
       </Container>
 
       {page.content ? (
-        <Container maxWidth="md" sx={{ py: { xs: 7, md: 11 } }}>
+        <Container maxWidth="xl" sx={{ py: { xs: 7, md: 11 } }}>
           <Box
             sx={{
               typography: 'body1',

@@ -77,17 +77,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const desktopImage = parseImage(req.body?.desktopImage);
       const mobileImage = parseImage(req.body?.mobileImage);
 
-      if (!title || !isStatus(status) || !desktopImage || !mobileImage) {
-        return res.status(400).json({ message: 'กรุณากรอกชื่อและเลือกรูป Desktop/Mobile ให้ครบ' });
+      if (!title || !isStatus(status) || !desktopImage) {
+        return res.status(400).json({ message: 'กรุณากรอกชื่อและเลือกรูป Desktop' });
       }
 
       const id = randomUUID();
       const desktopStoragePath = `${templeId}/${id}/desktop-${Date.now()}.${desktopImage.extension}`;
-      const mobileStoragePath = `${templeId}/${id}/mobile-${Date.now()}.${mobileImage.extension}`;
-      const [desktopImageUrl, mobileImageUrl] = await Promise.all([
-        uploadBannerImage(desktopStoragePath, desktopImage.buffer, desktopImage.contentType),
-        uploadBannerImage(mobileStoragePath, mobileImage.buffer, mobileImage.contentType),
-      ]);
+      const desktopImageUrl = await uploadBannerImage(
+        desktopStoragePath,
+        desktopImage.buffer,
+        desktopImage.contentType
+      );
+      const mobileStoragePath = mobileImage
+        ? `${templeId}/${id}/mobile-${Date.now()}.${mobileImage.extension}`
+        : '';
+      const mobileImageUrl = mobileImage
+        ? await uploadBannerImage(mobileStoragePath, mobileImage.buffer, mobileImage.contentType)
+        : desktopImageUrl;
       const data = {
         title,
         desktopImageUrl,
@@ -115,6 +121,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const mobileImage = parseImage(req.body?.mobileImage);
       const data = getBannerData({ ...existing, ...req.body });
       const replacedPaths: string[] = [];
+      const usesDesktopFallback =
+        !existing.mobileStoragePath &&
+        (!existing.mobileImageUrl || existing.mobileImageUrl === existing.desktopImageUrl);
 
       if (desktopImage) {
         const path = `${templeId}/${id}/desktop-${Date.now()}.${desktopImage.extension}`;
@@ -125,6 +134,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         );
         if (data.desktopStoragePath) replacedPaths.push(data.desktopStoragePath);
         data.desktopStoragePath = path;
+        if (usesDesktopFallback && !mobileImage) {
+          data.mobileImageUrl = data.desktopImageUrl;
+          data.mobileStoragePath = '';
+        }
       }
 
       if (mobileImage) {
@@ -136,11 +149,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         );
         if (data.mobileStoragePath) replacedPaths.push(data.mobileStoragePath);
         data.mobileStoragePath = path;
+      } else if (req.body?.removeMobileImage === true) {
+        if (existing.mobileStoragePath) replacedPaths.push(existing.mobileStoragePath);
+        data.mobileImageUrl = data.desktopImageUrl;
+        data.mobileStoragePath = '';
       }
 
-      if (!data.title || !data.desktopImageUrl || !data.mobileImageUrl) {
+      if (!data.title || !data.desktopImageUrl) {
         return res.status(400).json({ message: 'ข้อมูล Banner ไม่ครบถ้วน' });
       }
+
+      if (!data.mobileImageUrl) data.mobileImageUrl = data.desktopImageUrl;
 
       const banner = await updateAdminContent('banner', templeId, id, status, data);
       if (!banner) return res.status(404).json({ message: 'ไม่พบ Banner' });

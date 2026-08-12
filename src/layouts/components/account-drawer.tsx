@@ -1,10 +1,8 @@
 'use client';
 
 import type { IconButtonProps } from '@mui/material/IconButton';
-
 import { useBoolean } from 'minimal-shared/hooks';
 import { varAlpha } from 'minimal-shared/utils';
-
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
@@ -14,39 +12,30 @@ import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
 import Typography from '@mui/material/Typography';
 
+import { AccountButton } from './account-button';
+import { SignOutButton } from './sign-out-button';
+
 import { RouterLink } from 'src/routes/components';
 import { usePathname } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
-
 import { useTranslate } from 'src/locales';
-
 import { Label } from 'src/components/label';
 import {
   RiArrowRightSLine,
   RiBuildingLine,
   RiCloseLine,
-  RiContractLine,
-  RiFileTextLine,
-  RiGraduationCapLine,
-  RiGuideLine,
   RiHome5Line,
   RiImageLine,
   RiMenuLine,
-  RiSchoolLine,
   RiSettings3Line,
   RiShieldCheckLine,
-  RiShieldKeyholeLine,
-  RiShieldUserLine,
   RiTeamLine,
   RiUser3Line,
 } from 'src/components/remix-icon';
 import { Scrollbar } from 'src/components/scrollbar';
-
 import { useAuthContext } from 'src/auth/hooks';
 import { useCurrentTempleAccess } from 'src/hooks/use-current-temple-access';
 
-import { AccountButton } from './account-button';
-import { SignOutButton } from './sign-out-button';
 
 // ----------------------------------------------------------------------
 
@@ -64,13 +53,9 @@ const ROLE_LABEL: Record<string, string> = {
   temple_admin: 'ผู้ดูแลวัด',
   temple_editor: 'บรรณาธิการ',
   temple_contributor: 'ผู้เขียนเนื้อหา',
-  master_admin: 'ผู้ดูแลระบบหลัก',
-  school_admin: 'ผู้ดูแลโรงเรียน',
-  teacher: 'ครูผู้สอน',
-  student: 'นักเรียน',
 };
 
-const ROOT_PATHS = [paths.master.root, paths.admin.root, paths.teacher.root, paths.student.root];
+const ROOT_PATHS = [paths.dashboard.root];
 
 export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
   const pathname = usePathname();
@@ -81,7 +66,7 @@ export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
 
   const isSuperAdmin = user?.role === 'super_admin' || templeAccess?.role === 'super_admin';
   const isTempleAccount = Boolean(templeAccess) || isSuperAdmin;
-  const isAdmin = isTempleAccount || user?.role === 'school_admin' || user?.role === 'master_admin';
+  const isAdmin = isTempleAccount;
   const avatarUrl = user?.avatar_url ?? user?.photoURL;
   const displayName = user?.displayName || user?.username || t('ผู้ใช้งาน');
   const accountRole = isSuperAdmin ? 'super_admin' : templeAccess?.role || user?.role;
@@ -152,123 +137,7 @@ export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
       : []),
   ];
 
-  const adminMenu: NonNullable<AccountDrawerProps['data']> =
-    user?.role === 'master_admin'
-      ? [
-          {
-            label: 'ภาพรวมระบบ',
-            href: paths.master.root,
-            icon: <RiHome5Line />,
-          },
-          {
-            label: 'จัดการโรงเรียน',
-            href: paths.master.school.root,
-            icon: <RiSchoolLine />,
-          },
-          {
-            label: 'ผู้ดูแลโรงเรียน',
-            href: paths.master.schoolAdmin.root,
-            icon: <RiTeamLine />,
-          },
-          {
-            label: 'เปลี่ยนรหัสผ่าน',
-            href: paths.auth.jwt.changePassword,
-            icon: <RiShieldKeyholeLine />,
-          },
-        ]
-      : [
-          {
-            label: 'ภาพรวมโรงเรียน',
-            href: paths.admin.root,
-            icon: <RiHome5Line />,
-          },
-          {
-            label: 'ข้อมูลโรงเรียน',
-            href: paths.admin.school,
-            icon: <RiSchoolLine />,
-          },
-          {
-            label: 'บุคลากรและครู',
-            href: paths.admin.user.root,
-            icon: <RiTeamLine />,
-          },
-          {
-            label: 'นักเรียน',
-            href: paths.admin.student.root,
-            icon: <RiGraduationCapLine />,
-          },
-          {
-            label: 'วิธีใช้งาน',
-            href: paths.admin.guide,
-            icon: <RiGuideLine />,
-          },
-          {
-            label: 'นโยบายความเป็นส่วนตัว',
-            href: paths.legal.privacyPolicy,
-            icon: <RiShieldUserLine />,
-          },
-          {
-            label: 'ข้อกำหนดการใช้บริการ',
-            href: paths.legal.termsOfService,
-            icon: <RiFileTextLine />,
-          },
-          {
-            label: 'ข้อตกลงการให้บริการ',
-            href: paths.legal.serviceAgreement,
-            icon: <RiContractLine />,
-          },
-          {
-            label: 'เปลี่ยนรหัสผ่าน',
-            href: paths.auth.jwt.changePassword,
-            icon: <RiShieldKeyholeLine />,
-          },
-        ];
-
-  const teacherMenu: NonNullable<AccountDrawerProps['data']> = [
-    {
-      label: 'หน้าหลักครู',
-      href: paths.teacher.root,
-      icon: <RiHome5Line />,
-    },
-    {
-      label: 'โปรไฟล์ของฉัน',
-      href: paths.teacher.profile,
-      icon: <RiUser3Line />,
-    },
-    {
-      label: 'วิธีใช้งาน',
-      href: paths.teacher.guide,
-      icon: <RiGuideLine />,
-    },
-    {
-      label: 'นโยบายความเป็นส่วนตัว',
-      href: paths.legal.privacyPolicy,
-      icon: <RiShieldUserLine />,
-    },
-    {
-      label: 'ข้อกำหนดการใช้บริการ',
-      href: paths.legal.termsOfService,
-      icon: <RiFileTextLine />,
-    },
-    {
-      label: 'ข้อตกลงการให้บริการ',
-      href: paths.legal.serviceAgreement,
-      icon: <RiContractLine />,
-    },
-    {
-      label: 'เปลี่ยนรหัสผ่าน',
-      href: paths.auth.jwt.changePassword,
-      icon: <RiShieldKeyholeLine />,
-    },
-  ];
-
-  const menuData = isTempleAccount
-    ? templeMenu
-    : isAdmin
-      ? adminMenu
-      : user?.role === 'teacher'
-        ? teacherMenu
-        : data;
+  const menuData = isTempleAccount ? templeMenu : data;
 
   return (
     <>

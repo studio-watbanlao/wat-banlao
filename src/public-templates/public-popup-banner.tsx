@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import Iconify from 'src/components/iconify';
 import Image from 'src/components/image';
@@ -51,6 +51,7 @@ const rememberShown = (popupBanner: PopupBannerItem) => {
 
 export function PublicPopupBanner() {
   const [open, setOpen] = useState(false);
+  const [loadedBannerId, setLoadedBannerId] = useState('');
   const { data: temple } = usePublicTemple();
   const { data: popupBanner } = useQuery({
     queryKey: ['public-popup-banner', temple?.id],
@@ -64,9 +65,14 @@ export function PublicPopupBanner() {
 
   useEffect(() => {
     if (!popupBanner || !shouldOpen(popupBanner)) return;
-    rememberShown(popupBanner);
     setOpen(true);
   }, [popupBanner]);
+
+  const handleImageLoaded = useCallback(() => {
+    if (!popupBanner || loadedBannerId === popupBanner.id) return;
+    rememberShown(popupBanner);
+    setLoadedBannerId(popupBanner.id);
+  }, [loadedBannerId, popupBanner]);
 
   if (!popupBanner) return null;
 
@@ -75,7 +81,15 @@ export function PublicPopupBanner() {
       src={popupBanner.imageUrl}
       alt={popupBanner.title}
       ratio="1/1"
-      sx={{ width: 1, maxHeight: 'min(78vh, 760px)', '& img': { objectFit: 'contain' } }}
+      visibleByDefault
+      disabledEffect
+      afterLoad={handleImageLoaded}
+      sx={{
+        width: 600,
+        maxWidth: 1,
+        bgcolor: 'background.paper',
+        '& img': { objectFit: 'contain' },
+      }}
     />
   );
 
@@ -88,8 +102,10 @@ export function PublicPopupBanner() {
       slotProps={{
         paper: {
           sx: {
-            width: 'auto',
-            maxWidth: 'min(92vw, 760px)',
+            width: 'min(600px, 92vw, 82vh)',
+            height: 'min(600px, 92vw, 82vh)',
+            maxWidth: 'none',
+            maxHeight: 'none',
             m: 2,
             overflow: 'visible',
             borderRadius: 2,
@@ -99,7 +115,16 @@ export function PublicPopupBanner() {
         },
       }}
     >
-      <Box sx={{ position: 'relative', overflow: 'hidden', borderRadius: 2 }}>
+      <Box
+        sx={{
+          width: 1,
+          height: 1,
+          aspectRatio: '1 / 1',
+          position: 'relative',
+          overflow: 'hidden',
+          borderRadius: 2,
+        }}
+      >
         {popupBanner.linkUrl ? (
           <Box
             component="a"

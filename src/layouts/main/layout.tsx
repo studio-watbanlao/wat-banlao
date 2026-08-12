@@ -5,10 +5,10 @@ import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import IconButton from '@mui/material/IconButton';
 import type { Breakpoint } from '@mui/material/styles';
+import { useQuery } from '@tanstack/react-query';
 import { useBoolean } from 'minimal-shared/hooks';
 import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
 
 import { AccountPopover } from '../components/account-popover';
 import { LanguagePopover } from '../components/language-popover';
@@ -26,17 +26,17 @@ import { StudentBottomNav } from './nav/mobile/student-bottom-nav';
 import type { NavMainProps } from './nav/types';
 import { MainSchoolBrand } from './school-brand';
 
-import { RiArticleLine, RiFacebookFill, RiInstagramLine } from 'src/components/remix-icon';
 import MataData from 'src/components/mata-data/mata-data';
+import { RiArticleLine, RiFacebookFill, RiInstagramLine } from 'src/components/remix-icon';
 import { languageOptions, useTranslate, useTranslatedMainNav } from 'src/locales';
+import { resolvePublicTemplateKey } from 'src/public-templates/catalog';
+import { PublicPopupBanner } from 'src/public-templates/public-popup-banner';
+import { usePublicTemple } from 'src/public-templates/use-public-temple';
 import { RouterLink } from 'src/routes/components';
 import { usePathname } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 import type { TemplePage } from 'src/types/temple-page';
 import axios from 'src/utils/axios';
-import { resolvePublicTemplateKey } from 'src/public-templates/catalog';
-import { usePublicTemple } from 'src/public-templates/use-public-temple';
-import { PublicPopupBanner } from 'src/public-templates/public-popup-banner';
 
 const SerenePublicLayout = dynamic(() =>
   import('src/public-templates/serene/serene-public-layout').then(
@@ -146,7 +146,7 @@ export function MainLayout({
           })}
         >
           <Container
-            maxWidth="lg"
+            maxWidth="xl"
             sx={{
               height: 78,
               display: 'flex',
@@ -233,7 +233,7 @@ export function MainLayout({
           })}
         >
           <Container
-            maxWidth="lg"
+            maxWidth="xl"
             sx={{
               height: 46,
               display: 'flex',

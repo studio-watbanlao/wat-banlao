@@ -148,7 +148,7 @@ export default function CommunityLeaderFormPage({ leader }: Props) {
 
   return (
     <Layout>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
         <Form methods={methods} onSubmit={saveLeader}>
           <Stack spacing={3}>
             <Stack direction="row" alignItems="center" spacing={2}>

@@ -37,7 +37,7 @@ export default function EditPopupBannerPage() {
 
   return (
     <Layout>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
         <Stack spacing={2}>
           <Typography variant="h4">แก้ไข Popup Banner</Typography>
           {error ? <Alert severity="error">{error}</Alert> : <Typography>กำลังโหลด...</Typography>}

@@ -21,13 +21,6 @@ export const bannerFormSchema = z
         message: 'กรุณาเลือกรูป Desktop',
       });
     }
-    if (!data.mobileImage && !data.currentMobileUrl) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['mobileImage'],
-        message: 'กรุณาเลือกรูป Mobile',
-      });
-    }
   });
 
 export type BannerFormValues = z.infer<typeof bannerFormSchema>;

@@ -50,8 +50,12 @@ export default function BannerFormPage({ banner, initialSortOrder = 0 }: Props) 
   const isEditing = Boolean(banner);
 
   const currentDesktopUrl = banner?.desktopImageUrl || banner?.imageUrl || '';
-  const currentMobileUrl =
-    banner?.mobileImageUrl || banner?.desktopImageUrl || banner?.imageUrl || '';
+  const hasCustomMobileImage = Boolean(
+    banner?.mobileStoragePath ||
+    (banner?.mobileImageUrl && banner.mobileImageUrl !== currentDesktopUrl)
+  );
+  const initialMobileUrl = hasCustomMobileImage ? banner?.mobileImageUrl || '' : '';
+  const [currentMobileUrl, setCurrentMobileUrl] = useState(initialMobileUrl);
 
   const methods = useForm<BannerFormValues>({
     resolver: zodResolver(bannerFormSchema),
@@ -130,6 +134,7 @@ export default function BannerFormPage({ banner, initialSortOrder = 0 }: Props) 
         status: form.status,
         desktopImage: desktopPayload,
         mobileImage: mobilePayload,
+        removeMobileImage: Boolean(banner && !mobilePayload && !currentMobileUrl),
       };
 
       if (isEditing) await axios.patch('/api/admin/banners', payload);
@@ -158,7 +163,7 @@ export default function BannerFormPage({ banner, initialSortOrder = 0 }: Props) 
             <div>
               <Typography variant="h4">{isEditing ? 'แก้ไข Banner' : 'เพิ่ม Banner'}</Typography>
               <Typography variant="body2" color="text.secondary">
-                กำหนด Banner หน้าแรกสำหรับ Desktop และ Mobile
+                รูป Desktop ใช้เป็นรูปหลัก ส่วนรูป Mobile เพิ่มเฉพาะเมื่อต้องการภาพแนวตั้ง
               </Typography>
             </div>
           </Stack>
@@ -200,16 +205,14 @@ export default function BannerFormPage({ banner, initialSortOrder = 0 }: Props) 
                         }}
                         onDrop={handleDropImage('desktopImage', desktopImage)}
                         onDelete={
-                          desktopImage
-                            ? handleRemoveImage('desktopImage', desktopImage)
-                            : undefined
+                          desktopImage ? handleRemoveImage('desktopImage', desktopImage) : undefined
                         }
                         helperText="แนะนำ 1920 × 720 px · รองรับ JPG, PNG, WebP · ไม่เกิน 8 MB"
                       />
                     </Stack>
 
                     <Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography variant="subtitle2">รูป Mobile *</Typography>
+                      <Typography variant="subtitle2">รูป Mobile (ไม่บังคับ)</Typography>
                       <Field.Upload
                         name="mobileImage"
                         file={mobileImage || currentMobileUrl}
@@ -221,9 +224,13 @@ export default function BannerFormPage({ banner, initialSortOrder = 0 }: Props) 
                         }}
                         onDrop={handleDropImage('mobileImage', mobileImage)}
                         onDelete={
-                          mobileImage ? handleRemoveImage('mobileImage', mobileImage) : undefined
+                          mobileImage
+                            ? handleRemoveImage('mobileImage', mobileImage)
+                            : currentMobileUrl
+                              ? () => setCurrentMobileUrl('')
+                              : undefined
                         }
-                        helperText="แนะนำ 750 × 900 px · รองรับ JPG, PNG, WebP · ไม่เกิน 8 MB"
+                        helperText="หากไม่เลือก ระบบจะใช้รูป Desktop · แนะนำ 750 × 900 px · ไม่เกิน 8 MB"
                       />
                     </Stack>
                   </Stack>

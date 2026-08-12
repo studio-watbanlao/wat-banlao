@@ -7,15 +7,15 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import { useBoolean } from 'minimal-shared/hooks';
 
+import { RiFacebookFill, RiInstagramLine } from 'src/components/remix-icon';
 import { AccountPopover } from 'src/layouts/components/account-popover';
 import { MenuButton } from 'src/layouts/components/menu-button';
 import { SignInButton } from 'src/layouts/components/sign-in-button';
 import { LayoutSection, MainSection } from 'src/layouts/core';
-import { MainSchoolBrand, MainSchoolLogo } from 'src/layouts/main/school-brand';
 import { NavDesktop } from 'src/layouts/main/nav/desktop';
 import { NavMobile } from 'src/layouts/main/nav/mobile';
 import type { NavMainProps } from 'src/layouts/main/nav/types';
-import { RiFacebookFill, RiInstagramLine } from 'src/components/remix-icon';
+import { MainSchoolBrand, MainSchoolLogo } from 'src/layouts/main/school-brand';
 import { usePublicTemple } from 'src/public-templates/use-public-temple';
 
 type Props = {
@@ -51,7 +51,10 @@ export function SerenePublicLayout({ children, navData, footerContent }: Props) 
             borderBottomColor: 'divider',
           }}
         >
-          <Container maxWidth="xl" sx={{ height: { xs: 68, md: 86 }, display: 'flex', alignItems: 'center' }}>
+          <Container
+            maxWidth="xl"
+            sx={{ height: { xs: 68, md: 86 }, display: 'flex', alignItems: 'center' }}
+          >
             <Box sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }}>
               <MenuButton onClick={menu.onTrue} aria-label="เปิดเมนู" />
               <NavMobile data={navData} open={menu.value} onClose={menu.onFalse} />
@@ -70,8 +73,15 @@ export function SerenePublicLayout({ children, navData, footerContent }: Props) 
       footerSection={
         footerContent ?? (
           <Box component="footer" sx={{ mt: 'auto', color: 'common.white', bgcolor: '#25302B' }}>
-            <Container maxWidth="lg" sx={{ py: { xs: 5, md: 7 } }}>
-              <Box sx={{ display: 'flex', gap: 4, flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between' }}>
+            <Container maxWidth="xl" sx={{ py: { xs: 5, md: 7 } }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 4,
+                  flexDirection: { xs: 'column', md: 'row' },
+                  justifyContent: 'space-between',
+                }}
+              >
                 <Box sx={{ maxWidth: 520 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <MainSchoolLogo size={52} />
@@ -83,7 +93,14 @@ export function SerenePublicLayout({ children, navData, footerContent }: Props) 
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1 }}>
                   {SOCIALS.map(({ label, href, icon: Icon }) => (
-                    <IconButton key={label} component="a" href={href} target="_blank" aria-label={label} sx={{ color: 'common.white' }}>
+                    <IconButton
+                      key={label}
+                      component="a"
+                      href={href}
+                      target="_blank"
+                      aria-label={label}
+                      sx={{ color: 'common.white' }}
+                    >
                       <Icon size={20} />
                     </IconButton>
                   ))}
@@ -102,4 +119,3 @@ export function SerenePublicLayout({ children, navData, footerContent }: Props) 
     </LayoutSection>
   );
 }
-

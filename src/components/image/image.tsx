@@ -1,16 +1,13 @@
-import { forwardRef } from 'react';
+import { forwardRef, useState } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import Box from '@mui/material/Box';
+import Skeleton from '@mui/material/Skeleton';
 import { alpha, useTheme } from '@mui/material/styles';
 
 import { ImageProps } from './types';
 import { getRatio } from './utils';
 
-import {
-  applyDefaultContentImage,
-  DEFAULT_CONTENT_IMAGE,
-  resolveContentImage,
-} from 'src/constants/images';
+import { applyDefaultContentImage, resolveContentImage } from 'src/constants/images';
 
 // ----------------------------------------------------------------------
 
@@ -30,7 +27,7 @@ const Image = forwardRef<HTMLSpanElement, ImageProps>(
       delayMethod,
       onError,
       placeholder,
-      placeholderSrc = DEFAULT_CONTENT_IMAGE,
+      placeholderSrc,
       wrapperProps,
       scrollPosition,
       effect = 'blur',
@@ -43,6 +40,14 @@ const Image = forwardRef<HTMLSpanElement, ImageProps>(
     ref
   ) => {
     const theme = useTheme();
+    const resolvedSrc = resolveContentImage(typeof src === 'string' ? src : '');
+    const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
+    const isLoading = loadedSrc !== resolvedSrc;
+
+    const handleAfterLoad: NonNullable<ImageProps['afterLoad']> = () => {
+      setLoadedSrc(resolvedSrc);
+      afterLoad?.();
+    };
 
     const handleError: NonNullable<ImageProps['onError']> = (event) => {
       applyDefaultContentImage(event);
@@ -67,8 +72,8 @@ const Image = forwardRef<HTMLSpanElement, ImageProps>(
         component={LazyLoadImage as React.ElementType}
         //
         alt={alt}
-        src={resolveContentImage(typeof src === 'string' ? src : '')}
-        afterLoad={afterLoad}
+        src={resolvedSrc}
+        afterLoad={handleAfterLoad}
         delayTime={delayTime}
         threshold={threshold}
         beforeLoad={beforeLoad}
@@ -88,6 +93,10 @@ const Image = forwardRef<HTMLSpanElement, ImageProps>(
           height: 1,
           objectFit: 'cover',
           verticalAlign: 'bottom',
+          opacity: isLoading ? 0 : 1,
+          transition: theme.transitions.create('opacity', {
+            duration: theme.transitions.duration.shorter,
+          }),
           ...(!!ratio && {
             top: 0,
             left: 0,
@@ -113,6 +122,8 @@ const Image = forwardRef<HTMLSpanElement, ImageProps>(
           '& span.component-image-wrapper': {
             width: 1,
             height: 1,
+            zIndex: 1,
+            position: 'relative',
             verticalAlign: 'bottom',
             backgroundSize: 'cover !important',
             ...(!!ratio && {
@@ -124,6 +135,14 @@ const Image = forwardRef<HTMLSpanElement, ImageProps>(
         }}
         {...other}
       >
+        {isLoading && (
+          <Skeleton
+            aria-hidden
+            animation="wave"
+            variant="rectangular"
+            sx={{ position: 'absolute', inset: 0, width: 1, height: 1 }}
+          />
+        )}
         {content}
       </Box>
     );

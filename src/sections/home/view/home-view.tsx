@@ -14,6 +14,7 @@ import HomeLookingFor from '../home-looking-for';
 import HomeMinimal from '../home-minimal';
 import HomeTeam from '../home-team';
 import HomeTempleFestival from '../home-temple-festival';
+import WebsiteVisitorCount from '../website-visitor-count';
 
 import { CONFIG } from 'src/config-global';
 import { useGetBanner } from 'src/queries/banner';
@@ -129,9 +130,16 @@ const HomeView = () => {
   const { data: temple } = usePublicTemple();
   const template = resolvePublicTemplateKey(temple?.branding.publicTemplate);
 
-  if (template === 'serene') return <SereneHomeView />;
-  if (template === 'template-1') return <Template1HomeView />;
-  return <ClassicHomeView />;
+  let templateView = <ClassicHomeView />;
+  if (template === 'serene') templateView = <SereneHomeView />;
+  if (template === 'template-1') templateView = <Template1HomeView />;
+
+  return (
+    <>
+      {templateView}
+      <WebsiteVisitorCount templeId={temple?.id} />
+    </>
+  );
 };
 
 export default HomeView;

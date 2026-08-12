@@ -1,7 +1,5 @@
 import type { IconButtonProps } from '@mui/material/IconButton';
-
 import { usePopover } from 'minimal-shared/hooks';
-
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Divider from '@mui/material/Divider';
@@ -9,31 +7,19 @@ import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 
+import { AccountButton } from './account-button';
+import { SignOutButton } from './sign-out-button';
+
 import { paths } from 'src/routes/paths';
 import { usePathname } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
-
 import { useTranslate } from 'src/locales';
-
 import { Label } from 'src/components/label';
 import { CustomPopover } from 'src/components/custom-popover';
-import {
-  RiTeamLine,
-  RiGuideLine,
-  RiHome5Line,
-  RiUser3Line,
-  RiQrCodeLine,
-  RiContractLine,
-  RiFileTextLine,
-  RiShieldUserLine,
-  RiShieldKeyholeLine,
-} from 'src/components/remix-icon';
-
+import { RiUser3Line } from 'src/components/remix-icon';
 import { useAuthContext } from 'src/auth/hooks';
 import { useCurrentTempleAccess } from 'src/hooks/use-current-temple-access';
 
-import { AccountButton } from './account-button';
-import { SignOutButton } from './sign-out-button';
 
 // ----------------------------------------------------------------------
 
@@ -73,71 +59,17 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
     'ผู้ใช้งาน';
   const positionTitle = t(rawPositionTitle, { defaultValue: rawPositionTitle });
 
-  const studentMenu = [
+  const defaultMenu = [
     {
       label: 'โปรไฟล์ของฉัน',
-      href: paths.student.profile,
+      href: paths.dashboard.profile,
       icon: <RiUser3Line />,
     },
-    {
-      label: 'ห้องเรียนของฉัน',
-      href: paths.student.classroom,
-      icon: <RiTeamLine />,
-    },
-    {
-      label: 'QR ของฉัน',
-      href: paths.student.qr,
-      icon: <RiQrCodeLine />,
-    },
   ];
-  const teacherMenu = [
-    {
-      label: 'หน้าหลักครู',
-      href: paths.teacher.root,
-      icon: <RiHome5Line />,
-    },
-    {
-      label: 'โปรไฟล์ของฉัน',
-      href: paths.teacher.profile,
-      icon: <RiUser3Line />,
-    },
-    {
-      label: 'วิธีใช้งาน',
-      href: paths.teacher.guide,
-      icon: <RiGuideLine />,
-    },
-    {
-      label: 'นโยบายความเป็นส่วนตัว',
-      href: paths.legal.privacyPolicy,
-      icon: <RiShieldUserLine />,
-    },
-    {
-      label: 'ข้อกำหนดการใช้บริการ',
-      href: paths.legal.termsOfService,
-      icon: <RiFileTextLine />,
-    },
-    {
-      label: 'ข้อตกลงการให้บริการ',
-      href: paths.legal.serviceAgreement,
-      icon: <RiContractLine />,
-    },
-    {
-      label: 'เปลี่ยนรหัสผ่าน',
-      href: paths.auth.jwt.changePassword,
-      icon: <RiShieldKeyholeLine />,
-    },
+  const menuData: NonNullable<AccountPopoverProps['data']> = [
+    ...defaultMenu,
+    ...data.filter((option) => !defaultMenu.some((item) => item.href === option.href)),
   ];
-  const menuData: NonNullable<AccountPopoverProps['data']> =
-    user?.role === 'student'
-      ? [
-          ...studentMenu,
-          ...data.filter(
-            (option) => !studentMenu.some((studentOption) => studentOption.href === option.href)
-          ),
-        ]
-      : user?.role === 'teacher'
-        ? teacherMenu
-        : data;
 
   const renderMenuActions = () => (
     <CustomPopover
@@ -161,7 +93,7 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
       <MenuList sx={{ p: 1, my: 1, '& li': { p: 0 } }}>
         {menuData.map((option) => {
           const rootLabel = pathname.includes('/admin') ? t('Home') : t('Dashboard');
-          const rootHref = pathname.includes('/admin') ? '/' : paths.admin.root;
+          const rootHref = pathname.includes('/admin') ? '/' : paths.dashboard.root;
 
           return (
             <MenuItem key={option.label}>

@@ -1,36 +1,50 @@
-import { m } from "framer-motion";
-import { useEffect, useState } from "react";
+import Box, { BoxProps } from '@mui/material/Box';
+import { alpha, useTheme } from '@mui/material/styles';
+import { m } from 'framer-motion';
+import type { SyntheticEvent } from 'react';
 
-import { useTheme, alpha } from "@mui/material/styles";
-import Box, { BoxProps } from "@mui/material/Box";
+import Logo from '../logo';
 
-import Logo from "../logo";
+import { useAuthContext } from 'src/auth/hooks';
+import { usePublicTemple } from 'src/public-templates/use-public-temple';
+import type { TempleAccess } from 'src/types/temple';
+
+const DEFAULT_LOGO = '/logo/logo_single.png';
 
 const SplashScreen = ({ sx, ...other }: BoxProps) => {
   const theme = useTheme();
-  const [visible, setVisible] = useState(true);
+  const { user } = useAuthContext();
+  const { data: publicTemple } = usePublicTemple();
 
-  useEffect(() => {
-    const timeout = setTimeout(() => setVisible(false), 5000);
-    return () => clearTimeout(timeout);
-  }, []);
+  const accesses = (user?.templeAccesses || []) as TempleAccess[];
+  const currentAccess =
+    accesses.find((access) => access.temple.id === user?.currentTempleId) || accesses[0];
+  const temple = currentAccess?.temple || publicTemple;
+  const logoUrl = temple?.branding.logoUrl || DEFAULT_LOGO;
+  const templeName = temple?.name || 'วัดบ้านเหล่า';
 
-  if (!visible) return null;
+  const handleLogoError = (event: SyntheticEvent<HTMLImageElement>) => {
+    const image = event.currentTarget;
+
+    if (!image.src.endsWith(DEFAULT_LOGO)) {
+      image.src = DEFAULT_LOGO;
+    }
+  };
 
   return (
     <Box
       sx={{
-        position: "fixed",
+        position: 'fixed',
         zIndex: 1300,
         top: 0,
         left: 0,
-        width: "100%",
-        height: "100%",
+        width: '100%',
+        height: '100%',
         bgcolor: theme.palette.background.default,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        overflow: "hidden",
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
         ...sx,
       }}
       {...other}
@@ -45,13 +59,13 @@ const SplashScreen = ({ sx, ...other }: BoxProps) => {
         transition={{
           duration: 4,
           repeat: Infinity,
-          ease: "easeInOut",
+          ease: 'easeInOut',
         }}
         sx={{
-          position: "absolute",
+          position: 'absolute',
           width: 280,
           height: 280,
-          borderRadius: "50%",
+          borderRadius: '50%',
           background: `radial-gradient(${alpha(
             theme.palette.primary.main,
             0.15
@@ -63,12 +77,12 @@ const SplashScreen = ({ sx, ...other }: BoxProps) => {
       <Box
         component={m.div}
         animate={{ rotate: 360 }}
-        transition={{ duration: 10, ease: "linear", repeat: Infinity }}
+        transition={{ duration: 10, ease: 'linear', repeat: Infinity }}
         sx={{
-          position: "absolute",
+          position: 'absolute',
           width: 220,
           height: 220,
-          borderRadius: "50%",
+          borderRadius: '50%',
           border: `2px solid ${alpha(theme.palette.primary.light, 0.2)}`,
         }}
       />
@@ -80,12 +94,12 @@ const SplashScreen = ({ sx, ...other }: BoxProps) => {
           scale: [1, 1.1, 1],
           rotate: [0, -360],
         }}
-        transition={{ duration: 6, ease: "easeInOut", repeat: Infinity }}
+        transition={{ duration: 6, ease: 'easeInOut', repeat: Infinity }}
         sx={{
-          position: "absolute",
+          position: 'absolute',
           width: 160,
           height: 160,
-          borderRadius: "50%",
+          borderRadius: '50%',
           border: `3px dashed ${alpha(theme.palette.primary.main, 0.3)}`,
         }}
       />
@@ -97,14 +111,14 @@ const SplashScreen = ({ sx, ...other }: BoxProps) => {
           opacity: [0.2, 0.5, 0.2],
           scale: [1, 1.05, 1],
         }}
-        transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+        transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
         sx={{
-          position: "absolute",
+          position: 'absolute',
           width: 100,
           height: 100,
-          borderRadius: "50%",
+          borderRadius: '50%',
           border: `2px solid ${alpha(theme.palette.primary.dark, 0.2)}`,
-          backdropFilter: "blur(4px)",
+          backdropFilter: 'blur(4px)',
         }}
       />
 
@@ -112,9 +126,16 @@ const SplashScreen = ({ sx, ...other }: BoxProps) => {
       <m.div
         initial={{ scale: 0.9, opacity: 0.7 }}
         animate={{ scale: [1, 1.05, 1], opacity: [0.7, 1, 0.9] }}
-        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+        style={{ position: 'relative', zIndex: 2 }}
       >
-        <Logo disabledLink sx={{ width: 64, height: 64 }} />
+        <Logo
+          disabledLink
+          src={logoUrl}
+          alt={templeName}
+          onError={handleLogoError}
+          sx={{ width: 88, height: 88, display: 'block', objectFit: 'contain' }}
+        />
       </m.div>
     </Box>
   );
