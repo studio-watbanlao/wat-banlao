@@ -6,7 +6,7 @@ import Logo from '../logo';
 
 import { useAuthContext } from 'src/auth/hooks';
 import Iconify from 'src/components/iconify';
-import { usePublicTemple } from 'src/public-templates/use-public-temple';
+import { usePublicTemple } from 'src/hooks/use-public-temple';
 import type { TempleAccess } from 'src/types/temple';
 
 const SplashScreen = ({ sx, ...other }: BoxProps) => {

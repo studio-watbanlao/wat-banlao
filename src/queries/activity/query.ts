@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { fetchActivity, fetchActivityById } from 'src/api/activity';
-import { usePublicTenantKey } from 'src/public-templates/use-public-tenant-key';
+import { usePublicTenantKey } from 'src/hooks/use-public-tenant-key';
 import { ACTIVITY_KEY } from '../key';
 
 export const useGetActivity = () => {

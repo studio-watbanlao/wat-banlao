@@ -4,8 +4,8 @@ import { useTheme } from '@mui/material/styles';
 import { Typography } from '@mui/material';
 
 import Image from 'src/components/image';
-import { getDonationAccount, hasDonationAccount } from 'src/public-templates/donation-account';
-import { usePublicTemple } from 'src/public-templates/use-public-temple';
+import { getDonationAccount, hasDonationAccount } from 'src/lib/donation-account';
+import { usePublicTemple } from 'src/hooks/use-public-temple';
 import { bgGradient } from 'src/theme/css';
 
 // ----------------------------------------------------------------------

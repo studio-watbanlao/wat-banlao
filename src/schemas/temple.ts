@@ -2,8 +2,6 @@ import { z } from 'zod';
 
 import { optionalFaviconFileSchema, optionalImageFileSchema } from './common';
 
-import { PUBLIC_TEMPLATE_KEYS } from 'src/public-templates/catalog';
-
 const COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
 
 const optionalCoordinate = (label: string, min: number, max: number) =>
@@ -40,8 +38,6 @@ export const templeFormSchema = z
     primaryColor: z.string().regex(COLOR_PATTERN, 'รูปแบบสีไม่ถูกต้อง'),
     secondaryColor: z.string().regex(COLOR_PATTERN, 'รูปแบบสีไม่ถูกต้อง'),
     fontFamily: z.string().trim().max(120, 'ชื่อฟอนต์ยาวเกินไป').default(''),
-    adminTemplate: z.string().trim().min(1),
-    publicTemplate: z.enum(PUBLIC_TEMPLATE_KEYS, { message: 'กรุณาเลือก Public Template' }),
     modules: z.array(z.string()).min(1, 'กรุณาเปิดอย่างน้อยหนึ่ง Module'),
     logoImage: optionalImageFileSchema.default(null),
     currentLogoUrl: z.string().default(''),

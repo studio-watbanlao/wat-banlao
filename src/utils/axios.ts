@@ -1,22 +1,11 @@
 import axios, { AxiosRequestConfig } from 'axios';
 
 import { HOST_API } from 'src/config-global';
-import { getPublicPreviewTempleId, isPublicTenantRequest } from './public-tenant';
 import { ApiClientError, getErrorMessage, getStatusErrorMessage } from './error-message';
 
 // ----------------------------------------------------------------------
 
 const axiosInstance = axios.create({ baseURL: HOST_API });
-
-axiosInstance.interceptors.request.use((config) => {
-  const templeId = getPublicPreviewTempleId();
-
-  if (templeId && isPublicTenantRequest(config.url)) {
-    config.headers.set('x-temple-id', templeId);
-  }
-
-  return config;
-});
 
 axiosInstance.interceptors.response.use(
   (res) => res,

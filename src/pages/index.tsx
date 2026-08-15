@@ -4,7 +4,7 @@ import type { NextApiRequest } from 'next';
 import MataData from 'src/components/mata-data/mata-data';
 import { MainLayout } from 'src/layouts/main';
 import { resolvePublicTemple } from 'src/lib/temple-access';
-import type { PublicTempleConfig } from 'src/public-templates/use-public-temple';
+import type { PublicTempleConfig } from 'src/hooks/use-public-temple';
 import { HomeView } from 'src/sections/home/view';
 import { ManagedPageOverride } from 'src/sections/temple-page/temple-page-view';
 
@@ -31,6 +31,7 @@ export const getServerSideProps: GetServerSideProps<{
       slug: temple.slug,
       name: temple.name,
       branding: temple.branding,
+      modules: temple.modules,
       primaryDomain: temple.domains.find((domain) => domain.isPrimary)?.domain || '',
     };
 

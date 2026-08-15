@@ -15,7 +15,6 @@ import Stack from '@mui/material/Stack';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
-import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -24,13 +23,8 @@ import TempleAccessManagement from './temple-access-management';
 import { Field, Form } from 'src/components/hook-form';
 import Iconify from 'src/components/iconify';
 import { getThaiBank, THAI_BANKS } from 'src/constants/thai-banks';
+import { getDonationAccount } from 'src/lib/donation-account';
 import Layout from 'src/pages/dashboard/layout';
-import {
-  PUBLIC_TEMPLATES,
-  resolvePublicTemplateKey,
-  type ManagedPublicTemplate,
-} from 'src/public-templates/catalog';
-import { getDonationAccount } from 'src/public-templates/donation-account';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 import { templeFormSchema, type TempleFormValues } from 'src/schemas/temple';
@@ -98,20 +92,6 @@ export default function TempleFormPage({ temple }: Props) {
   const [activeSection, setActiveSection] = useState<EditSection>('details');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const { data: managedTemplates = [] } = useQuery({
-    queryKey: ['admin-public-template-catalog'],
-    queryFn: async () => {
-      const response = await axios.get('/api/admin/public-templates', {
-        params: { catalog: true },
-      });
-      return response.data.templates as ManagedPublicTemplate[];
-    },
-    retry: false,
-    staleTime: 60 * 1000,
-  });
-  const selectableTemplates = managedTemplates.length
-    ? managedTemplates.filter((template) => template.status === 'READY' && template.codeAvailable)
-    : PUBLIC_TEMPLATES;
   const donation = getDonationAccount(temple?.branding, temple?.slug);
   const contact = temple?.branding.contact;
 
@@ -130,8 +110,6 @@ export default function TempleFormPage({ temple }: Props) {
       primaryColor: temple?.branding.primaryColor || '#6F4E37',
       secondaryColor: temple?.branding.secondaryColor || '#C89545',
       fontFamily: temple?.branding.fontFamily || '',
-      adminTemplate: temple?.branding.adminTemplate || 'classic',
-      publicTemplate: resolvePublicTemplateKey(temple?.branding.publicTemplate),
       modules: temple
         ? TEMPLE_MODULES.filter((module) => temple.modules[module])
         : [...TEMPLE_MODULES],
@@ -576,8 +554,8 @@ export default function TempleFormPage({ temple }: Props) {
               <Iconify icon="solar:palette-bold" />
             </Avatar>
           }
-          title="อัตลักษณ์และรูปแบบการแสดงผล"
-          subheader="โลโก้ สี และ Template ที่เป็นเอกลักษณ์ของวัดนี้"
+          title="อัตลักษณ์เว็บไซต์"
+          subheader="โลโก้ สี และรูปภาพที่เป็นเอกลักษณ์ของวัดนี้"
         />
         <Divider sx={{ pt: 2 }} />
         <CardContent sx={{ p: { xs: 2, md: 3 } }}>
@@ -657,31 +635,6 @@ export default function TempleFormPage({ temple }: Props) {
                   label="ชื่อแบบอักษร"
                   placeholder="เช่น IBM Plex Sans Thai"
                 />
-              </Stack>
-
-              <Divider />
-
-              <Stack spacing={2}>
-                <Stack spacing={0.5}>
-                  <Typography variant="subtitle1">รูปแบบระบบ</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    เลือกรูปแบบหน้าผู้ดูแลระบบและหน้าเว็บไซต์สาธารณะของวัดนี้
-                  </Typography>
-                </Stack>
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                  <Field.Select name="adminTemplate" label="รูปแบบหน้าผู้ดูแลระบบ">
-                    <MenuItem value="classic">คลาสสิก</MenuItem>
-                    <MenuItem value="modern">ทันสมัย</MenuItem>
-                    <MenuItem value="minimal">เรียบง่าย</MenuItem>
-                  </Field.Select>
-                  <Field.Select name="publicTemplate" label="รูปแบบหน้าเว็บไซต์สาธารณะ">
-                    {selectableTemplates.map((template) => (
-                      <MenuItem key={template.key} value={template.key}>
-                        {template.name}
-                      </MenuItem>
-                    ))}
-                  </Field.Select>
-                </Stack>
               </Stack>
 
               <Divider />

@@ -15,6 +15,7 @@ import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
 import { CONFIG } from 'src/config-global';
 import { useTranslate } from 'src/locales';
+import { usePublicTemple } from 'src/hooks/use-public-temple';
 import {
   RiHome5Line,
   RiMailLine,
@@ -25,12 +26,10 @@ import {
 
 // ----------------------------------------------------------------------
 
-const QUICK_LINKS = [
-  { label: 'หน้าหลัก', href: '/', icon: <RiHome5Line size={18} /> },
-  { label: 'ประวัติวัดบ้านเหล่า', href: paths.banlao.history, icon: <RiArticleLine size={18} /> },
-  { label: 'กิจกรรมต่าง ๆ', href: paths.activity.root, icon: <RiCalendarLine size={18} /> },
-  { label: 'ติดต่อสอบถาม', href: paths.contact, icon: <RiMailLine size={18} /> },
-] as const;
+const contactText = (contact: Record<string, unknown> | undefined, key: string) => {
+  const value = contact?.[key];
+  return typeof value === 'string' ? value.trim() : '';
+};
 
 const FooterRoot = styled('footer')(({ theme }) => ({
   marginTop: 'auto',
@@ -103,6 +102,11 @@ export function HomeFooter({ sx, ...other }: FooterProps) {
 
 function BrandSummary() {
   const { school } = useMainSchoolBrand();
+  const { data: temple } = usePublicTemple();
+  const description =
+    contactText(temple?.branding.contact, 'description') ||
+    contactText(temple?.branding.contact, 'address') ||
+    'ศูนย์รวมศรัทธา ประเพณี และวัฒนธรรมของชุมชน';
 
   return (
     <Box sx={{ maxWidth: 390 }}>
@@ -117,7 +121,7 @@ function BrandSummary() {
         <MainSchoolLogo size={48} />
         <Box>
           <Typography variant="subtitle1" sx={{ lineHeight: 1.2 }}>
-            {school?.name ?? 'วัดบ้านเหล่า'}
+            {school.name}
           </Typography>
           <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 700 }}>
             เว็บไซต์อย่างเป็นทางการ
@@ -125,7 +129,7 @@ function BrandSummary() {
         </Box>
       </Box>
       <Typography variant="body2" sx={{ mt: 1.75, color: 'text.secondary', lineHeight: 1.75 }}>
-        ศูนย์รวมศรัทธา ประเพณี และวัฒนธรรมของชุมชนบ้านเหล่า จังหวัดมหาสารคาม
+        {description}
       </Typography>
     </Box>
   );
@@ -134,6 +138,17 @@ function BrandSummary() {
 function QuickLinks({ layoutQuery }: { layoutQuery: Breakpoint }) {
   const { t } = useTranslate('navbar');
   const { t: tCommon } = useTranslate();
+  const { school } = useMainSchoolBrand();
+  const quickLinks = [
+    { label: 'หน้าหลัก', href: '/', icon: <RiHome5Line size={18} /> },
+    {
+      label: `ประวัติ${school.name}`,
+      href: paths.banlao.history,
+      icon: <RiArticleLine size={18} />,
+    },
+    { label: 'กิจกรรมต่าง ๆ', href: paths.activity.root, icon: <RiCalendarLine size={18} /> },
+    { label: 'ติดต่อสอบถาม', href: paths.contact, icon: <RiMailLine size={18} /> },
+  ];
 
   return (
     <Box component="nav" aria-label={tCommon('navigation.footerLinks')}>
@@ -149,7 +164,7 @@ function QuickLinks({ layoutQuery }: { layoutQuery: Breakpoint }) {
           [theme.breakpoints.up(layoutQuery)]: { minWidth: 340 },
         })}
       >
-        {QUICK_LINKS.map((item) => (
+        {quickLinks.map((item) => (
           <Link
             key={item.href}
             href={item.href}

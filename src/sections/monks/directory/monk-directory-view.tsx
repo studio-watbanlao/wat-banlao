@@ -13,12 +13,15 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 
+import { usePublicTempleDirectory } from '../use-public-temple-directory';
+
 import Image from 'src/components/image';
 import Iconify from 'src/components/iconify';
-import { usePublicTempleDirectory } from '../use-public-temple-directory';
+import { usePublicTemple } from 'src/hooks/use-public-temple';
 
 export function MonkDirectoryView() {
   const [search, setSearch] = useState('');
+  const { data: temple } = usePublicTemple();
   const { data: entries = [], isLoading, error, refetch } = usePublicTempleDirectory();
   const monkEntries = entries.filter((entry) => entry.entryType !== 'FORMER_ABBOT');
   const keyword = search.trim().toLocaleLowerCase('th');
@@ -51,7 +54,7 @@ export function MonkDirectoryView() {
               รายนามพระสงฆ์
             </Typography>
             <Typography component="h1" variant="h3">
-              ทำเนียบพระสงฆ์วัดบ้านเหล่า
+              ทำเนียบพระสงฆ์{temple?.name || 'วัด'}
             </Typography>
             <Typography color="text.secondary" sx={{ mt: 1 }}>
               แสดงเฉพาะรายชื่อที่ผู้ดูแลวัดตรวจสอบและเผยแพร่แล้ว

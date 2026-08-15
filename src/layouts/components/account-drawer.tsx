@@ -25,7 +25,6 @@ import {
   RiBuildingLine,
   RiCloseLine,
   RiHome5Line,
-  RiImageLine,
   RiMenuLine,
   RiSettings3Line,
   RiShieldCheckLine,
@@ -100,11 +99,6 @@ export function AccountDrawer({ data = [], sx, ...other }: AccountDrawerProps) {
             label: 'จัดการผู้ใช้งาน',
             href: paths.dashboard.users,
             icon: <RiTeamLine />,
-          },
-          {
-            label: 'จัดการธีมเว็บไซต์',
-            href: paths.dashboard.templates,
-            icon: <RiImageLine />,
           },
         ]
       : []),

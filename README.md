@@ -41,14 +41,6 @@ standard Home, About, History, and Contact starter pack. Manage these and temple
 pages at `/dashboard/pages`. Published custom pages resolve from their configured nested slug and
 can be added to the public navigation without creating a new React route.
 
-### Code-based public templates
-
-Run `supabase/migrations/20260812140000_create_public_template_catalog.sql` after the pages
-migration. Super Admin can manage template names, descriptions, lifecycle status, and temple
-assignments at `/dashboard/templates`. New templates start as DRAFT. Create their source scaffold
-locally with `npm run template:create -- <template-key>`, implement and register the code, deploy,
-then mark the template READY before assigning it to a temple.
-
 The service role key is server-only. Frontend code must use `/api/content/*` and must never access
 Supabase directly.
 

@@ -8,9 +8,9 @@ import { useCallback, useEffect, useState } from 'react';
 
 import Iconify from 'src/components/iconify';
 import Image from 'src/components/image';
+import { usePublicTemple } from 'src/hooks/use-public-temple';
 import type { PopupBannerItem } from 'src/types/popup-banner';
 import axios from 'src/utils/axios';
-import { usePublicTemple } from 'src/public-templates/use-public-temple';
 
 const getStorageKey = (popupBanner: PopupBannerItem) =>
   `wat-popup-banner:${popupBanner.id}:${popupBanner.updatedAt}`;

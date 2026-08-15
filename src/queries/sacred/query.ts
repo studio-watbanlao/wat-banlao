@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { fetchSacred, fetchSacredById } from 'src/api/sacred';
-import { usePublicTenantKey } from 'src/public-templates/use-public-tenant-key';
+import { usePublicTenantKey } from 'src/hooks/use-public-tenant-key';
 import { SACRED_KEY } from '../key';
 
 export const useGetSacred = () => {

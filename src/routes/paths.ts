@@ -129,7 +129,6 @@ export const paths = {
     root: ROOTS.DASHBOARD,
     profile: `${ROOTS.DASHBOARD}/profile`,
     temples: `${ROOTS.DASHBOARD}/temples`,
-    templates: `${ROOTS.DASHBOARD}/templates`,
     templeNew: `${ROOTS.DASHBOARD}/temples/new`,
     templeEdit: (id: string) => `${ROOTS.DASHBOARD}/temples/${id}/edit`,
     pages: `${ROOTS.DASHBOARD}/pages`,

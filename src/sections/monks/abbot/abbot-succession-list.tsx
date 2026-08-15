@@ -7,17 +7,17 @@ import Typography from '@mui/material/Typography';
 
 import type { TempleDirectoryEntry } from 'src/types/temple-directory';
 
-type Props = { entries: TempleDirectoryEntry[] };
+type Props = { entries: TempleDirectoryEntry[]; templeName: string };
 
-export function AbbotSuccessionList({ entries }: Props) {
+export function AbbotSuccessionList({ entries, templeName }: Props) {
   return (
     <Box component="section" aria-labelledby="abbot-succession-title">
       <Stack spacing={1} sx={{ mb: 2.5 }}>
         <Typography id="abbot-succession-title" component="h2" variant="h4">
-          เจ้าอาวาสวัดบ้านเหล่าอดีต–ปัจจุบัน
+          เจ้าอาวาส{templeName}อดีต–ปัจจุบัน
         </Typography>
         <Typography color="text.secondary">
-          ลำดับรายนามเจ้าอาวาสผู้บริหารและปกครองคณะสงฆ์วัดบ้านเหล่า
+          ลำดับรายนามเจ้าอาวาสผู้บริหารและปกครองคณะสงฆ์{templeName}
         </Typography>
       </Stack>
 

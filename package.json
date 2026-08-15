@@ -6,7 +6,6 @@
     "dev": "next dev -p 3300",
     "start": "next start -p 3300",
     "build": "next build",
-    "template:create": "node scripts/create-public-template.mjs",
     "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
     "lint:fix": "eslint --fix \"src/**/*.{js,jsx,ts,tsx}\"",
     "prettier": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",

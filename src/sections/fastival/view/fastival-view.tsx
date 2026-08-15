@@ -1,11 +1,16 @@
 'use client';
 
 import { Stack, Typography } from '@mui/material';
-import { useGetFastival } from 'src/queries/fastival';
+
 import FastivalList from '../fastival-list';
+
+import { useGetFastival } from 'src/queries/fastival';
+import { usePublicTemple } from 'src/hooks/use-public-temple';
 
 const FastivalView = () => {
   const { data = [] } = useGetFastival();
+  const { data: temple } = usePublicTemple();
+  const address = temple?.branding.contact?.address;
 
   return (
     <Stack>
@@ -14,10 +19,10 @@ const FastivalView = () => {
           กิจกรรมประจำปี
         </Typography>
         <Typography align="center" variant="h3">
-          เทศกาลงานบุญวัดบ้านเหล่า
+          เทศกาลและงานประเพณีของ{temple?.name || 'วัด'}
         </Typography>
         <Typography sx={{ color: 'text.secondary' }}>
-          วัดบ้านเหล่า-สุขธัมมาราม ตำบลเม็กดำ อำเภอพยัคฆภูมิพิสัย จังหวัดมหาสารคาม
+          {typeof address === 'string' ? address : ''}
         </Typography>
       </Stack>
       <FastivalList data={data} />

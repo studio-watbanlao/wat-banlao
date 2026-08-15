@@ -25,8 +25,6 @@ create table if not exists public.temple_branding (
   primary_color text not null default '#6F4E37',
   secondary_color text not null default '#C89545',
   font_family text,
-  admin_template text not null default 'classic',
-  public_template text not null default 'custom',
   contact jsonb not null default '{}'::jsonb check (jsonb_typeof(contact) = 'object'),
   updated_at timestamptz not null default now()
 );

@@ -5,7 +5,6 @@ import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 
 import axios from 'src/utils/axios';
@@ -14,9 +13,7 @@ type Props = { templeId?: string };
 type VisitResponse = { totalVisits: number };
 
 export default function WebsiteVisitorCount({ templeId }: Props) {
-  const router = useRouter();
   const queryClient = useQueryClient();
-  const isPreview = router.pathname === '/dashboard/templates/preview';
   const queryKey = ['public-website-visits', templeId];
   const { data } = useQuery({
     queryKey,
@@ -24,13 +21,13 @@ export default function WebsiteVisitorCount({ templeId }: Props) {
       const response = await axios.get<VisitResponse>('/api/public/website-visits');
       return response.data.totalVisits;
     },
-    enabled: Boolean(templeId) && !isPreview,
+    enabled: Boolean(templeId),
     staleTime: 30 * 1000,
     retry: false,
   });
 
   useEffect(() => {
-    if (!templeId || isPreview) return;
+    if (!templeId) return;
     const sessionKey = `wat-website-visit:${templeId}`;
 
     try {
@@ -52,9 +49,7 @@ export default function WebsiteVisitorCount({ templeId }: Props) {
           // Session storage may be unavailable in privacy mode.
         }
       });
-  }, [isPreview, queryClient, templeId]);
-
-  if (isPreview) return null;
+  }, [queryClient, templeId]);
 
   return (
     <Box component="section" aria-label="จำนวนผู้เข้าชมเว็บไซต์" sx={{ py: { xs: 4, md: 5 } }}>

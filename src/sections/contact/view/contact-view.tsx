@@ -9,8 +9,8 @@ import ContactHero from '../contact-hero';
 import { MotionViewport, varFade } from 'src/components/animate';
 import Image from 'src/components/image';
 import { useResponsive } from 'src/hooks/use-responsive';
-import { getDonationAccount, hasDonationAccount } from 'src/public-templates/donation-account';
-import { usePublicTemple } from 'src/public-templates/use-public-temple';
+import { getDonationAccount, hasDonationAccount } from 'src/lib/donation-account';
+import { usePublicTemple } from 'src/hooks/use-public-temple';
 import { bgGradient } from 'src/theme/css';
 
 const contactText = (contact: Record<string, unknown> | undefined, key: string) => {

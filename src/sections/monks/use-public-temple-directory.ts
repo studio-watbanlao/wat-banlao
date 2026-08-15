@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { usePublicTenantKey } from 'src/public-templates/use-public-tenant-key';
+import { usePublicTenantKey } from 'src/hooks/use-public-tenant-key';
 import type { TempleDirectoryEntry } from 'src/types/temple-directory';
 import axios from 'src/utils/axios';
 

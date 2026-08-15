@@ -4,7 +4,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import { MotionContainer, varFade } from 'src/components/animate';
-import { usePublicTemple } from 'src/public-templates/use-public-temple';
+import { usePublicTemple } from 'src/hooks/use-public-temple';
 
 // ----------------------------------------------------------------------
 

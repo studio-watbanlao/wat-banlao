@@ -10,10 +10,13 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
+import { usePublicTempleDirectory } from '../use-public-temple-directory';
+
+import { AbbotSuccessionList } from './abbot-succession-list';
+
 import Image from 'src/components/image';
 import Iconify from 'src/components/iconify';
-import { usePublicTempleDirectory } from '../use-public-temple-directory';
-import { AbbotSuccessionList } from './abbot-succession-list';
+import { usePublicTemple } from 'src/hooks/use-public-temple';
 
 type InfoItemProps = {
   icon: string;
@@ -75,6 +78,7 @@ function RichSection({ title, content }: RichSectionProps) {
 }
 
 export function AbbotView() {
+  const { data: temple } = usePublicTemple();
   const { data: entries = [], isLoading, error, refetch } = usePublicTempleDirectory();
   const abbot = entries.find((entry) => entry.entryType === 'CURRENT_ABBOT');
   const abbotEntries = entries.filter(
@@ -112,7 +116,7 @@ export function AbbotView() {
                 <Card sx={{ overflow: 'hidden' }}>
                   <Image
                     src={abbot.imageUrl}
-                    alt={`รูป${abbot.fullName} เจ้าอาวาสวัดบ้านเหล่า`}
+                    alt={`รูป${abbot.fullName} เจ้าอาวาส${temple?.name || ''}`}
                     ratio="3/4"
                     sx={{
                       bgcolor: 'background.neutral',
@@ -134,7 +138,7 @@ export function AbbotView() {
                 <Stack spacing={3}>
                   <Box>
                     <Typography color="primary" variant="overline">
-                      เจ้าอาวาส{abbot.templeName || 'วัดบ้านเหล่า – สุขธัมมาราม'}
+                      เจ้าอาวาส{abbot.templeName || temple?.name || 'วัด'}
                     </Typography>
                     <Typography component="h1" variant="h3" sx={{ mt: 0.75 }}>
                       {abbot.fullName}
@@ -236,7 +240,9 @@ export function AbbotView() {
             </Grid>
           </Stack>
         ) : null}
-        {!isLoading && !error ? <AbbotSuccessionList entries={abbotEntries} /> : null}
+        {!isLoading && !error ? (
+          <AbbotSuccessionList entries={abbotEntries} templeName={temple?.name || 'วัด'} />
+        ) : null}
       </Stack>
     </Container>
   );

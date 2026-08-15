@@ -17,7 +17,7 @@ import type { AuthCenteredContentProps } from './content';
 import { Logo } from 'src/components/logo';
 import Iconify from 'src/components/iconify';
 import { languageOptions } from 'src/locales';
-import { usePublicTemple } from 'src/public-templates/use-public-temple';
+import { usePublicTemple } from 'src/hooks/use-public-temple';
 
 // ----------------------------------------------------------------------
 

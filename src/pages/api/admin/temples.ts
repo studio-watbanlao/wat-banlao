@@ -10,7 +10,6 @@ import { uploadBrandingImage } from 'src/lib/supabase-storage';
 import { listAllTemples } from 'src/lib/temple-access';
 import { DEFAULT_TEMPLE_NAVIGATION } from 'src/lib/temple-navigation';
 import { TEMPLE_MODULES, type TempleModule, type TemplePermissions } from 'src/types/temple';
-import { resolvePublicTemplateKey } from 'src/public-templates/catalog';
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const ALLOWED_FAVICON_TYPES = [...ALLOWED_IMAGE_TYPES, 'image/x-icon', 'image/vnd.microsoft.icon'];
@@ -218,8 +217,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             primary_color: text(req.body?.primaryColor, 20) || '#6F4E37',
             secondary_color: text(req.body?.secondaryColor, 20) || '#C89545',
             font_family: text(req.body?.fontFamily, 120) || null,
-            admin_template: text(req.body?.adminTemplate, 50) || 'classic',
-            public_template: resolvePublicTemplateKey(req.body?.publicTemplate),
             contact: brandingContact(req.body, bankQrUrl),
           }),
         }),
@@ -333,8 +330,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               primary_color: text(req.body?.primaryColor, 20) || '#6F4E37',
               secondary_color: text(req.body?.secondaryColor, 20) || '#C89545',
               font_family: text(req.body?.fontFamily, 120) || null,
-              admin_template: text(req.body?.adminTemplate, 50) || 'classic',
-              public_template: resolvePublicTemplateKey(req.body?.publicTemplate),
               contact: brandingContact(req.body, bankQrUrl),
             }),
           }),

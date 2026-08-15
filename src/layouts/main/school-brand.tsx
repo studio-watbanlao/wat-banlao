@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 
 import { RouterLink } from 'src/routes/components';
 import { Logo } from 'src/components/logo';
-import { usePublicTemple } from 'src/public-templates/use-public-temple';
+import { usePublicTemple } from 'src/hooks/use-public-temple';
 
 // ----------------------------------------------------------------------
 

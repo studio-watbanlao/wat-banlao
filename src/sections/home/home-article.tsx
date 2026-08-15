@@ -13,7 +13,7 @@ import Typography from '@mui/material/Typography';
 
 import Iconify from 'src/components/iconify';
 import Image from 'src/components/image';
-import { usePublicTemple } from 'src/public-templates/use-public-temple';
+import { usePublicTemple } from 'src/hooks/use-public-temple';
 import { useGetActivity } from 'src/queries/activity';
 import { RouterLink } from 'src/routes/components';
 import { paths } from 'src/routes/paths';

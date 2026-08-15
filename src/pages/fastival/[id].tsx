@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
           url: `${ogImage}?v=${data.updatedAt || Date.now()}`,
           width: 1200,
           height: 630,
-          alt: `${data.title} - รายละเอียดเทศกาลงานบุญวัดบ้านเหล่า`,
+          alt: `${data.title} - รายละเอียดเทศกาลและงานประเพณี`,
         },
       ],
     },

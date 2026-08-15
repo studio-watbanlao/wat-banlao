@@ -7,9 +7,8 @@ export default function AbbotPage() {
     <MainLayout>
       <MataData
         data={{
-          title: 'เจ้าอาวาสวัดบ้านเหล่า',
-          description: 'ประวัติ การศึกษา สมณศักดิ์ และบทบาทของเจ้าอาวาสวัดบ้านเหล่า สุขธัมมาราม',
-          imageUrl: '/assets/background/overlay_4.jpg',
+          title: 'เจ้าอาวาส',
+          description: 'ประวัติ การศึกษา สมณศักดิ์ และบทบาทของเจ้าอาวาสองค์ปัจจุบัน',
         }}
       />
       <AbbotView />

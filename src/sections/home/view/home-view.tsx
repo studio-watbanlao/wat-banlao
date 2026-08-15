@@ -1,7 +1,6 @@
 'use client';
 
 import { Container, Stack, Typography } from '@mui/material';
-import dynamic from 'next/dynamic';
 
 import HomeAdvertisement from '../home-advertisement';
 import HomeAgencies from '../home-agencies';
@@ -17,19 +16,8 @@ import HomeTempleFestival from '../home-temple-festival';
 import WebsiteVisitorCount from '../website-visitor-count';
 
 import { CONFIG } from 'src/config-global';
+import { usePublicTemple } from 'src/hooks/use-public-temple';
 import { useGetBanner } from 'src/queries/banner';
-import { resolvePublicTemplateKey } from 'src/public-templates/catalog';
-import { usePublicTemple } from 'src/public-templates/use-public-temple';
-
-const SereneHomeView = dynamic(() =>
-  import('src/public-templates/serene/serene-home-view').then((module) => module.SereneHomeView)
-);
-
-const Template1HomeView = dynamic(() =>
-  import('src/public-templates/template-1/template-1-home-view').then(
-    (module) => module.Template1HomeView
-  )
-);
 
 const ClassicHomeView = () => {
   const { data = [] } = useGetBanner();
@@ -128,15 +116,10 @@ const ClassicHomeView = () => {
 
 const HomeView = () => {
   const { data: temple } = usePublicTemple();
-  const template = resolvePublicTemplateKey(temple?.branding.publicTemplate);
-
-  let templateView = <ClassicHomeView />;
-  if (template === 'serene') templateView = <SereneHomeView />;
-  if (template === 'template-1') templateView = <Template1HomeView />;
 
   return (
     <>
-      {templateView}
+      <ClassicHomeView />
       <WebsiteVisitorCount templeId={temple?.id} />
     </>
   );

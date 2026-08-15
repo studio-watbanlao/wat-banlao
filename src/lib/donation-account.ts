@@ -1,5 +1,5 @@
-import type { TempleBranding } from 'src/types/temple';
 import { findThaiBankByName, getThaiBank } from 'src/constants/thai-banks';
+import type { TempleBranding } from 'src/types/temple';
 
 export type DonationAccount = {
   bankCode: string;

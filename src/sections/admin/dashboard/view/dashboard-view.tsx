@@ -138,17 +138,11 @@ export default function DashboardView() {
   const primaryDomain = temple?.domains.find(
     (domain) => domain.isPrimary && domain.verificationStatus === 'VERIFIED'
   )?.domain;
-  const publicWebsiteUrl =
-    temple && access?.role === 'super_admin'
-      ? `${paths.dashboard.templates}/preview?${new URLSearchParams({
-          templeId: temple.id,
-        }).toString()}`
-      : primaryDomain
-        ? /^https?:\/\//i.test(primaryDomain)
-          ? primaryDomain
-          : `https://${primaryDomain}`
-      : '';
-  const isWebsitePreview = access?.role === 'super_admin' || !primaryDomain;
+  const publicWebsiteUrl = primaryDomain
+    ? /^https?:\/\//i.test(primaryDomain)
+      ? primaryDomain
+      : `https://${primaryDomain}`
+    : '';
 
   const enabledSources = useMemo(
     () =>
@@ -234,7 +228,7 @@ export default function DashboardView() {
             variant="outlined"
             startIcon={<Iconify icon="solar:eye-bold" />}
           >
-            {isWebsitePreview ? 'ดูตัวอย่างหน้าเว็บ' : 'ดูหน้าเว็บ'}
+            ดูหน้าเว็บ
           </Button>
         </Stack>
 

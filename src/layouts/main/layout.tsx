@@ -5,11 +5,11 @@ import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import IconButton from '@mui/material/IconButton';
 import Skeleton from '@mui/material/Skeleton';
+import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { Breakpoint } from '@mui/material/styles';
 import { useQuery } from '@tanstack/react-query';
 import { useBoolean } from 'minimal-shared/hooks';
-import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
 
 import { LanguagePopover } from '../components/language-popover';
@@ -35,29 +35,17 @@ import {
   RiInstagramLine,
   RiUserStarLine,
 } from 'src/components/remix-icon';
+import { usePublicTemple } from 'src/hooks/use-public-temple';
+import { usePublicTenantKey } from 'src/hooks/use-public-tenant-key';
+import { getPublicRouteModule, isBanlaoOnlyPublicRoute } from 'src/lib/temple-navigation';
 import { languageOptions, useTranslate, useTranslatedMainNav } from 'src/locales';
-import { resolvePublicTemplateKey } from 'src/public-templates/catalog';
-import { PublicPopupBanner } from 'src/public-templates/public-popup-banner';
-import { usePublicTemple } from 'src/public-templates/use-public-temple';
-import { usePublicTenantKey } from 'src/public-templates/use-public-tenant-key';
 import { RouterLink } from 'src/routes/components';
 import { usePathname } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
+import { PublicPopupBanner } from 'src/sections/public-popup-banner';
 import type { TemplePage } from 'src/types/temple-page';
 import type { TempleNavigationItem } from 'src/types/temple-navigation';
 import axios from 'src/utils/axios';
-
-const SerenePublicLayout = dynamic(() =>
-  import('src/public-templates/serene/serene-public-layout').then(
-    (module) => module.SerenePublicLayout
-  )
-);
-
-const Template1PublicLayout = dynamic(() =>
-  import('src/public-templates/template-1/template-1-public-layout').then(
-    (module) => module.Template1PublicLayout
-  )
-);
 
 // ----------------------------------------------------------------------
 
@@ -142,6 +130,20 @@ function PublicSiteLoading({ failed = false }: { failed?: boolean }) {
   );
 }
 
+function PublicRouteUnavailable() {
+  return (
+    <Container maxWidth="md" sx={{ py: { xs: 10, md: 16 } }}>
+      <Stack spacing={1.5} alignItems="center" textAlign="center">
+        <RiBuildingLine size={48} />
+        <Typography variant="h4">ไม่พบข้อมูลหรือบริการที่ร้องขอ</Typography>
+        <Typography color="text.secondary">
+          วัดนี้ยังไม่ได้เปิดใช้งานส่วนดังกล่าว หรือหน้านี้อาจไม่มีอยู่แล้ว
+        </Typography>
+      </Stack>
+    </Container>
+  );
+}
+
 export function MainLayout({
   sx,
   cssVars,
@@ -219,12 +221,16 @@ export function MainLayout({
     [navData]
   );
   const mobileBottom = slotProps?.nav?.mobileBottom ?? false;
-  const publicTemplate = resolvePublicTemplateKey(publicTemple?.branding.publicTemplate);
+  const requiredModule = getPublicRouteModule(pathname);
+  const isRouteUnavailable = Boolean(
+    (requiredModule && publicTemple?.modules?.[requiredModule] === false) ||
+    (isBanlaoOnlyPublicRoute(pathname) && publicTemple?.slug !== 'wat-banlao')
+  );
   const publicContent = (
     <>
       <MataData />
       <PublicPopupBanner />
-      {children}
+      {isRouteUnavailable ? <PublicRouteUnavailable /> : children}
     </>
   );
 
@@ -407,22 +413,6 @@ export function MainLayout({
       {publicContent}
     </MainSection>
   );
-
-  if (publicTemplate === 'serene') {
-    return (
-      <SerenePublicLayout navData={navData} footerContent={slotProps?.footerContent}>
-        {publicContent}
-      </SerenePublicLayout>
-    );
-  }
-
-  if (publicTemplate === 'template-1') {
-    return (
-      <Template1PublicLayout navData={navData} footerContent={slotProps?.footerContent}>
-        {publicContent}
-      </Template1PublicLayout>
-    );
-  }
 
   return (
     <LayoutSection

@@ -16,7 +16,7 @@ import { useSettingsContext } from 'src/components/settings';
 import { useLocales } from 'src/locales';
 import { useAuthContext } from 'src/auth/hooks';
 import type { TempleAccess } from 'src/types/temple';
-import { usePublicTemple } from 'src/public-templates/use-public-temple';
+import { usePublicTemple } from 'src/hooks/use-public-temple';
 
 // ----------------------------------------------------------------------
 

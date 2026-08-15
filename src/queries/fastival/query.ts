@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { fetchFastival, fetchFastivalById } from 'src/api/fastival';
-import { usePublicTenantKey } from 'src/public-templates/use-public-tenant-key';
+import { usePublicTenantKey } from 'src/hooks/use-public-tenant-key';
 import { FASTIVAL_KEY } from '../key';
 
 export const useGetFastival = () => {

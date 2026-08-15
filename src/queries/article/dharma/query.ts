@@ -7,7 +7,7 @@ import {
 
 import type { InfiniteData } from '@tanstack/react-query';
 import { fetchDharma, fetchDharmaById } from 'src/api/dharma';
-import { usePublicTenantKey } from 'src/public-templates/use-public-tenant-key';
+import { usePublicTenantKey } from 'src/hooks/use-public-tenant-key';
 import type { EditorialItem } from 'src/types/editorial';
 import { ARRICLE_KEY } from '../../key';
 

@@ -139,13 +139,6 @@ export const navData: NavSectionProps['data'] = [
         roles: ['super_admin'],
         deep: true,
       },
-      {
-        title: 'จัดการธีมเว็บไซต์',
-        path: paths.dashboard.templates,
-        icon: <RiImageLine />,
-        roles: ['super_admin'],
-        deep: true,
-      },
     ],
   },
 ];

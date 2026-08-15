@@ -34,8 +34,6 @@ type BrandingRow = {
   primary_color?: string;
   secondary_color?: string;
   font_family?: string;
-  admin_template?: string;
-  public_template?: string;
   contact?: Record<string, unknown>;
 };
 
@@ -75,8 +73,6 @@ const normalizeBranding = (row?: BrandingRow): TempleBranding => ({
   primaryColor: row?.primary_color || '#6F4E37',
   secondaryColor: row?.secondary_color || '#C89545',
   fontFamily: row?.font_family || '',
-  adminTemplate: row?.admin_template || 'classic',
-  publicTemplate: row?.public_template || 'custom',
   contact: row?.contact || {},
 });
 

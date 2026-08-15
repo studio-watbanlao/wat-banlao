@@ -7,9 +7,8 @@ export default function MonksPage() {
     <MainLayout>
       <MataData
         data={{
-          title: 'ทำเนียบพระสงฆ์วัดบ้านเหล่า',
-          description: 'รายนามและข้อมูลพระภิกษุสามเณรประจำวัดบ้านเหล่า สุขธัมมาราม',
-          imageUrl: '/assets/background/overlay_4.jpg',
+          title: 'ทำเนียบพระสงฆ์',
+          description: 'รายนามและข้อมูลพระภิกษุสามเณรประจำวัด',
         }}
       />
       <MonkDirectoryView />

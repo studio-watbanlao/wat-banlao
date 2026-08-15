@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { fetchArchitecture, fetchArchitectureById } from 'src/api/architecture';
-import { usePublicTenantKey } from 'src/public-templates/use-public-tenant-key';
+import { usePublicTenantKey } from 'src/hooks/use-public-tenant-key';
 import { ARCHITECTURE_KEY } from '../key';
 
 export const useGetArchitecture = () => {

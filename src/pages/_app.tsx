@@ -14,7 +14,7 @@ import { MotionLazy } from 'src/components/animate/motion-lazy';
 import ProgressBar from 'src/components/progress-bar';
 import { SettingsDrawer, SettingsProvider } from 'src/components/settings';
 import SnackbarProvider from 'src/components/snackbar/snackbar-provider';
-import { PublicTempleInitialDataContext } from 'src/public-templates/use-public-temple';
+import { PublicTempleInitialDataContext } from 'src/hooks/use-public-temple';
 import { createQueryClient } from 'src/queries/client';
 
 const App = ({ Component, pageProps }: AppProps) => {

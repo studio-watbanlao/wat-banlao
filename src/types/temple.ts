@@ -38,8 +38,6 @@ export type TempleBranding = {
   primaryColor: string;
   secondaryColor: string;
   fontFamily: string;
-  adminTemplate: string;
-  publicTemplate: string;
   contact: Record<string, unknown>;
 };
 

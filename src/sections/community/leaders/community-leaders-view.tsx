@@ -15,6 +15,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import Image from 'src/components/image';
 import Iconify from 'src/components/iconify';
+import { usePublicTemple } from 'src/hooks/use-public-temple';
 import {
   RiGovernmentLine,
   RiMapPinLine,
@@ -39,6 +40,7 @@ const GROUP_META: Record<
 };
 
 export function CommunityLeadersView() {
+  const { data: temple } = usePublicTemple();
   const [selectedVillage, setSelectedVillage] = useState(0);
   const [leaders, setLeaders] = useState<CommunityLeader[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,7 +76,7 @@ export function CommunityLeadersView() {
             ทำเนียบผู้นำชุมชน
           </Typography>
           <Typography component="h1" variant="h3">
-            ผู้นำชุมชนบ้านเหล่า
+            ผู้นำชุมชนของ{temple?.name || 'วัด'}
           </Typography>
           <Typography color="text.secondary">
             เลือกดูรายชื่อผู้นำ ตำแหน่ง และหน้าที่รับผิดชอบ แยกตามทั้ง 6 หมู่บ้าน
@@ -88,7 +90,7 @@ export function CommunityLeadersView() {
             variant="scrollable"
             scrollButtons="auto"
             allowScrollButtonsMobile
-            aria-label="เลือกหมู่บ้านในชุมชนบ้านเหล่า"
+            aria-label={`เลือกหมู่บ้านในชุมชนของ${temple?.name || 'วัด'}`}
             sx={{ px: 1, bgcolor: 'background.neutral' }}
           >
             {COMMUNITY_VILLAGES.map((item) => (

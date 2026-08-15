@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { CONFIG } from 'src/config-global';
 import { resolveContentImage } from 'src/constants/images';
 import { usePathname } from 'src/routes/hooks';
-import { usePublicTemple } from 'src/public-templates/use-public-temple';
+import { usePublicTemple } from 'src/hooks/use-public-temple';
 
 type MataDataProps = {
   url?: string;
