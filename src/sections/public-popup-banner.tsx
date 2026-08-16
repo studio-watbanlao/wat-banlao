@@ -52,6 +52,7 @@ const rememberShown = (popupBanner: PopupBannerItem) => {
 export function PublicPopupBanner() {
   const [open, setOpen] = useState(false);
   const [loadedBannerId, setLoadedBannerId] = useState('');
+  const [dismissedBannerId, setDismissedBannerId] = useState('');
   const { data: temple } = usePublicTemple();
   const { data: popupBanner } = useQuery({
     queryKey: ['public-popup-banner', temple?.id],
@@ -64,8 +65,18 @@ export function PublicPopupBanner() {
   });
 
   useEffect(() => {
-    if (!popupBanner || !shouldOpen(popupBanner)) return;
+    if (
+      !popupBanner ||
+      dismissedBannerId === popupBanner.id ||
+      !shouldOpen(popupBanner)
+    )
+      return;
     setOpen(true);
+  }, [dismissedBannerId, popupBanner]);
+
+  const handleClose = useCallback(() => {
+    if (popupBanner) setDismissedBannerId(popupBanner.id);
+    setOpen(false);
   }, [popupBanner]);
 
   const handleImageLoaded = useCallback(() => {
@@ -96,7 +107,7 @@ export function PublicPopupBanner() {
   return (
     <Dialog
       open={open}
-      onClose={() => setOpen(false)}
+      onClose={handleClose}
       fullWidth
       maxWidth="md"
       slotProps={{
@@ -132,7 +143,7 @@ export function PublicPopupBanner() {
             target={popupBanner.linkUrl.startsWith('http') ? '_blank' : undefined}
             rel={popupBanner.linkUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
             aria-label={`เปิดรายละเอียด ${popupBanner.title}`}
-            onClick={() => setOpen(false)}
+            onClick={handleClose}
             sx={{ display: 'block' }}
           >
             {bannerImage}
@@ -142,7 +153,7 @@ export function PublicPopupBanner() {
         )}
         <IconButton
           aria-label="ปิด Popup Banner"
-          onClick={() => setOpen(false)}
+          onClick={handleClose}
           sx={{
             top: 12,
             right: 12,

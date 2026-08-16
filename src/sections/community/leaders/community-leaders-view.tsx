@@ -13,15 +13,15 @@ import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import Image from 'src/components/image';
 import Iconify from 'src/components/iconify';
-import { usePublicTemple } from 'src/hooks/use-public-temple';
+import Image from 'src/components/image';
 import {
   RiGovernmentLine,
   RiMapPinLine,
   RiShieldUserLine,
   RiTeamLine,
 } from 'src/components/remix-icon';
+import { usePublicTemple } from 'src/hooks/use-public-temple';
 import {
   COMMUNITY_VILLAGES,
   type CommunityLeader,
@@ -69,7 +69,7 @@ export function CommunityLeadersView() {
   }, [loadLeaders]);
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 6, md: 10 } }}>
       <Stack spacing={5}>
         <Stack spacing={1} sx={{ maxWidth: 760 }}>
           <Typography color="primary" variant="overline">

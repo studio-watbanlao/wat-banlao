@@ -17,7 +17,20 @@ module.exports = withBundleAnalyzer({
       transform: '@mui/lab/{{member}}',
     },
   },
-  webpack(config) {
+  webpack(config, { dev, isServer }) {
+    if (dev && !isServer) {
+      config.module.rules.push({
+        test: /\.(tsx|ts|jsx|js)$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: '@locator/webpack-loader',
+            options: { env: 'development' },
+          },
+        ],
+      });
+    }
+
     config.module.rules.push({
       test: /\.svg$/,
       use: ['@svgr/webpack'],

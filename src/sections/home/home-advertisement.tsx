@@ -1,15 +1,15 @@
-import { m } from 'framer-motion';
+import { Container, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import { Container, Typography } from '@mui/material';
+import { m } from 'framer-motion';
 
-import { bgGradient } from 'src/theme/css';
 import { MotionViewport, varFade } from 'src/components/animate';
 import Image from 'src/components/image';
 import { CONFIG } from 'src/config-global';
+import { usePublicTemple } from 'src/hooks/use-public-temple';
 import { useResponsive } from 'src/hooks/use-responsive';
 import { getDonationAccount, hasDonationAccount } from 'src/lib/donation-account';
-import { usePublicTemple } from 'src/hooks/use-public-temple';
+import { bgGradient } from 'src/theme/css';
 
 // ----------------------------------------------------------------------
 
@@ -126,6 +126,7 @@ export default function HomeAdvertisement() {
   return (
     <Container
       component={MotionViewport}
+      maxWidth="xl"
       sx={{
         py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
       }}

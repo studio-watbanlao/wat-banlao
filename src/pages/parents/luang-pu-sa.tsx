@@ -11,22 +11,25 @@ export const metadata = {
 
 const LuangPuSaPage = () => {
   return (
-    <ManagedPageOverride pageKey="luang-pu-sa"><MainLayout>
-      <Container
-        sx={{
-          py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
-        }}
-      >
-        <Typography align="center" sx={{ color: 'text.secondary' }}>
-          บูรพาจารย์
-        </Typography>
-        <Typography variant="h3" align="center" sx={{ mb: 2 }}>
-          หลวงปู่สาธุ์ สุขธมฺโม
-        </Typography>
+    <ManagedPageOverride pageKey="luang-pu-sa">
+      <MainLayout>
+        <Container
+          maxWidth="xl"
+          sx={{
+            py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
+          }}
+        >
+          <Typography align="center" sx={{ color: 'text.secondary' }}>
+            บูรพาจารย์
+          </Typography>
+          <Typography variant="h3" align="center" sx={{ mb: 2 }}>
+            หลวงปู่สาธุ์ สุขธมฺโม
+          </Typography>
 
-        <LuangPuSaView />
-      </Container>
-    </MainLayout></ManagedPageOverride>
+          <LuangPuSaView />
+        </Container>
+      </MainLayout>
+    </ManagedPageOverride>
   );
 };
 

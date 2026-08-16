@@ -61,6 +61,8 @@ const REMIX_ICON_MAP: Record<string, string> = {
   'solar:gallery-wide-bold-duotone': 'ri:gallery-fill',
   'solar:home-2-bold-duotone': 'ri:home-5-fill',
   'solar:inbox-line-bold-duotone': 'ri:inbox-2-fill',
+  'solar:letter-linear': 'ri:mail-line',
+  'solar:lock-password-linear': 'ri:lock-password-line',
   'solar:pen-bold': 'ri:edit-fill',
   'solar:play-broken': 'ri:play-circle-line',
   'solar:printer-minimalistic-bold': 'ri:printer-fill',

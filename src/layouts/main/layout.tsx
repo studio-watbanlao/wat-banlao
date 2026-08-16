@@ -43,8 +43,8 @@ import { RouterLink } from 'src/routes/components';
 import { usePathname } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 import { PublicPopupBanner } from 'src/sections/public-popup-banner';
-import type { TemplePage } from 'src/types/temple-page';
 import type { TempleNavigationItem } from 'src/types/temple-navigation';
+import type { TemplePage } from 'src/types/temple-page';
 import axios from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
@@ -250,7 +250,7 @@ export function MainLayout({
           })}
         >
           <Container
-            maxWidth="lg"
+            maxWidth="xl"
             sx={{
               height: 78,
               display: 'flex',
@@ -333,7 +333,7 @@ export function MainLayout({
           })}
         >
           <Container
-            maxWidth="lg"
+            maxWidth="xl"
             sx={{
               height: 46,
               display: 'flex',

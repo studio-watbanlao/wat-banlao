@@ -1,8 +1,7 @@
-import { useEffect } from 'react';
 import Button from '@mui/material/Button';
-import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { useEffect } from 'react';
 
 import { useAuthContext } from 'src/auth/hooks';
 import AuthLayoutCompact from 'src/layouts/auth/compact';
@@ -27,10 +26,10 @@ export default function PendingApprovalPage() {
     <AuthLayoutCompact>
       <Stack spacing={3} sx={{ minWidth: 320, textAlign: 'center' }}>
         <Typography variant="h4">รอการอนุมัติสิทธิ์</Typography>
-        <Alert severity="info">
+        {/* <Alert severity="info">
           บัญชี {user?.email} เข้าสู่ระบบสำเร็จแล้ว แต่ยังไม่สามารถเข้า Admin UI ได้ กรุณารอ Super
           Admin กำหนด role เป็น Admin
-        </Alert>
+        </Alert> */}
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} justifyContent="center">
           <Button variant="contained" onClick={() => window.location.reload()}>
             ตรวจสอบสิทธิ์อีกครั้ง

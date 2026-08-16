@@ -28,7 +28,7 @@
       url('LINESeedSansTH-Heavy.woff') format('woff'),
       url('LINESeedSansTH-Heavy.ttf') format('truetype'),
       url('LINESeedSansTH-Heavy.svg#LINESeedSansTH-Heavy') format('svg');
-  font-weight: 700;
+  font-weight: 900;
   font-style: normal;
   font-display: swap;
 }
@@ -41,7 +41,34 @@
       url('LINESeedSansTH-Bold.woff') format('woff'),
       url('LINESeedSansTH-Bold.ttf') format('truetype'),
       url('LINESeedSansTH-Bold.svg#LINESeedSansTH-Bold') format('svg');
-  font-weight: bold;
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* MUI uses 500, 600 and 800 throughout the app. The distributed LINE Seed
+ * files do not include those exact cuts, so map each requested weight to the
+ * closest real face instead of letting browsers synthesize it inconsistently. */
+@font-face {
+  font-family: 'LINE Seed Sans TH';
+  src: url('LINESeedSansTH-Regular.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'LINE Seed Sans TH';
+  src: url('LINESeedSansTH-Bold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'LINE Seed Sans TH';
+  src: url('LINESeedSansTH-Heavy.woff2') format('woff2');
+  font-weight: 800;
   font-style: normal;
   font-display: swap;
 }
@@ -54,7 +81,7 @@
       url('LINESeedSansTH-Regular.woff') format('woff'),
       url('LINESeedSansTH-Regular.ttf') format('truetype'),
       url('LINESeedSansTH-Regular.svg#LINESeedSansTH-Regular') format('svg');
-  font-weight: normal;
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }

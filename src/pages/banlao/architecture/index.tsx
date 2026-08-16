@@ -1,8 +1,8 @@
 import { Container, Typography } from '@mui/material';
 
 import { CONFIG } from 'src/config-global';
-import { MainLayout } from 'src/layouts/main';
 import { usePublicTemple } from 'src/hooks/use-public-temple';
+import { MainLayout } from 'src/layouts/main';
 import ArchitectureView from 'src/sections/architecture/view/architecture-view';
 
 export const metadata = {
@@ -15,6 +15,7 @@ const ArchitecturePage = () => {
   return (
     <MainLayout>
       <Container
+        maxWidth="xl"
         sx={{
           py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
         }}

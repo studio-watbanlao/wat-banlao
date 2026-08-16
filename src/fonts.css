@@ -1,0 +1,6 @@
+/* Kept as its own module so this stays the very first rule webpack emits.
+ * @import must be the first rule in a stylesheet or browsers drop it; when
+ * this lived inside global.css, other resolvable @import statements in that
+ * file got hoisted ahead of it by css-loader, pushing this @import past the
+ * "must be first" limit and silently breaking the LINE Seed font-face. */
+@import url('/fonts/index.css');

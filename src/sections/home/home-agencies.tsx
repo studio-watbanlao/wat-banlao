@@ -1,20 +1,30 @@
-import { m } from 'framer-motion';
-
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
+import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { m } from 'framer-motion';
 
-import { Stack } from '@mui/material';
 import { MotionViewport, varFade } from 'src/components/animate';
 
 // ----------------------------------------------------------------------
 
-const SLIDES_DEFAULT = 4;
+type Agency = {
+  label: string;
+  logo: string;
+};
+
+const DATA: Agency[] = [
+  { label: 'วัดบ้านเหล่า', logo: 'banlao' },
+  { label: 'วัดราษบำรุง', logo: 'watnu' },
+  { label: 'ชุมชนบ้านเหล่า', logo: 'house' },
+  { label: 'โรงเรียนบ้านเหล่า', logo: 'school' },
+  { label: 'องค์การบริหารส่วนตำบลเม็กดำ', logo: 'abt' },
+  { label: 'ค่ายเพลง', logo: 'klong' },
+];
 
 export default function HomeAgencies() {
   return (
-    <Container component={MotionViewport} sx={{ textAlign: 'center', py: { xs: 8 } }}>
-      {/* Header */}
+    <Container maxWidth="xl" component={MotionViewport} sx={{ textAlign: 'center', py: { xs: 8 } }}>
       <m.div variants={varFade().inDown}>
         <Typography variant="overline" sx={{ color: 'text.disabled' }}>
           หน่วยงานที่เกี่ยวข้อง
@@ -34,31 +44,21 @@ export default function HomeAgencies() {
       </m.div>
 
       <Stack
+        direction="row"
         spacing={{ xs: 1, md: 3 }}
-        sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', mt: 3 }}
+        sx={{ justifyContent: 'center', flexWrap: 'wrap', mt: 3 }}
       >
-        {DATA.map((item: any, index: number) => (
-          // <Grid item xs={12 / DATA.length} key={item?.id || index}>
-          <Box component={m.div} variants={varFade().in}>
+        {DATA.map((item) => (
+          <Box key={item.logo} component={m.div} variants={varFade().in}>
             <Box
               component="img"
               src={`/assets/images/partner/${item.logo}.png`}
-              sx={{ width: { xs: 60, md: 120 }, height: { xs: 60, md: 120 }, cursor: 'pointer' }}
+              alt={item.label}
+              sx={{ width: { xs: 60, md: 120 }, height: { xs: 60, md: 120 } }}
             />
-            {/* <Typography>{item.label}</Typography> */}
           </Box>
-          // </Grid>
         ))}
       </Stack>
     </Container>
   );
 }
-
-const DATA = [
-  { label: 'วัดบ้านเหล่า', logo: 'banlao' },
-  { label: 'วัดราษบำรุง', logo: 'watnu' },
-  { label: 'ชุมชนบ้านเหล่า', logo: 'house' },
-  { label: 'โรงเรียนบ้านเหล่า', logo: 'school' },
-  { label: 'องค์การบริหารส่วนตำบลเม็กดำ', logo: 'abt' },
-  { label: 'ค่ายเพลง', logo: 'klong' },
-];

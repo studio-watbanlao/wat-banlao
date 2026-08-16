@@ -15,8 +15,8 @@ import { useState } from 'react';
 
 import { usePublicTempleDirectory } from '../use-public-temple-directory';
 
-import Image from 'src/components/image';
 import Iconify from 'src/components/iconify';
+import Image from 'src/components/image';
 import { usePublicTemple } from 'src/hooks/use-public-temple';
 
 export function MonkDirectoryView() {
@@ -41,7 +41,7 @@ export function MonkDirectoryView() {
     : monkEntries;
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 6, md: 10 } }}>
       <Stack spacing={4}>
         <Stack
           direction={{ xs: 'column', md: 'row' }}

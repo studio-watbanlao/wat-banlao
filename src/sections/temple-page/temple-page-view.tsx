@@ -34,41 +34,41 @@ export function TemplePageContent({ page }: { page: TemplePage }) {
         sx={{ py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT } }}
       >
         <Stack spacing={3} alignItems={page.templateKey === 'landing' ? 'center' : 'stretch'}>
-            {page.eyebrow ? (
-              <Typography align="center" color="text.secondary">
-                {page.eyebrow}
-              </Typography>
-            ) : null}
-            <Typography variant="h2" align={page.templateKey === 'landing' ? 'center' : 'left'}>
-              {page.title}
+          {page.eyebrow ? (
+            <Typography align="center" color="text.secondary">
+              {page.eyebrow}
             </Typography>
-            {page.excerpt ? (
-              <Typography
-                variant="h6"
-                color="text.secondary"
-                align={page.templateKey === 'landing' ? 'center' : 'left'}
-              >
-                {page.excerpt}
-              </Typography>
-            ) : null}
-            {page.heroImageUrl ? (
-              <Image
-                src={page.heroImageUrl}
-                alt={page.title}
-                visibleByDefault
-                sx={{ width: '100%', maxHeight: 560, objectFit: 'cover', borderRadius: 2 }}
-              />
-            ) : null}
-            {page.content ? (
-              <Box
-                sx={{
-                  typography: 'body1',
-                  width: '100%',
-                  '& img': { maxWidth: '100%', height: 'auto' },
-                }}
-                dangerouslySetInnerHTML={{ __html: page.content }}
-              />
-            ) : null}
+          ) : null}
+          <Typography variant="h2" align={page.templateKey === 'landing' ? 'center' : 'left'}>
+            {page.title}
+          </Typography>
+          {page.excerpt ? (
+            <Typography
+              variant="h6"
+              color="text.secondary"
+              align={page.templateKey === 'landing' ? 'center' : 'left'}
+            >
+              {page.excerpt}
+            </Typography>
+          ) : null}
+          {page.heroImageUrl ? (
+            <Image
+              src={page.heroImageUrl}
+              alt={page.title}
+              visibleByDefault
+              sx={{ width: '100%', maxHeight: 560, objectFit: 'cover', borderRadius: 2 }}
+            />
+          ) : null}
+          {page.content ? (
+            <Box
+              sx={{
+                typography: 'body1',
+                width: '100%',
+                '& img': { maxWidth: '100%', height: 'auto' },
+              }}
+              dangerouslySetInnerHTML={{ __html: page.content }}
+            />
+          ) : null}
         </Stack>
       </Container>
     </MainLayout>
@@ -94,7 +94,7 @@ export function ManagedPageOverride({
   if (isLoading) {
     return (
       <MainLayout>
-        <Container maxWidth="lg" sx={{ py: { xs: 7, md: 10 } }}>
+        <Container maxWidth="xl" sx={{ py: { xs: 7, md: 10 } }}>
           <Stack spacing={2.5} alignItems="center">
             <Skeleton variant="text" width="28%" height={28} />
             <Skeleton variant="text" width="52%" height={56} />

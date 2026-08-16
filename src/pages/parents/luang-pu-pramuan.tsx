@@ -11,22 +11,25 @@ export const metadata = {
 
 const LuangPuPramuanPage = () => {
   return (
-    <ManagedPageOverride pageKey="luang-pu-pramuan"><MainLayout>
-      <Container
-        sx={{
-          py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
-        }}
-      >
-        <Typography align="center" sx={{ color: 'text.secondary' }}>
-          บูรพาจารย์
-        </Typography>
-        <Typography variant="h3" align="center" sx={{ mb: 2 }}>
-          หลวงปู่ประมวล ญาณวโร
-        </Typography>
+    <ManagedPageOverride pageKey="luang-pu-pramuan">
+      <MainLayout>
+        <Container
+          maxWidth="xl"
+          sx={{
+            py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
+          }}
+        >
+          <Typography align="center" sx={{ color: 'text.secondary' }}>
+            บูรพาจารย์
+          </Typography>
+          <Typography variant="h3" align="center" sx={{ mb: 2 }}>
+            หลวงปู่ประมวล ญาณวโร
+          </Typography>
 
-        <LuangPuPramuanView />
-      </Container>
-    </MainLayout></ManagedPageOverride>
+          <LuangPuPramuanView />
+        </Container>
+      </MainLayout>
+    </ManagedPageOverride>
   );
 };
 export default LuangPuPramuanPage;

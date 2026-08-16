@@ -95,6 +95,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^8.57.1",
+    "@locator/webpack-loader": "^0.5.1",
     "@svgr/webpack": "^8.1.0",
     "@types/autosuggest-highlight": "^3.2.0",
     "@types/lodash": "^4.14.199",

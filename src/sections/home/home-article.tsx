@@ -5,8 +5,8 @@ import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import Chip from '@mui/material/Chip';
-import Container from '@mui/material/Container';
 import type { ContainerProps } from '@mui/material/Container';
+import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -116,7 +116,7 @@ function ActivityNewsCard({ item }: { item: ActivityItem }) {
   );
 }
 
-export default function HomeArticle({ maxWidth = 'lg' }: Props) {
+export default function HomeArticle({ maxWidth = 'xl' }: Props) {
   const { data = [], isLoading } = useGetActivity();
   const { data: temple } = usePublicTemple();
   const displayItems = data.slice(0, MAX_ITEMS);

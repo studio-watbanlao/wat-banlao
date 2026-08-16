@@ -13,14 +13,16 @@ export const metadata = {
 
 export default function AboutPage() {
   return (
-    <ManagedPageOverride pageKey="about"><MainLayout>
-      <Container
-        sx={{
-          py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
-        }}
-      >
-        <AboutUsView />
-      </Container>
-    </MainLayout></ManagedPageOverride>
+    <ManagedPageOverride pageKey="about">
+      <MainLayout>
+        <Container
+          sx={{
+            py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
+          }}
+        >
+          <AboutUsView />
+        </Container>
+      </MainLayout>
+    </ManagedPageOverride>
   );
 }

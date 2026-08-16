@@ -39,7 +39,7 @@ const SCHOOL_DETAILS = [
 
 export function BanlaoSchoolView() {
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 6, md: 10 } }}>
       <Stack spacing={{ xs: 6, md: 9 }}>
         <Grid container spacing={{ xs: 3, md: 6 }} alignItems="center">
           <Grid size={{ xs: 12, md: 5.5 }}>

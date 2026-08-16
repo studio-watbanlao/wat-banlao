@@ -1,36 +1,13 @@
-import { m } from 'framer-motion';
-
-import { Grid } from '@mui/material';
-import Button from '@mui/material/Button';
+import { Container, Grid } from '@mui/material';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { m } from 'framer-motion';
 
-import { paths } from 'src/routes/paths';
-
-import { useResponsive } from 'src/hooks/use-responsive';
-
-import { Container } from '@mui/material';
 import { MotionViewport, varFade } from 'src/components/animate';
-import Iconify from 'src/components/iconify';
 import Image from 'src/components/image';
 import { CONFIG } from 'src/config-global';
 
 const HomeHistory = () => {
-  const mdUp = useResponsive('up', 'md');
-
-  const renderBtn = (
-    <Button
-      color="inherit"
-      size="large"
-      variant="outlined"
-      rel="noopener"
-      href={paths.parents.luangPuSa}
-      endIcon={<Iconify icon="eva:arrow-ios-forward-fill" />}
-    >
-      อ่านเพิ่มเติม
-    </Button>
-  );
-
   const renderDescription = (
     <Stack
       sx={{
@@ -88,6 +65,7 @@ const HomeHistory = () => {
 
   return (
     <Container
+      maxWidth="xl"
       component={MotionViewport}
       sx={{
         py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },

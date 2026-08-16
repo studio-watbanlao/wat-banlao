@@ -1,22 +1,16 @@
-import { Grid } from '@mui/material';
+import { Box, Container, Grid } from '@mui/material';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { m } from 'framer-motion';
 
-import { paths } from 'src/routes/paths';
-
-import { useResponsive } from 'src/hooks/use-responsive';
-
-import { Box, Container } from '@mui/material';
 import { MotionViewport, varFade } from 'src/components/animate';
 import Iconify from 'src/components/iconify';
 import Image from 'src/components/image';
 import { CONFIG } from 'src/config-global';
+import { paths } from 'src/routes/paths';
 
 const HomeLookingFor = () => {
-  const mdUp = useResponsive('up', 'md');
-
   const renderBtn = (
     <Button
       color="inherit"
@@ -79,6 +73,7 @@ const HomeLookingFor = () => {
 
   return (
     <Container
+      maxWidth="xl"
       component={MotionViewport}
       sx={{
         py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },

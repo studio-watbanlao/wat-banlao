@@ -1,4 +1,5 @@
 import { Container } from '@mui/material';
+
 import { CONFIG } from 'src/config-global';
 import { MainLayout } from 'src/layouts/main';
 import BlogDetailsView from 'src/sections/article/blog/blog-detail-view';
@@ -7,6 +8,7 @@ const BlogDetailPage = () => {
   return (
     <MainLayout>
       <Container
+        maxWidth="xl"
         sx={{
           py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
         }}

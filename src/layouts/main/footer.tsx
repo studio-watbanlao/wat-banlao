@@ -1,28 +1,22 @@
 'use client';
 
-import type { Breakpoint } from '@mui/material/styles';
-import { varAlpha } from 'minimal-shared/utils';
 import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
-import Divider from '@mui/material/Divider';
-import { styled } from '@mui/material/styles';
 import Container from '@mui/material/Container';
+import Divider from '@mui/material/Divider';
+import Link from '@mui/material/Link';
+import type { Breakpoint } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { varAlpha } from 'minimal-shared/utils';
 
 import { MainSchoolLogo, useMainSchoolBrand } from './school-brand';
 
-import { paths } from 'src/routes/paths';
-import { RouterLink } from 'src/routes/components';
+import { RiArticleLine, RiCalendarLine, RiHome5Line, RiMailLine } from 'src/components/remix-icon';
 import { CONFIG } from 'src/config-global';
-import { useTranslate } from 'src/locales';
 import { usePublicTemple } from 'src/hooks/use-public-temple';
-import {
-  RiHome5Line,
-  RiMailLine,
-  RiArticleLine,
-  RiCalendarLine,
-} from 'src/components/remix-icon';
-
+import { useTranslate } from 'src/locales';
+import { RouterLink } from 'src/routes/components';
+import { paths } from 'src/routes/paths';
 
 // ----------------------------------------------------------------------
 
@@ -48,7 +42,7 @@ export function Footer({
 }: FooterProps & { layoutQuery?: Breakpoint }) {
   return (
     <FooterRoot sx={sx} {...other}>
-      <Container sx={{ position: 'relative', py: { xs: 4, md: 5 } }}>
+      <Container maxWidth="xl" sx={{ position: 'relative', py: { xs: 4, md: 5 } }}>
         <Box
           sx={(theme) => ({
             gap: 3,
@@ -79,7 +73,7 @@ export function Footer({
 export function HomeFooter({ sx, ...other }: FooterProps) {
   return (
     <FooterRoot sx={sx} {...other}>
-      <Container sx={{ position: 'relative', py: { xs: 3.5, md: 4.5 } }}>
+      <Container maxWidth="xl" sx={{ position: 'relative', py: { xs: 3.5, md: 4.5 } }}>
         <Box
           sx={{
             gap: 3,
@@ -226,9 +220,7 @@ function FooterBottom() {
         <Typography variant="caption">
           © {year} {school?.name ?? 'เว็บไซต์วัด'}
         </Typography>
-        <Typography variant="caption">
-          เวอร์ชัน {CONFIG.appVersion}
-        </Typography>
+        <Typography variant="caption">เวอร์ชัน {CONFIG.appVersion}</Typography>
       </Box>
     </>
   );

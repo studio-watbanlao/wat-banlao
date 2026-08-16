@@ -12,21 +12,24 @@ export const metadata = {
 const HistoryPage = () => {
   const theme = useTheme();
   return (
-    <ManagedPageOverride pageKey="history"><MainLayout>
-      <Container
-        sx={{
-          py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
-        }}
-      >
-        <Typography align="center" sx={{ color: 'text.secondary' }}>
-          ประวัติความเป็นมา
-        </Typography>
-        <Typography variant="h3" color={theme.palette.primary.main} align="center" sx={{ mb: 2 }}>
-          วัดบ้านเหล่า - สุขธัมมาราม
-        </Typography>
-        <HistoryView />
-      </Container>
-    </MainLayout></ManagedPageOverride>
+    <ManagedPageOverride pageKey="history">
+      <MainLayout>
+        <Container
+          maxWidth="xl"
+          sx={{
+            py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
+          }}
+        >
+          <Typography align="center" sx={{ color: 'text.secondary' }}>
+            ประวัติความเป็นมา
+          </Typography>
+          <Typography variant="h3" color={theme.palette.primary.main} align="center" sx={{ mb: 2 }}>
+            วัดบ้านเหล่า - สุขธัมมาราม
+          </Typography>
+          <HistoryView />
+        </Container>
+      </MainLayout>
+    </ManagedPageOverride>
   );
 };
 export default HistoryPage;

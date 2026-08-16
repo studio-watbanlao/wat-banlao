@@ -1,14 +1,11 @@
-import { m } from 'framer-motion';
-
-import { Grid } from '@mui/material';
+import { Container, Grid } from '@mui/material';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { m } from 'framer-motion';
 
-import { useResponsive } from 'src/hooks/use-responsive';
-
-import { Container } from '@mui/material';
 import { MotionViewport, varFade } from 'src/components/animate';
 import Image from 'src/components/image';
+import { useResponsive } from 'src/hooks/use-responsive';
 
 const HomeLooking = () => {
   const mdUp = useResponsive('up', 'md');
@@ -20,6 +17,7 @@ const HomeLooking = () => {
       }}
     >
       <Container
+        maxWidth="xl"
         component={MotionViewport}
         sx={{
           py: { xs: 10 },
