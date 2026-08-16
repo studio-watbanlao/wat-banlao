@@ -12,6 +12,7 @@ import { LocalizationProvider } from 'src/locales';
 import ThemeProvider from 'src/theme';
 import { AuthProvider } from 'src/auth/context/jwt';
 import { MotionLazy } from 'src/components/animate/motion-lazy';
+import MataData from 'src/components/mata-data/mata-data';
 import ProgressBar from 'src/components/progress-bar';
 import { SettingsDrawer, SettingsProvider } from 'src/components/settings';
 import SnackbarProvider from 'src/components/snackbar/snackbar-provider';
@@ -39,6 +40,7 @@ const App = ({ Component, pageProps }: AppProps) => {
 
       <QueryClientProvider client={queryClient}>
         <PublicTempleInitialDataContext.Provider value={pageProps.publicTemple}>
+          <MataData />
           <AuthProvider>
             <LocalizationProvider>
               <SettingsProvider

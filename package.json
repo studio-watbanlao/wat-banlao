@@ -52,6 +52,8 @@
     "@tiptap/extensions": "^3.30.0",
     "@tiptap/react": "^3.30.0",
     "@tiptap/starter-kit": "^3.30.0",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "autosuggest-highlight": "^3.3.4",
     "axios": "^1.5.1",
     "date-fns": "^2.30.0",

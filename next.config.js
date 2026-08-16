@@ -9,6 +9,14 @@ module.exports = withBundleAnalyzer({
   output: 'standalone',
   reactStrictMode: true,
   trailingSlash: true,
+  async rewrites() {
+    return [
+      {
+        source: '/favicon.ico',
+        destination: '/favicon/favicon.ico',
+      },
+    ];
+  },
   modularizeImports: {
     '@mui/material': {
       transform: '@mui/material/{{member}}',
