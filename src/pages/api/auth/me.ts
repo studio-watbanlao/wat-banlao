@@ -10,10 +10,7 @@ import {
   toAdminUser,
 } from 'src/lib/supabase-auth';
 import { supabaseRequest, SupabaseRequestError } from 'src/lib/supabase-rest';
-import {
-  listTempleAccessForUser,
-  TEMPLE_CONTEXT_COOKIE,
-} from 'src/lib/temple-access';
+import { listTempleAccessForUser, selectTempleAccessForRequest } from 'src/lib/temple-access';
 import { claimPendingTempleInvitations } from 'src/lib/temple-invitations';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -49,14 +46,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await claimPendingTempleInvitations(user);
     const [templeAccesses, profiles] = await Promise.all([
       listTempleAccessForUser(user),
-      supabaseRequest<
-        Array<{ display_name?: string; pen_name?: string; avatar_url?: string }>
-      >(`profiles?select=*&id=eq.${encodeURIComponent(user.id)}&limit=1`),
+      supabaseRequest<Array<{ display_name?: string; pen_name?: string; avatar_url?: string }>>(
+        `profiles?select=*&id=eq.${encodeURIComponent(user.id)}&limit=1`
+      ),
     ]);
     const profile = profiles[0];
-    const requestedTempleId = req.cookies[TEMPLE_CONTEXT_COOKIE];
-    const currentAccess =
-      templeAccesses.find((access) => access.temple.id === requestedTempleId) || templeAccesses[0];
+    const currentAccess = selectTempleAccessForRequest(req, templeAccesses);
     const authUser = toAdminUser(user);
     return res.status(200).json({
       user: {

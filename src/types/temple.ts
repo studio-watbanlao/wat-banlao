@@ -37,7 +37,6 @@ export type TempleBranding = {
   ogImageUrl: string;
   primaryColor: string;
   secondaryColor: string;
-  fontFamily: string;
   contact: Record<string, unknown>;
 };
 

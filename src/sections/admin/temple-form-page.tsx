@@ -109,7 +109,6 @@ export default function TempleFormPage({ temple }: Props) {
       status: temple?.status || 'ACTIVE',
       primaryColor: temple?.branding.primaryColor || '#6F4E37',
       secondaryColor: temple?.branding.secondaryColor || '#C89545',
-      fontFamily: temple?.branding.fontFamily || '',
       modules: temple
         ? TEMPLE_MODULES.filter((module) => temple.modules[module])
         : [...TEMPLE_MODULES],
@@ -621,20 +620,15 @@ export default function TempleFormPage({ temple }: Props) {
             <Stack spacing={3} sx={{ width: 1, minWidth: 0, py: { lg: 1 } }}>
               <Stack spacing={2}>
                 <Stack spacing={0.5}>
-                  <Typography variant="subtitle1">สีและตัวอักษร</Typography>
+                  <Typography variant="subtitle1">สีประจำวัด</Typography>
                   <Typography variant="body2" color="text.secondary">
-                    กำหนดโทนสีหลักและแบบอักษรที่ต้องการใช้งาน
+                    กำหนดโทนสีหลักที่ต้องการใช้งาน
                   </Typography>
                 </Stack>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                   <Field.Text name="primaryColor" type="color" label="สีหลัก" />
                   <Field.Text name="secondaryColor" type="color" label="สีรอง" />
                 </Stack>
-                <Field.Text
-                  name="fontFamily"
-                  label="ชื่อแบบอักษร"
-                  placeholder="เช่น IBM Plex Sans Thai"
-                />
               </Stack>
 
               <Divider />

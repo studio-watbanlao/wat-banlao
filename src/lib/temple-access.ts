@@ -33,7 +33,6 @@ type BrandingRow = {
   og_image_url?: string;
   primary_color?: string;
   secondary_color?: string;
-  font_family?: string;
   contact?: Record<string, unknown>;
 };
 
@@ -72,7 +71,6 @@ const normalizeBranding = (row?: BrandingRow): TempleBranding => ({
   ogImageUrl: row?.og_image_url || '',
   primaryColor: row?.primary_color || '#6F4E37',
   secondaryColor: row?.secondary_color || '#C89545',
-  fontFamily: row?.font_family || '',
   contact: row?.contact || {},
 });
 
@@ -194,15 +192,44 @@ export const listTempleAccessForUser = async (user: SupabaseUser): Promise<Templ
   );
 };
 
+const normalizeHost = (value: string) =>
+  value
+    .toLowerCase()
+    .split(',')[0]
+    .trim()
+    .split(':')[0]
+    .replace(/^www\./, '');
+
+export const selectTempleAccessForRequest = (req: NextApiRequest, accesses: TempleAccess[]) => {
+  const forwardedHost = Array.isArray(req.headers['x-forwarded-host'])
+    ? req.headers['x-forwarded-host'][0]
+    : req.headers['x-forwarded-host'];
+  const requestHost = normalizeHost(forwardedHost || req.headers.host || '');
+  const domainAccess = requestHost
+    ? accesses.find((access) =>
+        access.temple.domains.some(
+          (domain) =>
+            domain.verificationStatus === 'VERIFIED' && normalizeHost(domain.domain) === requestHost
+        )
+      )
+    : undefined;
+  if (domainAccess) return domainAccess;
+
+  const requestedTempleId = req.cookies[TEMPLE_CONTEXT_COOKIE];
+  return (
+    accesses.find((access) => access.temple.id === requestedTempleId) ||
+    accesses.find((access) => access.temple.status === 'ACTIVE')
+  );
+};
+
 export const resolveTempleAccess = async (req: NextApiRequest, user: SupabaseUser) => {
   const accesses = await listTempleAccessForUser(user);
   if (!accesses.length) throw new TempleAccessError('บัญชีนี้ยังไม่ได้รับสิทธิ์จัดการวัด', 403);
-  const requestedTempleId =
-    (typeof req.headers['x-temple-id'] === 'string' ? req.headers['x-temple-id'] : '') ||
-    req.cookies[TEMPLE_CONTEXT_COOKIE];
-  const selected = requestedTempleId
-    ? accesses.find((access) => access.temple.id === requestedTempleId)
-    : accesses.find((access) => access.temple.status === 'ACTIVE');
+  const headerTempleId =
+    typeof req.headers['x-temple-id'] === 'string' ? req.headers['x-temple-id'] : '';
+  const selected = headerTempleId
+    ? accesses.find((access) => access.temple.id === headerTempleId)
+    : selectTempleAccessForRequest(req, accesses);
   if (!selected) throw new TempleAccessError('ไม่มีสิทธิ์เข้าถึงวัดที่เลือก', 403);
   if (selected.temple.status !== 'ACTIVE') {
     throw new TempleAccessError('วัดนี้ยังไม่เปิดใช้งาน', 403);

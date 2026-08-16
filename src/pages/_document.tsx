@@ -6,6 +6,35 @@ const Document = () => {
       <Head>
         <meta charSet="utf-8" />
         <meta name="theme-color" content="#000000" />
+        <link rel="stylesheet" href="/fonts/index.css" />
+        <link
+          rel="preload"
+          href="/fonts/LINESeedSansTH-Regular.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/LINESeedSansTH-Bold.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/LINESeedSansTH-Heavy.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/LINESeedSansTH-Thin.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />

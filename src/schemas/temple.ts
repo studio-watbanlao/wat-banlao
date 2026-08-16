@@ -37,7 +37,6 @@ export const templeFormSchema = z
     status: z.enum(['ACTIVE', 'SUSPENDED', 'ARCHIVED']),
     primaryColor: z.string().regex(COLOR_PATTERN, 'รูปแบบสีไม่ถูกต้อง'),
     secondaryColor: z.string().regex(COLOR_PATTERN, 'รูปแบบสีไม่ถูกต้อง'),
-    fontFamily: z.string().trim().max(120, 'ชื่อฟอนต์ยาวเกินไป').default(''),
     modules: z.array(z.string()).min(1, 'กรุณาเปิดอย่างน้อยหนึ่ง Module'),
     logoImage: optionalImageFileSchema.default(null),
     currentLogoUrl: z.string().default(''),
