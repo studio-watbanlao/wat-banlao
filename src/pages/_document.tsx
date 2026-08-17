@@ -7,6 +7,7 @@ const Document = () => {
         <meta charSet="utf-8" />
         <meta name="theme-color" content="#000000" />
         <link rel="stylesheet" href="/fonts/index.css" />
+        <link rel="stylesheet" href="/fonts/kanit/index.css" />
         <link
           rel="preload"
           href="/fonts/LINESeedSansTH-Regular.woff2"

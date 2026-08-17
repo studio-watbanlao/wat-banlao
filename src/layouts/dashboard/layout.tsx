@@ -26,7 +26,6 @@ import { NavHorizontal } from './nav-horizontal';
 import { NavVertical } from './nav-vertical';
 import { VerticalDivider } from './content';
 import { NavMobile } from './nav-mobile';
-import { TempleSwitcher } from './temple-switcher';
 
 import { useAuthContext } from 'src/auth/hooks';
 import { useSettingsContext } from 'src/components/settings';
@@ -223,7 +222,6 @@ export function DashboardLayout({
       ),
       rightArea: (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0, sm: 0.75 } }}>
-          <TempleSwitcher />
           {/** @slot Searchbar */}
           {/* <Searchbar data={navData} /> */}
 

@@ -1,8 +1,9 @@
 import type { ColorSystem } from '@mui/material/styles';
-import { setFont, hexToRgbChannel, createPaletteChannel } from 'minimal-shared/utils';
+import { hexToRgbChannel, createPaletteChannel } from 'minimal-shared/utils';
 
 import type { ThemeOptions, ThemeColorScheme, ColorSchemeOptionsExtended } from '../types';
 import { createShadowColor } from '../core/custom-shadows';
+import { setFont } from '../theme-config';
 
 import { primaryColorPresets } from './color-presets';
 

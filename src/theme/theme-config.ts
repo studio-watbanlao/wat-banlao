@@ -41,8 +41,8 @@ export const themeConfig: ThemeConfig = {
    * Typography
    *************************************** */
   fontFamily: {
-    primary: 'LINE Seed Sans TH',
-    secondary: 'LINE Seed Sans TH',
+    primary: 'var(--font-line-seed-sans-th)',
+    secondary: 'var(--font-line-seed-sans-th)',
   },
   /** **************************************
    * Palette
@@ -166,3 +166,14 @@ export const createTemplePalette = (primaryColor?: string, secondaryColor?: stri
   primary: createBrandColor(primaryColor, themeConfig.palette.primary),
   secondary: createBrandColor(secondaryColor, themeConfig.palette.secondary),
 });
+
+// ----------------------------------------------------------------------
+
+/** Kanit is the self-hosted fallback if the primary local font cannot load. */
+const SYSTEM_FONT_FALLBACK =
+  'Kanit, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"';
+
+export const setFont = (fontFamily?: string) =>
+  fontFamily
+    ? `${fontFamily.startsWith('var(') ? fontFamily : `"${fontFamily}"`}, ${SYSTEM_FONT_FALLBACK}`
+    : SYSTEM_FONT_FALLBACK;
