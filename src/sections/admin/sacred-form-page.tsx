@@ -11,9 +11,10 @@ import Typography from '@mui/material/Typography';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { Form, Field } from 'src/components/hook-form';
+import { Field, Form } from 'src/components/hook-form';
 import Iconify from 'src/components/iconify';
 import Layout from 'src/pages/dashboard/layout';
+import AdminFormSectionHeader from 'src/sections/admin/admin-form-section-header';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 import { sacredFormSchema, type SacredFormValues } from 'src/schemas/sacred';
@@ -205,84 +206,121 @@ export default function SacredFormPage({ item }: Props) {
 
           {error ? <Alert severity="error">{error}</Alert> : null}
 
-          <Card>
-            <CardContent>
-              <Form methods={methods} onSubmit={save}>
-                <Stack spacing={3}>
-                  <Field.Text name="title" required label="ชื่อ" />
-                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                    <Field.Text name="year" label="ปี" />
-                    <Field.Select name="status" label="สถานะ">
-                      <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
-                      <MenuItem value="DRAFT">แบบร่าง</MenuItem>
-                    </Field.Select>
+          <Form methods={methods} onSubmit={save}>
+            <Stack spacing={3} sx={{ width: 1, maxWidth: 1200, mx: 'auto' }}>
+              <Card>
+                <AdminFormSectionHeader
+                  icon="solar:document-text-bold-duotone"
+                  title="ข้อมูลวัตถุมงคล"
+                  subheader="ชื่อ ปีที่จัดสร้าง และสถานะการเผยแพร่"
+                />
+                <CardContent>
+                  <Stack spacing={3}>
+                    <Field.Text name="title" required label="ชื่อ" />
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                      <Field.Text name="year" label="ปี" />
+                      <Field.Select name="status" label="สถานะ">
+                        <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
+                        <MenuItem value="DRAFT">แบบร่าง</MenuItem>
+                      </Field.Select>
+                    </Stack>
                   </Stack>
-                  <Field.Text name="description" multiline minRows={3} label="คำอธิบาย" />
-                  <Field.Editor name="content" label="เนื้อหา" />
+                </CardContent>
+              </Card>
 
-                  <Stack spacing={1}>
-                    <Typography variant="subtitle2">รูปหน้าปก *</Typography>
-                    <Field.Upload
-                      name="coverImage"
-                      file={coverImage || item?.imageUrl || ''}
-                      maxSize={8 * 1024 * 1024}
-                      accept={{
-                        'image/jpeg': [],
-                        'image/png': [],
-                        'image/webp': [],
-                      }}
-                      onDrop={handleDropCover}
-                      onDelete={coverImage ? handleRemoveCover : undefined}
-                      helperText="แนะนำอัตราส่วน 3:4 · รองรับ JPG, PNG, WebP · ไม่เกิน 8 MB"
-                    />
+              <Card>
+                <AdminFormSectionHeader
+                  icon="solar:document-text-bold-duotone"
+                  title="รายละเอียดเนื้อหา"
+                  subheader="คำอธิบายและข้อมูลวัตถุมงคลฉบับเต็ม"
+                />
+                <CardContent>
+                  <Stack spacing={2}>
+                    <Field.Text name="description" multiline minRows={3} label="คำอธิบาย" />
+                    <Field.Editor name="content" label="เนื้อหา" />
                   </Stack>
+                </CardContent>
+              </Card>
 
-                  <Stack spacing={1}>
-                    <Typography variant="subtitle2">รูป Gallery (สูงสุด 8 รูป)</Typography>
-                    <Field.Upload
-                      multiple
-                      thumbnail
-                      name="galleryImages"
-                      files={[
-                        ...currentGallery.map((image) => image.image),
-                        ...galleryImages,
-                      ]}
-                      maxFiles={8}
-                      maxSize={8 * 1024 * 1024}
-                      disabled={currentGallery.length + galleryImages.length >= 8}
-                      accept={{
-                        'image/jpeg': [],
-                        'image/png': [],
-                        'image/webp': [],
-                      }}
-                      onDrop={handleDropGallery}
-                      onRemove={handleRemoveGallery}
-                      onRemoveAll={handleRemoveAllGallery}
-                      helperText="รองรับ JPG, PNG และ WebP รูปละไม่เกิน 8 MB"
-                    />
-                  </Stack>
+              <Card>
+                <AdminFormSectionHeader
+                  icon="solar:gallery-wide-bold-duotone"
+                  title="รูปภาพวัตถุมงคล"
+                  subheader="รูปหน้าปกและ Gallery สำหรับแสดงรายละเอียด"
+                />
+                <CardContent>
+                  <Stack spacing={3}>
+                    <Stack spacing={1}>
+                      <Typography variant="subtitle2">รูปหน้าปก *</Typography>
+                      <Field.Upload
+                        name="coverImage"
+                        file={coverImage || item?.imageUrl || ''}
+                        maxSize={8 * 1024 * 1024}
+                        accept={{
+                          'image/jpeg': [],
+                          'image/png': [],
+                          'image/webp': [],
+                        }}
+                        onDrop={handleDropCover}
+                        onDelete={coverImage ? handleRemoveCover : undefined}
+                        helperText="แนะนำอัตราส่วน 3:4 · รองรับ JPG, PNG, WebP · ไม่เกิน 8 MB"
+                        sx={{
+                          maxWidth: 480,
+                          '& > div:first-of-type': {
+                            p: '0 !important',
+                            display: 'grid',
+                            placeItems: 'center',
+                            aspectRatio: '3 / 4',
+                          },
+                          '& .component-image img': { objectFit: 'cover !important' },
+                        }}
+                      />
+                    </Stack>
 
-                  <Stack direction="row" justifyContent="flex-end" spacing={1.5}>
-                    <Button
-                      color="inherit"
-                      disabled={saving}
-                      onClick={() => router.push(paths.dashboard.manageSacred)}
-                    >
-                      ยกเลิก
-                    </Button>
-                    <LoadingButton
-                      type="submit"
-                      variant="contained"
-                      loading={saving}
-                      startIcon={<Iconify icon="ri:save-line" />}
-                    >
-                      บันทึกข้อมูล
-                    </LoadingButton>
+                    <Stack spacing={1}>
+                      <Typography variant="subtitle2">รูป Gallery (สูงสุด 8 รูป)</Typography>
+                      <Field.Upload
+                        multiple
+                        thumbnail
+                        name="galleryImages"
+                        files={[...currentGallery.map((image) => image.image), ...galleryImages]}
+                        maxFiles={8}
+                        maxSize={8 * 1024 * 1024}
+                        disabled={currentGallery.length + galleryImages.length >= 8}
+                        accept={{
+                          'image/jpeg': [],
+                          'image/png': [],
+                          'image/webp': [],
+                        }}
+                        onDrop={handleDropGallery}
+                        onRemove={handleRemoveGallery}
+                        onRemoveAll={handleRemoveAllGallery}
+                        helperText="รองรับ JPG, PNG และ WebP รูปละไม่เกิน 8 MB"
+                      />
+                    </Stack>
                   </Stack>
-                </Stack>
-              </Form>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+
+              <Stack direction="row" justifyContent="flex-end" spacing={1.5}>
+                <Button
+                  color="inherit"
+                  disabled={saving}
+                  onClick={() => router.push(paths.dashboard.manageSacred)}
+                >
+                  ยกเลิก
+                </Button>
+                <LoadingButton
+                  type="submit"
+                  variant="contained"
+                  loading={saving}
+                  startIcon={<Iconify icon="ri:save-line" />}
+                >
+                  บันทึกข้อมูล
+                </LoadingButton>
+              </Stack>
+            </Stack>
+          </Form>
         </Stack>
       </Container>
     </Layout>

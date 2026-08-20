@@ -25,15 +25,15 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
-import { zodResolver } from 'src/utils/zod-resolver';
 import { useAuthContext } from 'src/auth/hooks';
 import Layout from 'src/pages/dashboard/layout';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
-import { changeRoleFormSchema, createUserFormSchema } from 'src/schemas/user';
 import type { ChangeRoleFormValues, CreateUserFormValues } from 'src/schemas/user';
+import { changeRoleFormSchema, createUserFormSchema } from 'src/schemas/user';
 import axios from 'src/utils/axios';
 import { getErrorMessage } from 'src/utils/error-message';
+import { zodResolver } from 'src/utils/zod-resolver';
 
 type UserRole = 'user' | 'admin' | 'super_admin';
 
@@ -161,7 +161,7 @@ export default function UsersManagementPage() {
 
   return (
     <Layout>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth={false} sx={{ py: 4 }}>
         <Stack spacing={3}>
           <Typography variant="h4">จัดการผู้ใช้งาน</Typography>
 

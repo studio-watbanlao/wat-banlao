@@ -11,9 +11,10 @@ import Typography from '@mui/material/Typography';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { Form, Field } from 'src/components/hook-form';
+import { Field, Form } from 'src/components/hook-form';
 import Iconify from 'src/components/iconify';
 import Layout from 'src/pages/dashboard/layout';
+import AdminFormSectionHeader from 'src/sections/admin/admin-form-section-header';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 import { bannerFormSchema, type BannerFormValues } from 'src/schemas/banner';
@@ -170,92 +171,131 @@ export default function BannerFormPage({ banner, initialSortOrder = 0 }: Props) 
 
           {error ? <Alert severity="error">{error}</Alert> : null}
 
-          <Card>
-            <CardContent>
-              <Form methods={methods} onSubmit={saveBanner}>
-                <Stack spacing={3}>
-                  <Typography variant="h6">ข้อมูล Banner</Typography>
+          <Form methods={methods} onSubmit={saveBanner}>
+            <Stack spacing={3} sx={{ width: 1, maxWidth: 1200, mx: 'auto' }}>
+              <Card>
+                <AdminFormSectionHeader
+                  icon="solar:document-text-bold-duotone"
+                  title="ข้อมูล Banner"
+                  subheader="ชื่อ ลิงก์ปลายทาง ลำดับ และสถานะการเผยแพร่"
+                />
+                <CardContent>
+                  <Stack spacing={3}>
+                    <Field.Text name="title" required label="ชื่อ Banner" />
+                    <Field.Text
+                      name="linkUrl"
+                      label="ลิงก์เมื่อคลิก (ไม่บังคับ)"
+                      placeholder="https://... หรือ /activity"
+                    />
 
-                  <Field.Text name="title" required label="ชื่อ Banner" />
-                  <Field.Text
-                    name="linkUrl"
-                    label="ลิงก์เมื่อคลิก (ไม่บังคับ)"
-                    placeholder="https://... หรือ /activity"
-                  />
-
-                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                    <Field.Text name="sortOrder" type="number" label="ลำดับ" />
-                    <Field.Select name="status" label="สถานะ">
-                      <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
-                      <MenuItem value="DRAFT">แบบร่าง</MenuItem>
-                    </Field.Select>
-                  </Stack>
-
-                  <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
-                    <Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography variant="subtitle2">รูป Desktop *</Typography>
-                      <Field.Upload
-                        name="desktopImage"
-                        file={desktopImage || currentDesktopUrl}
-                        maxSize={8 * 1024 * 1024}
-                        accept={{
-                          'image/jpeg': [],
-                          'image/png': [],
-                          'image/webp': [],
-                        }}
-                        onDrop={handleDropImage('desktopImage', desktopImage)}
-                        onDelete={
-                          desktopImage ? handleRemoveImage('desktopImage', desktopImage) : undefined
-                        }
-                        helperText="แนะนำ 1920 × 720 px · รองรับ JPG, PNG, WebP · ไม่เกิน 8 MB"
-                      />
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                      <Field.Text name="sortOrder" type="number" label="ลำดับ" />
+                      <Field.Select name="status" label="สถานะ">
+                        <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
+                        <MenuItem value="DRAFT">แบบร่าง</MenuItem>
+                      </Field.Select>
                     </Stack>
+                  </Stack>
+                </CardContent>
+              </Card>
 
-                    <Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography variant="subtitle2">รูป Mobile (ไม่บังคับ)</Typography>
-                      <Field.Upload
-                        name="mobileImage"
-                        file={mobileImage || currentMobileUrl}
-                        maxSize={8 * 1024 * 1024}
-                        accept={{
-                          'image/jpeg': [],
-                          'image/png': [],
-                          'image/webp': [],
-                        }}
-                        onDrop={handleDropImage('mobileImage', mobileImage)}
-                        onDelete={
-                          mobileImage
-                            ? handleRemoveImage('mobileImage', mobileImage)
-                            : currentMobileUrl
-                              ? () => setCurrentMobileUrl('')
+              <Card>
+                <AdminFormSectionHeader
+                  icon="solar:gallery-wide-bold-duotone"
+                  title="รูป Banner"
+                  subheader="กำหนดรูปสำหรับหน้าจอ Desktop และ Mobile แยกกัน"
+                />
+                <CardContent>
+                  <Stack spacing={3}>
+                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+                      <Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography variant="subtitle2">รูป Desktop *</Typography>
+                        <Field.Upload
+                          name="desktopImage"
+                          file={desktopImage || currentDesktopUrl}
+                          maxSize={8 * 1024 * 1024}
+                          accept={{
+                            'image/jpeg': [],
+                            'image/png': [],
+                            'image/webp': [],
+                          }}
+                          onDrop={handleDropImage('desktopImage', desktopImage)}
+                          onDelete={
+                            desktopImage
+                              ? handleRemoveImage('desktopImage', desktopImage)
                               : undefined
-                        }
-                        helperText="หากไม่เลือก ระบบจะใช้รูป Desktop · แนะนำ 750 × 900 px · ไม่เกิน 8 MB"
-                      />
+                          }
+                          helperText="แนะนำ 1920 × 720 px · รองรับ JPG, PNG, WebP · ไม่เกิน 8 MB"
+                          sx={{
+                            '& > div:first-of-type': {
+                              p: '0 !important',
+                              display: 'grid',
+                              placeItems: 'center',
+                              aspectRatio: '8 / 3',
+                            },
+                            '& .upload-placeholder-illustration': { maxWidth: 120 },
+                            '& .component-image img': { objectFit: 'cover !important' },
+                          }}
+                        />
+                      </Stack>
+
+                      <Stack spacing={1} sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography variant="subtitle2">รูป Mobile (ไม่บังคับ)</Typography>
+                        <Field.Upload
+                          name="mobileImage"
+                          file={mobileImage || currentMobileUrl}
+                          maxSize={8 * 1024 * 1024}
+                          accept={{
+                            'image/jpeg': [],
+                            'image/png': [],
+                            'image/webp': [],
+                          }}
+                          onDrop={handleDropImage('mobileImage', mobileImage)}
+                          onDelete={
+                            mobileImage
+                              ? handleRemoveImage('mobileImage', mobileImage)
+                              : currentMobileUrl
+                                ? () => setCurrentMobileUrl('')
+                                : undefined
+                          }
+                          helperText="หากไม่เลือก ระบบจะใช้รูป Desktop · แนะนำ 750 × 900 px · ไม่เกิน 8 MB"
+                          sx={{
+                            maxWidth: 420,
+                            '& > div:first-of-type': {
+                              p: '0 !important',
+                              display: 'grid',
+                              placeItems: 'center',
+                              aspectRatio: '5 / 6',
+                            },
+                            '& .upload-placeholder-illustration': { maxWidth: 140 },
+                            '& .component-image img': { objectFit: 'cover !important' },
+                          }}
+                        />
+                      </Stack>
                     </Stack>
                   </Stack>
+                </CardContent>
+              </Card>
 
-                  <Stack direction="row" justifyContent="flex-end" spacing={1.5}>
-                    <Button
-                      color="inherit"
-                      disabled={saving}
-                      onClick={() => router.push(paths.dashboard.banners)}
-                    >
-                      ยกเลิก
-                    </Button>
-                    <LoadingButton
-                      type="submit"
-                      variant="contained"
-                      loading={saving}
-                      startIcon={<Iconify icon="ri:save-line" />}
-                    >
-                      บันทึกข้อมูล
-                    </LoadingButton>
-                  </Stack>
-                </Stack>
-              </Form>
-            </CardContent>
-          </Card>
+              <Stack direction="row" justifyContent="flex-end" spacing={1.5}>
+                <Button
+                  color="inherit"
+                  disabled={saving}
+                  onClick={() => router.push(paths.dashboard.banners)}
+                >
+                  ยกเลิก
+                </Button>
+                <LoadingButton
+                  type="submit"
+                  variant="contained"
+                  loading={saving}
+                  startIcon={<Iconify icon="ri:save-line" />}
+                >
+                  บันทึกข้อมูล
+                </LoadingButton>
+              </Stack>
+            </Stack>
+          </Form>
         </Stack>
       </Container>
     </Layout>

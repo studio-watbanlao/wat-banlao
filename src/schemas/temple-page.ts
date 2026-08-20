@@ -11,7 +11,6 @@ export const templePageFormSchema = z.object({
     .min(1, 'กรุณากรอก URL slug')
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)*$/, 'รูปแบบ slug ไม่ถูกต้อง'),
   pageType: z.enum(['SYSTEM', 'CUSTOM']),
-  templateKey: z.enum(['default', 'landing', 'biography']),
   eyebrow: z.string().trim().max(120).default(''),
   excerpt: z.string().trim().max(500).default(''),
   content: z.string().default(''),

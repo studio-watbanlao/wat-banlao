@@ -18,6 +18,17 @@ import Iconify from 'src/components/iconify';
 import Image from 'src/components/image';
 import { usePublicTemple } from 'src/hooks/use-public-temple';
 
+const formatThaiDate = (value: string) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return new Intl.DateTimeFormat('th-TH', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(date);
+};
+
 type InfoItemProps = {
   icon: string;
   label: string;
@@ -86,7 +97,7 @@ export function AbbotView() {
   );
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 6, md: 10 } }}>
+    <Container maxWidth={false} sx={{ py: { xs: 6, md: 10 } }}>
       <Stack spacing={{ xs: 6, md: 8 }}>
         {isLoading ? (
           <Stack alignItems="center" sx={{ py: 10 }}>
@@ -158,7 +169,7 @@ export function AbbotView() {
                         <InfoItem
                           icon="solar:calendar-linear"
                           label="วันเกิด"
-                          value={abbot.birth}
+                          value={formatThaiDate(abbot.birth)}
                         />
                       </Grid>
                     ) : null}

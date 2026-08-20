@@ -13,16 +13,17 @@ import {
 import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { zodResolver } from 'src/utils/zod-resolver';
 import { Form, RHFEditor, RHFSelect, RHFTextField, RHFUpload } from 'src/components/hook-form';
 import Iconify from 'src/components/iconify';
 import Layout from 'src/pages/dashboard/layout';
+import AdminFormSectionHeader from 'src/sections/admin/admin-form-section-header';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 import { festivalFormSchema, type FestivalFormValues } from 'src/schemas/festival';
 import type { FestivalGalleryImage, FestivalImagePayload, FestivalItem } from 'src/types/festival';
 import axios from 'src/utils/axios';
 import { getErrorMessage } from 'src/utils/error-message';
+import { zodResolver } from 'src/utils/zod-resolver';
 
 export const metadata = {
   title: 'เพิ่ม Festival',
@@ -239,94 +240,138 @@ export default function FestivalFormPage({ festival }: Props) {
 
           {error && <Alert severity="error">{error}</Alert>}
 
-          <Card>
-            <CardContent>
-              <Form methods={methods} onSubmit={saveFestival}>
-                <Stack spacing={3}>
-                  <Typography variant="h6">ข้อมูล Festival</Typography>
+          <Form methods={methods} onSubmit={saveFestival}>
+            <Stack spacing={3} sx={{ width: 1, maxWidth: 1200, mx: 'auto' }}>
+              <Card>
+                <AdminFormSectionHeader
+                  icon="solar:document-text-bold-duotone"
+                  title="ข้อมูล Festival"
+                  subheader="ชื่อ ปี ครั้งที่จัดงาน และสถานะการเผยแพร่"
+                />
+                <CardContent>
+                  <Stack spacing={3}>
+                    <RHFTextField name="title" required label="ชื่อ Festival" />
 
-                  <RHFTextField name="title" required label="ชื่อ Festival" />
-
-                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                    <RHFTextField name="year" required label="ปี" />
-                    <RHFTextField name="no" label="ครั้งที่" />
-                    <RHFSelect name="status" label="สถานะ">
-                      <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
-                      <MenuItem value="DRAFT">แบบร่าง</MenuItem>
-                    </RHFSelect>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                      <RHFTextField name="year" required label="ปี" />
+                      <RHFTextField name="no" label="ครั้งที่" />
+                      <RHFSelect name="status" label="สถานะ">
+                        <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
+                        <MenuItem value="DRAFT">แบบร่าง</MenuItem>
+                      </RHFSelect>
+                    </Stack>
                   </Stack>
+                </CardContent>
+              </Card>
 
-                  <RHFTextField name="description" multiline minRows={2} label="คำอธิบาย" />
-                  <RHFEditor name="content" label="เนื้อหา" />
-
-                  <Stack spacing={1}>
-                    <Typography variant="subtitle2">รูปหน้าปก *</Typography>
-                    <RHFUpload
-                      name="coverImage"
-                      file={coverImage || festival?.imageUrl || ''}
-                      maxSize={8 * 1024 * 1024}
-                      accept={{
-                        'image/jpeg': [],
-                        'image/png': [],
-                        'image/webp': [],
-                      }}
-                      onDrop={handleDropCover}
-                      onDelete={coverImage ? handleRemoveCover : undefined}
-                      helperText="แนะนำอัตราส่วน 4:3 · รองรับ JPG, PNG, WebP · ไม่เกิน 8 MB"
-                    />
+              <Card>
+                <AdminFormSectionHeader
+                  icon="solar:document-text-bold-duotone"
+                  title="รายละเอียดเนื้อหา"
+                  subheader="คำอธิบายและเนื้อหาเทศกาลฉบับเต็ม"
+                />
+                <CardContent>
+                  <Stack spacing={2}>
+                    <RHFTextField name="description" multiline minRows={2} label="คำอธิบาย" />
+                    <RHFEditor name="content" label="เนื้อหา" />
                   </Stack>
+                </CardContent>
+              </Card>
 
-                  <Stack spacing={1}>
-                    <Typography variant="subtitle2">รูป Gallery (สูงสุด 8 รูป)</Typography>
-                    <RHFUpload
-                      multiple
-                      thumbnail
-                      name="galleryImages"
-                      files={[
-                        ...currentGallery.map((image) => image.image),
-                        ...galleryImages,
-                      ]}
-                      maxFiles={8}
-                      maxSize={8 * 1024 * 1024}
-                      disabled={currentGallery.length + galleryImages.length >= 8}
-                      accept={{
-                        'image/jpeg': [],
-                        'image/png': [],
-                        'image/webp': [],
-                      }}
-                      onDrop={handleDropGallery}
-                      onRemove={handleRemoveGallery}
-                      onRemoveAll={handleRemoveAllGallery}
-                      helperText="รองรับ JPG, PNG และ WebP รูปละไม่เกิน 8 MB"
-                    />
+              <Card>
+                <AdminFormSectionHeader
+                  icon="solar:gallery-wide-bold-duotone"
+                  title="รูปภาพ"
+                  subheader="รูปหน้าปกและ Gallery สำหรับเทศกาล"
+                />
+                <CardContent>
+                  <Stack spacing={3}>
+                    <Stack spacing={1}>
+                      <Typography variant="subtitle2">รูปหน้าปก *</Typography>
+                      <RHFUpload
+                        name="coverImage"
+                        file={coverImage || festival?.imageUrl || ''}
+                        maxSize={8 * 1024 * 1024}
+                        accept={{
+                          'image/jpeg': [],
+                          'image/png': [],
+                          'image/webp': [],
+                        }}
+                        onDrop={handleDropCover}
+                        onDelete={coverImage ? handleRemoveCover : undefined}
+                        helperText="แนะนำอัตราส่วน 4:3 · รองรับ JPG, PNG, WebP · ไม่เกิน 8 MB"
+                        sx={{
+                          maxWidth: 720,
+                          '& > div:first-of-type': {
+                            p: '0 !important',
+                            display: 'grid',
+                            placeItems: 'center',
+                            aspectRatio: '4 / 3',
+                          },
+                          '& .component-image img': { objectFit: 'cover !important' },
+                        }}
+                      />
+                    </Stack>
+
+                    <Stack spacing={1}>
+                      <Typography variant="subtitle2">รูป Gallery (สูงสุด 8 รูป)</Typography>
+                      <RHFUpload
+                        multiple
+                        thumbnail
+                        name="galleryImages"
+                        files={[...currentGallery.map((image) => image.image), ...galleryImages]}
+                        maxFiles={8}
+                        maxSize={8 * 1024 * 1024}
+                        disabled={currentGallery.length + galleryImages.length >= 8}
+                        accept={{
+                          'image/jpeg': [],
+                          'image/png': [],
+                          'image/webp': [],
+                        }}
+                        onDrop={handleDropGallery}
+                        onRemove={handleRemoveGallery}
+                        onRemoveAll={handleRemoveAllGallery}
+                        helperText="รองรับ JPG, PNG และ WebP รูปละไม่เกิน 8 MB"
+                      />
+                    </Stack>
                   </Stack>
+                </CardContent>
+              </Card>
 
-                  <Typography variant="h6">ลิงก์ที่เกี่ยวข้อง</Typography>
-                  <RHFTextField name="videoUrl" label="YouTube URL" />
-                  <RHFTextField name="openingUrl" label="วิดีโอเปิดงาน URL" />
-                  <RHFTextField name="logoUrl" label="Logo URL" />
-
-                  <Stack direction="row" justifyContent="flex-end" spacing={1.5}>
-                    <Button
-                      color="inherit"
-                      disabled={saving}
-                      onClick={() => router.push(paths.dashboard.festivals)}
-                    >
-                      ยกเลิก
-                    </Button>
-                    <LoadingButton
-                      type="submit"
-                      variant="contained"
-                      loading={saving}
-                      startIcon={<Iconify icon="ri:save-line" />}
-                    >
-                      บันทึก Festival
-                    </LoadingButton>
+              <Card>
+                <AdminFormSectionHeader
+                  icon="ri:links-line"
+                  title="ลิงก์ที่เกี่ยวข้อง"
+                  subheader="วิดีโอ โลโก้ และสื่อภายนอกของเทศกาล"
+                />
+                <CardContent>
+                  <Stack spacing={2}>
+                    <RHFTextField name="videoUrl" label="YouTube URL" />
+                    <RHFTextField name="openingUrl" label="วิดีโอเปิดงาน URL" />
+                    <RHFTextField name="logoUrl" label="Logo URL" />
                   </Stack>
-                </Stack>
-              </Form>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+
+              <Stack direction="row" justifyContent="flex-end" spacing={1.5}>
+                <Button
+                  color="inherit"
+                  disabled={saving}
+                  onClick={() => router.push(paths.dashboard.festivals)}
+                >
+                  ยกเลิก
+                </Button>
+                <LoadingButton
+                  type="submit"
+                  variant="contained"
+                  loading={saving}
+                  startIcon={<Iconify icon="ri:save-line" />}
+                >
+                  บันทึก Festival
+                </LoadingButton>
+              </Stack>
+            </Stack>
+          </Form>
         </Stack>
       </Container>
     </Layout>

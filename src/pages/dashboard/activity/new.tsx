@@ -11,9 +11,11 @@ import Typography from '@mui/material/Typography';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { Form, Field } from 'src/components/hook-form';
+import { Field, Form } from 'src/components/hook-form';
 import Iconify from 'src/components/iconify';
+import { useCurrentTempleAccess } from 'src/hooks/use-current-temple-access';
 import Layout from 'src/pages/dashboard/layout';
+import AdminFormSectionHeader from 'src/sections/admin/admin-form-section-header';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 import { activityFormSchema, type ActivityFormValues } from 'src/schemas/activity';
@@ -21,7 +23,6 @@ import type { ActivityGalleryImage, ActivityImagePayload, ActivityItem } from 's
 import axios from 'src/utils/axios';
 import { getErrorMessage } from 'src/utils/error-message';
 import { zodResolver } from 'src/utils/zod-resolver';
-import { useCurrentTempleAccess } from 'src/hooks/use-current-temple-access';
 
 export const metadata = {
   title: 'เพิ่มกิจกรรม',
@@ -238,12 +239,15 @@ export default function ActivityFormPage({ activity }: Props) {
 
           {error ? <Alert severity="error">{error}</Alert> : null}
 
-          <Card>
+          <Card sx={{ width: 1, maxWidth: 1200, mx: 'auto' }}>
+            <AdminFormSectionHeader
+              icon="solar:document-text-bold-duotone"
+              title="ข้อมูลกิจกรรมและข่าวสาร"
+              subheader="ชื่อเรื่อง ประเภทเนื้อหา ส่วนงาน และสถานะการเผยแพร่"
+            />
             <CardContent>
               <Form methods={methods} onSubmit={saveActivity}>
                 <Stack spacing={3}>
-                  <Typography variant="h6">ข้อมูลกิจกรรมและข่าวสาร</Typography>
-
                   <Field.Text name="title" required label="ชื่อเรื่อง" />
 
                   <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
@@ -262,52 +266,87 @@ export default function ActivityFormPage({ activity }: Props) {
                     </Field.Select>
                   </Stack>
 
-                  <Field.Text name="description" multiline minRows={3} label="คำอธิบาย" />
                   {isContributor ? (
                     <Alert severity="info">
                       Contributor บันทึกได้เฉพาะแบบร่าง ผู้ดูแลวัดจะเป็นผู้ตรวจและเผยแพร่
                     </Alert>
                   ) : null}
-                  <Field.Editor name="content" label="เนื้อหา" />
-
-                  <Stack spacing={1}>
-                    <Typography variant="subtitle2">รูปหน้าปก *</Typography>
-                    <Field.Upload
-                      name="coverImage"
-                      file={coverImage || activity?.imageUrl || ''}
-                      maxSize={8 * 1024 * 1024}
-                      accept={{
-                        'image/jpeg': [],
-                        'image/png': [],
-                        'image/webp': [],
-                      }}
-                      onDrop={handleDropCover}
-                      onDelete={coverImage ? handleRemoveCover : undefined}
-                      helperText="แนะนำอัตราส่วน 4:3 · รองรับ JPG, PNG, WebP · ไม่เกิน 8 MB"
+                  <Card variant="outlined">
+                    <AdminFormSectionHeader
+                      icon="solar:document-text-bold-duotone"
+                      title="รายละเอียดเนื้อหา"
+                      subheader="คำอธิบายและเนื้อหาฉบับเต็มที่แสดงบนเว็บไซต์"
                     />
-                  </Stack>
+                    <CardContent>
+                      <Stack spacing={2}>
+                        <Field.Text name="description" multiline minRows={3} label="คำอธิบาย" />
+                        <Field.Editor name="content" label="เนื้อหา" />
+                      </Stack>
+                    </CardContent>
+                  </Card>
 
-                  <Stack spacing={1}>
-                    <Typography variant="subtitle2">รูป Gallery (สูงสุด 8 รูป)</Typography>
-                    <Field.Upload
-                      multiple
-                      thumbnail
-                      name="galleryImages"
-                      files={[...currentGallery.map((image) => image.image), ...galleryImages]}
-                      maxFiles={8}
-                      maxSize={8 * 1024 * 1024}
-                      disabled={currentGallery.length + galleryImages.length >= 8}
-                      accept={{
-                        'image/jpeg': [],
-                        'image/png': [],
-                        'image/webp': [],
-                      }}
-                      onDrop={handleDropGallery}
-                      onRemove={handleRemoveGallery}
-                      onRemoveAll={handleRemoveAllGallery}
-                      helperText="รองรับ JPG, PNG และ WebP รูปละไม่เกิน 8 MB"
+                  <Card variant="outlined">
+                    <AdminFormSectionHeader
+                      icon="solar:gallery-wide-bold-duotone"
+                      title="รูปภาพ"
+                      subheader="รูปหน้าปกและรูปเพิ่มเติมสำหรับกิจกรรมหรือข่าวสาร"
                     />
-                  </Stack>
+                    <CardContent>
+                      <Stack spacing={3}>
+                        <Stack spacing={1}>
+                          <Typography variant="subtitle2">รูปหน้าปก *</Typography>
+                          <Field.Upload
+                            name="coverImage"
+                            file={coverImage || activity?.imageUrl || ''}
+                            maxSize={8 * 1024 * 1024}
+                            accept={{
+                              'image/jpeg': [],
+                              'image/png': [],
+                              'image/webp': [],
+                            }}
+                            onDrop={handleDropCover}
+                            onDelete={coverImage ? handleRemoveCover : undefined}
+                            helperText="แนะนำอัตราส่วน 4:3 · รองรับ JPG, PNG, WebP · ไม่เกิน 8 MB"
+                            sx={{
+                              maxWidth: 720,
+                              '& > div:first-of-type': {
+                                p: '0 !important',
+                                display: 'grid',
+                                placeItems: 'center',
+                                aspectRatio: '4 / 3',
+                              },
+                              '& .component-image img': { objectFit: 'cover !important' },
+                            }}
+                          />
+                        </Stack>
+
+                        <Stack spacing={1}>
+                          <Typography variant="subtitle2">รูป Gallery (สูงสุด 8 รูป)</Typography>
+                          <Field.Upload
+                            multiple
+                            thumbnail
+                            name="galleryImages"
+                            files={[
+                              ...currentGallery.map((image) => image.image),
+                              ...galleryImages,
+                            ]}
+                            maxFiles={8}
+                            maxSize={8 * 1024 * 1024}
+                            disabled={currentGallery.length + galleryImages.length >= 8}
+                            accept={{
+                              'image/jpeg': [],
+                              'image/png': [],
+                              'image/webp': [],
+                            }}
+                            onDrop={handleDropGallery}
+                            onRemove={handleRemoveGallery}
+                            onRemoveAll={handleRemoveAllGallery}
+                            helperText="รองรับ JPG, PNG และ WebP รูปละไม่เกิน 8 MB"
+                          />
+                        </Stack>
+                      </Stack>
+                    </CardContent>
+                  </Card>
 
                   <Stack direction="row" justifyContent="flex-end" spacing={1.5}>
                     <Button

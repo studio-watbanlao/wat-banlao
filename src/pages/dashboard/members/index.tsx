@@ -6,15 +6,15 @@ import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
+import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Container from '@mui/material/Container';
-import Divider from '@mui/material/Divider';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import Checkbox from '@mui/material/Checkbox';
+import Divider from '@mui/material/Divider';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import MenuItem from '@mui/material/MenuItem';
@@ -30,8 +30,8 @@ import Iconify from 'src/components/iconify';
 import Layout from 'src/pages/dashboard/layout';
 import { templeInvitationFormSchema, type TempleInvitationFormValues } from 'src/schemas/temple';
 import {
-  TEMPLE_MODULES,
   TEMPLE_CONTRIBUTOR_MODULES,
+  TEMPLE_MODULES,
   type Temple,
   type TempleInvitation,
   type TempleMemberRole,
@@ -254,7 +254,7 @@ export default function TempleMembersPage() {
 
   return (
     <Layout>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth={false} sx={{ py: 4 }}>
         <Stack spacing={3}>
           <Box>
             <Typography variant="h4">สมาชิกวัด</Typography>

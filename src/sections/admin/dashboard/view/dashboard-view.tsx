@@ -1,7 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -23,6 +21,8 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
@@ -164,7 +164,11 @@ export default function DashboardView() {
   );
 
   const { data: results = [], isLoading } = useQuery({
-    queryKey: ['dashboard-overview', temple?.id, enabledSources.map((source) => source.key).join(',')],
+    queryKey: [
+      'dashboard-overview',
+      temple?.id,
+      enabledSources.map((source) => source.key).join(','),
+    ],
     queryFn: () => loadDashboard(enabledSources),
     enabled: Boolean(temple?.id),
     staleTime: 60 * 1000,
@@ -203,7 +207,7 @@ export default function DashboardView() {
   );
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 3, md: 4 } }}>
+    <Container maxWidth={false} sx={{ py: { xs: 3, md: 4 } }}>
       <Stack spacing={3}>
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
@@ -272,7 +276,9 @@ export default function DashboardView() {
                           border: '1px solid rgba(255,255,255,0.16)',
                         }}
                       >
-                        <Typography variant="h4">{isLoading ? '—' : number(summary.value)}</Typography>
+                        <Typography variant="h4">
+                          {isLoading ? '—' : number(summary.value)}
+                        </Typography>
                         <Typography variant="caption" sx={{ opacity: 0.76 }}>
                           {summary.label}
                         </Typography>
@@ -341,7 +347,12 @@ export default function DashboardView() {
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, lg: 8 }}>
             <Card>
-              <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ p: 3 }}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{ p: 3 }}
+              >
                 <Box>
                   <Typography variant="h6">เนื้อหาล่าสุด</Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -406,7 +417,11 @@ export default function DashboardView() {
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary' }}>
+                          <TableCell
+                            colSpan={5}
+                            align="center"
+                            sx={{ py: 6, color: 'text.secondary' }}
+                          >
                             ยังไม่มีเนื้อหา
                           </TableCell>
                         </TableRow>

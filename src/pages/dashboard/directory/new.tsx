@@ -2,6 +2,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
 import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -179,7 +180,7 @@ export default function TempleDirectoryFormPage({ entry }: Props) {
 
   return (
     <Layout>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth={false} sx={{ py: 4 }}>
         <Form methods={methods} onSubmit={saveEntry}>
           <Stack spacing={3}>
             <Stack direction="row" alignItems="center" spacing={2}>
@@ -202,163 +203,198 @@ export default function TempleDirectoryFormPage({ entry }: Props) {
 
             {error ? <Alert severity="error">{error}</Alert> : null}
 
-            <Card>
-              <CardHeader
-                avatar={sectionAvatar('solar:user-id-bold')}
-                title="ข้อมูลหลักและรูปประจำตัว"
-                subheader="ชื่อที่แสดง รูปภาพ ลำดับ และสถานะการเผยแพร่"
-              />
-              <Divider sx={{ mt: 2 }} />
-              <CardContent>
-                <Stack spacing={3}>
-                  <Field.Select name="entryType" required label="ประเภทบุคคล">
-                    {TEMPLE_DIRECTORY_ENTRY_TYPES.map((item) => (
-                      <MenuItem key={item.value} value={item.value}>
-                        {item.label}
-                      </MenuItem>
-                    ))}
-                  </Field.Select>
-                  <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                    <Field.Text name="fullName" required label="ชื่อ / สมณศักดิ์" />
-                    <Field.Text
-                      name="displayTitle"
-                      label="ชื่อที่ใช้แสดงใต้รูป"
-                      placeholder="เช่น พระธรรมพุทธิมงคล"
-                    />
-                  </Stack>
-                  <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                    <Field.Text name="sortOrder" type="number" label="ลำดับการแสดง" />
-                    <Field.Select name="status" label="สถานะ">
-                      <MenuItem value="DRAFT">แบบร่าง</MenuItem>
-                      <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
+            <Box
+              sx={{
+                gap: 3,
+                display: 'grid',
+                alignItems: 'start',
+                gridTemplateColumns: { xs: '1fr', lg: '360px minmax(0, 1fr)' },
+              }}
+            >
+              <Card sx={{ position: { lg: 'sticky' }, top: { lg: 96 } }}>
+                <CardHeader
+                  avatar={sectionAvatar('solar:user-id-bold')}
+                  title="ข้อมูลหลักและรูปประจำตัว"
+                  subheader="ชื่อที่แสดง รูปภาพ ลำดับ และสถานะการเผยแพร่"
+                />
+                <Divider sx={{ mt: 2 }} />
+                <CardContent>
+                  <Stack spacing={3}>
+                    <Field.Select name="entryType" required label="ประเภทบุคคล">
+                      {TEMPLE_DIRECTORY_ENTRY_TYPES.map((item) => (
+                        <MenuItem key={item.value} value={item.value}>
+                          {item.label}
+                        </MenuItem>
+                      ))}
                     </Field.Select>
+                    <Stack direction={{ xs: 'column', md: 'column' }} spacing={2}>
+                      <Field.Text name="fullName" required label="ชื่อ / สมณศักดิ์" />
+                      <Field.Text
+                        name="displayTitle"
+                        label="ชื่อที่ใช้แสดงใต้รูป"
+                        placeholder="เช่น พระธรรมพุทธิมงคล"
+                      />
+                    </Stack>
+                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                      <Field.Text name="sortOrder" type="number" label="ลำดับการแสดง" />
+                      <Field.Select name="status" label="สถานะ">
+                        <MenuItem value="DRAFT">แบบร่าง</MenuItem>
+                        <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
+                      </Field.Select>
+                    </Stack>
+                    <Stack spacing={1}>
+                      <Typography variant="subtitle2">รูปประจำตัว *</Typography>
+                      <Field.Upload
+                        name="profileImage"
+                        file={profileImage || entry?.imageUrl || ''}
+                        maxSize={8 * 1024 * 1024}
+                        accept={{ 'image/jpeg': [], 'image/png': [], 'image/webp': [] }}
+                        onDrop={dropProfileImage}
+                        onDelete={profileImage ? removeProfileImage : undefined}
+                        helperText="แนะนำรูปแนวตั้ง · รองรับ JPG, PNG, WebP · ไม่เกิน 8 MB"
+                        sx={{
+                          '& > div:first-of-type': {
+                            p: '0 !important',
+                            display: 'grid',
+                            placeItems: 'center',
+                            aspectRatio: '4 / 5',
+                          },
+                          '& .upload-placeholder-illustration': { maxWidth: 150 },
+                          '& .component-image img': {
+                            objectFit: 'cover !important',
+                            objectPosition: 'center !important',
+                          },
+                        }}
+                      />
+                    </Stack>
                   </Stack>
-                  <Stack spacing={1}>
-                    <Typography variant="subtitle2">รูปประจำตัว *</Typography>
-                    <Field.Upload
-                      name="profileImage"
-                      file={profileImage || entry?.imageUrl || ''}
-                      maxSize={8 * 1024 * 1024}
-                      accept={{ 'image/jpeg': [], 'image/png': [], 'image/webp': [] }}
-                      onDrop={dropProfileImage}
-                      onDelete={profileImage ? removeProfileImage : undefined}
-                      helperText="แนะนำรูปแนวตั้ง · รองรับ JPG, PNG, WebP · ไม่เกิน 8 MB"
-                    />
-                  </Stack>
-                </Stack>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader
-                avatar={sectionAvatar('solar:document-text-bold')}
-                title="ข้อมูลพื้นฐาน"
-                subheader="ข้อมูลสั้นที่แสดงร่วมกับรูปประจำตัว"
-              />
-              <Divider sx={{ mt: 2 }} />
-              <CardContent>
-                <Stack spacing={2}>
-                  <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                    <Field.Text name="birth" label="เกิด" placeholder="เช่น 4 มกราคม พ.ศ. 2477" />
-                    <Field.Text name="age" label="อายุ" placeholder="เช่น 91 ปี" />
-                    <Field.Text name="ordination" label="อุปสมบท" />
-                    <Field.Text name="vassa" label="พรรษา" />
-                  </Stack>
-                  <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                    <Field.Text name="templeName" label="วัด" />
-                    <Controller
-                      name="province"
-                      control={methods.control}
-                      render={({ field, fieldState: { error: fieldError } }) => (
-                        <Autocomplete
-                          fullWidth
-                          options={THAI_PROVINCES}
-                          value={field.value || null}
-                          onChange={(_, province) => field.onChange(province || '')}
-                          onBlur={field.onBlur}
-                          noOptionsText="ไม่พบจังหวัด"
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              name={field.name}
-                              inputRef={field.ref}
-                              label="จังหวัด"
-                              placeholder="พิมพ์เพื่อค้นหาจังหวัด"
-                              error={Boolean(fieldError)}
-                              helperText={fieldError?.message}
-                              slotProps={{
-                                htmlInput: {
-                                  ...params.inputProps,
-                                  autoComplete: 'new-password',
-                                },
-                              }}
+              <Stack spacing={3} sx={{ minWidth: 0 }}>
+                <Card>
+                  <CardHeader
+                    avatar={sectionAvatar('solar:document-text-bold')}
+                    title="ข้อมูลพื้นฐาน"
+                    subheader="ข้อมูลสั้นที่แสดงร่วมกับรูปประจำตัว"
+                  />
+                  <Divider sx={{ mt: 2 }} />
+                  <CardContent>
+                    <Stack spacing={2}>
+                      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                        <Field.DatePicker
+                          name="birth"
+                          label="วันเกิด"
+                          format="dd/MM/yyyy"
+                          disableFuture
+                          slotProps={{
+                            textField: {
+                              fullWidth: true,
+                              placeholder: 'วัน/เดือน/ปี',
+                            },
+                          }}
+                        />
+                        <Field.Text name="age" label="อายุ" placeholder="เช่น 91 ปี" />
+                        <Field.Text name="ordination" label="อุปสมบท" />
+                        <Field.Text name="vassa" label="พรรษา" />
+                      </Stack>
+                      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                        <Field.Text name="templeName" label="วัด" />
+                        <Controller
+                          name="province"
+                          control={methods.control}
+                          render={({ field, fieldState: { error: fieldError } }) => (
+                            <Autocomplete
+                              fullWidth
+                              options={THAI_PROVINCES}
+                              value={field.value || null}
+                              onChange={(_, province) => field.onChange(province || '')}
+                              onBlur={field.onBlur}
+                              noOptionsText="ไม่พบจังหวัด"
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  name={field.name}
+                                  inputRef={field.ref}
+                                  label="จังหวัด"
+                                  placeholder="พิมพ์เพื่อค้นหาจังหวัด"
+                                  error={Boolean(fieldError)}
+                                  helperText={fieldError?.message}
+                                  slotProps={{
+                                    htmlInput: {
+                                      ...params.inputProps,
+                                      autoComplete: 'new-password',
+                                    },
+                                  }}
+                                />
+                              )}
                             />
                           )}
                         />
-                      )}
-                    />
-                    <Field.Text name="affiliation" label="สังกัด" />
-                  </Stack>
-                </Stack>
-              </CardContent>
-            </Card>
+                        <Field.Text name="affiliation" label="สังกัด" />
+                      </Stack>
+                    </Stack>
+                  </CardContent>
+                </Card>
 
-            <Card>
-              <CardHeader
-                avatar={sectionAvatar('solar:square-academic-cap-bold')}
-                title="การศึกษาและเกียรติคุณ"
-                subheader="ใช้เครื่องมือจัดรูปแบบเพื่อแยกหัวข้อและรายการให้อ่านง่าย"
-              />
-              <Divider sx={{ mt: 2 }} />
-              <CardContent>
-                <Stack spacing={1}>
-                  <Field.Editor name="education" label="การศึกษา" />
-                  <Field.Editor name="honoraryAwards" label="เกียรติคุณ / ปริญญากิตติมศักดิ์" />
-                </Stack>
-              </CardContent>
-            </Card>
+                <Card>
+                  <CardHeader
+                    avatar={sectionAvatar('solar:square-academic-cap-bold')}
+                    title="การศึกษาและเกียรติคุณ"
+                    subheader="ใช้เครื่องมือจัดรูปแบบเพื่อแยกหัวข้อและรายการให้อ่านง่าย"
+                  />
+                  <Divider sx={{ mt: 2 }} />
+                  <CardContent>
+                    <Stack spacing={1}>
+                      <Field.Editor name="education" label="การศึกษา" />
+                      <Field.Editor name="honoraryAwards" label="เกียรติคุณ / ปริญญากิตติมศักดิ์" />
+                    </Stack>
+                  </CardContent>
+                </Card>
 
-            <Card>
-              <CardHeader
-                avatar={sectionAvatar('solar:case-round-bold')}
-                title="ตำแหน่งและสมณศักดิ์"
-                subheader="ระบุตำแหน่งปัจจุบัน ตำแหน่งที่ผ่านมา และลำดับสมณศักดิ์"
-              />
-              <Divider sx={{ mt: 2 }} />
-              <CardContent>
-                <Stack spacing={2}>
-                  <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                    <Field.Text
-                      name="termStart"
-                      label="เริ่มดำรงตำแหน่ง"
-                      placeholder="เช่น พ.ศ. 2560"
-                    />
-                    <Field.Text
-                      name="termEnd"
-                      label="สิ้นสุดการดำรงตำแหน่ง"
-                      placeholder="เว้นว่างหากยังดำรงตำแหน่ง"
-                    />
-                  </Stack>
-                  <Field.Editor name="administrativePositions" label="ตำแหน่ง / ฝ่ายปกครอง" />
-                  <Field.Editor name="monasticRank" label="สมณศักดิ์" />
-                </Stack>
-              </CardContent>
-            </Card>
+                <Card>
+                  <CardHeader
+                    avatar={sectionAvatar('solar:case-round-bold')}
+                    title="ตำแหน่งและสมณศักดิ์"
+                    subheader="ระบุตำแหน่งปัจจุบัน ตำแหน่งที่ผ่านมา และลำดับสมณศักดิ์"
+                  />
+                  <Divider sx={{ mt: 2 }} />
+                  <CardContent>
+                    <Stack spacing={2}>
+                      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                        <Field.Text
+                          name="termStart"
+                          label="เริ่มดำรงตำแหน่ง"
+                          placeholder="เช่น พ.ศ. 2560"
+                        />
+                        <Field.Text
+                          name="termEnd"
+                          label="สิ้นสุดการดำรงตำแหน่ง"
+                          placeholder="เว้นว่างหากยังดำรงตำแหน่ง"
+                        />
+                      </Stack>
+                      <Field.Editor name="administrativePositions" label="ตำแหน่ง / ฝ่ายปกครอง" />
+                      <Field.Editor name="monasticRank" label="สมณศักดิ์" />
+                    </Stack>
+                  </CardContent>
+                </Card>
 
-            <Card>
-              <CardHeader
-                avatar={sectionAvatar('solar:book-2-bold')}
-                title="ประวัติและแหล่งอ้างอิง"
-                subheader="ใช้เครื่องมือจัดรูปแบบสำหรับเนื้อหาแบบละเอียด"
-              />
-              <Divider sx={{ mt: 2 }} />
-              <CardContent>
-                <Stack spacing={1}>
-                  <Field.Editor name="biography" label="ประวัติ" />
-                  <Field.Editor name="sources" label="ที่มา / แหล่งอ้างอิง" />
-                </Stack>
-              </CardContent>
-            </Card>
+                <Card>
+                  <CardHeader
+                    avatar={sectionAvatar('solar:book-2-bold')}
+                    title="ประวัติและแหล่งอ้างอิง"
+                    subheader="ใช้เครื่องมือจัดรูปแบบสำหรับเนื้อหาแบบละเอียด"
+                  />
+                  <Divider sx={{ mt: 2 }} />
+                  <CardContent>
+                    <Stack spacing={1}>
+                      <Field.Editor name="biography" label="ประวัติ" />
+                      <Field.Editor name="sources" label="ที่มา / แหล่งอ้างอิง" />
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Stack>
+            </Box>
 
             <Stack direction="row" justifyContent="flex-end" spacing={2}>
               <Button

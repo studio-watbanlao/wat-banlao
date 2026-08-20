@@ -11,9 +11,12 @@ import Typography from '@mui/material/Typography';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { Form, Field } from 'src/components/hook-form';
+import { useAuthContext } from 'src/auth/hooks';
+import { Field, Form } from 'src/components/hook-form';
 import Iconify from 'src/components/iconify';
+import { useCurrentTempleAccess } from 'src/hooks/use-current-temple-access';
 import Layout from 'src/pages/dashboard/layout';
+import AdminFormSectionHeader from 'src/sections/admin/admin-form-section-header';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 import { editorialFormSchema, type EditorialFormValues } from 'src/schemas/editorial';
@@ -21,8 +24,6 @@ import type { EditorialImagePayload, EditorialItem, EditorialResource } from 'sr
 import axios from 'src/utils/axios';
 import { getErrorMessage } from 'src/utils/error-message';
 import { zodResolver } from 'src/utils/zod-resolver';
-import { useCurrentTempleAccess } from 'src/hooks/use-current-temple-access';
-import { useAuthContext } from 'src/auth/hooks';
 
 type PreviewFile = File & { preview?: string };
 
@@ -163,42 +164,69 @@ export default function EditorialFormPage({ resource, title, item }: Props) {
 
           {error ? <Alert severity="error">{error}</Alert> : null}
 
-          <Card>
-            <CardContent>
-              <Form methods={methods} onSubmit={save}>
-                <Stack spacing={3}>
-                  <Field.Text name="title" required label={`ชื่อ${title}`} />
+          <Form methods={methods} onSubmit={save}>
+            <Stack spacing={3} sx={{ width: 1, maxWidth: 1200, mx: 'auto' }}>
+              <Card>
+                <AdminFormSectionHeader
+                  icon="solar:document-text-bold-duotone"
+                  title={`ข้อมูล${title}`}
+                  subheader="ชื่อ ผู้เขียน วันที่เผยแพร่ และสถานะของเนื้อหา"
+                />
+                <CardContent>
+                  <Stack spacing={3}>
+                    <Field.Text name="title" required label={`ชื่อ${title}`} />
 
-                  <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                    <Field.Text
-                      name="author"
-                      label="ผู้เขียน"
-                      disabled={isContributor}
-                      helperText={
-                        isContributor ? 'ใช้จากนามปากกาในโปรไฟล์ของคุณอัตโนมัติ' : undefined
-                      }
-                    />
-                    <Field.DatePicker
-                      name="createdDate"
-                      label="วันที่เผยแพร่"
-                      format="dd/MM/yyyy"
-                      slotProps={{ textField: { fullWidth: true } }}
-                    />
-                    <Field.Select name="status" label="สถานะ">
-                      {!isContributor ? <MenuItem value="PUBLIC">เผยแพร่</MenuItem> : null}
-                      <MenuItem value="DRAFT">แบบร่าง</MenuItem>
-                    </Field.Select>
+                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                      <Field.Text
+                        name="author"
+                        label="ผู้เขียน"
+                        disabled={isContributor}
+                        helperText={
+                          isContributor ? 'ใช้จากนามปากกาในโปรไฟล์ของคุณอัตโนมัติ' : undefined
+                        }
+                      />
+                      <Field.DatePicker
+                        name="createdDate"
+                        label="วันที่เผยแพร่"
+                        format="dd/MM/yyyy"
+                        slotProps={{ textField: { fullWidth: true } }}
+                      />
+                      <Field.Select name="status" label="สถานะ">
+                        {!isContributor ? <MenuItem value="PUBLIC">เผยแพร่</MenuItem> : null}
+                        <MenuItem value="DRAFT">แบบร่าง</MenuItem>
+                      </Field.Select>
+                    </Stack>
+
+                    {isContributor ? (
+                      <Alert severity="info">
+                        ผู้เขียนเนื้อหาบันทึกได้เฉพาะแบบร่าง ผู้ดูแลวัดจะเป็นผู้ตรวจและเผยแพร่
+                      </Alert>
+                    ) : null}
                   </Stack>
+                </CardContent>
+              </Card>
 
-                  {isContributor ? (
-                    <Alert severity="info">
-                      ผู้เขียนเนื้อหาบันทึกได้เฉพาะแบบร่าง ผู้ดูแลวัดจะเป็นผู้ตรวจและเผยแพร่
-                    </Alert>
-                  ) : null}
+              <Card>
+                <AdminFormSectionHeader
+                  icon="solar:document-text-bold-duotone"
+                  title="รายละเอียดเนื้อหา"
+                  subheader="คำอธิบายย่อและเนื้อหาฉบับเต็มที่แสดงบนเว็บไซต์"
+                />
+                <CardContent>
+                  <Stack spacing={2}>
+                    <Field.Text name="description" multiline minRows={3} label="คำอธิบายย่อ" />
+                    <Field.Editor name="content" label="เนื้อหา" />
+                  </Stack>
+                </CardContent>
+              </Card>
 
-                  <Field.Text name="description" multiline minRows={3} label="คำอธิบายย่อ" />
-                  <Field.Editor name="content" label="เนื้อหา" />
-
+              <Card>
+                <AdminFormSectionHeader
+                  icon="solar:gallery-wide-bold-duotone"
+                  title="รูปหน้าปก"
+                  subheader="รูปที่ใช้แสดงบนหน้ารวมและเมื่อแชร์เนื้อหา"
+                />
+                <CardContent>
                   <Stack spacing={1}>
                     <Typography variant="subtitle2">รูปหน้าปก *</Typography>
                     <Field.Upload
@@ -213,26 +241,36 @@ export default function EditorialFormPage({ resource, title, item }: Props) {
                       onDrop={handleDropCover}
                       onDelete={coverImage ? handleRemoveCover : undefined}
                       helperText="รองรับ JPG, PNG และ WebP · ไม่เกิน 8 MB"
+                      sx={{
+                        maxWidth: 720,
+                        '& > div:first-of-type': {
+                          p: '0 !important',
+                          display: 'grid',
+                          placeItems: 'center',
+                          aspectRatio: '16 / 9',
+                        },
+                        '& .component-image img': { objectFit: 'cover !important' },
+                      }}
                     />
                   </Stack>
+                </CardContent>
+              </Card>
 
-                  <Stack direction="row" justifyContent="flex-end" spacing={1.5}>
-                    <Button color="inherit" disabled={saving} onClick={() => router.push(listPath)}>
-                      ยกเลิก
-                    </Button>
-                    <LoadingButton
-                      type="submit"
-                      variant="contained"
-                      loading={saving}
-                      startIcon={<Iconify icon="ri:save-line" />}
-                    >
-                      บันทึกข้อมูล
-                    </LoadingButton>
-                  </Stack>
-                </Stack>
-              </Form>
-            </CardContent>
-          </Card>
+              <Stack direction="row" justifyContent="flex-end" spacing={1.5}>
+                <Button color="inherit" disabled={saving} onClick={() => router.push(listPath)}>
+                  ยกเลิก
+                </Button>
+                <LoadingButton
+                  type="submit"
+                  variant="contained"
+                  loading={saving}
+                  startIcon={<Iconify icon="ri:save-line" />}
+                >
+                  บันทึกข้อมูล
+                </LoadingButton>
+              </Stack>
+            </Stack>
+          </Form>
         </Stack>
       </Container>
     </Layout>

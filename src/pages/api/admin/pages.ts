@@ -34,9 +34,6 @@ const toRow = (body: Record<string, unknown>) => ({
     .toLowerCase()
     .replace(/^\/+|\/+$/g, ''),
   page_type: body.pageType === 'SYSTEM' ? 'SYSTEM' : 'CUSTOM',
-  template_key: ['default', 'landing', 'biography'].includes(String(body.templateKey))
-    ? body.templateKey
-    : 'default',
   title: text(body.title, 200),
   eyebrow: text(body.eyebrow, 120) || null,
   excerpt: text(body.excerpt, 500) || null,

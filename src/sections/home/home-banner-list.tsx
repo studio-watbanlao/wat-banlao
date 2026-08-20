@@ -1,32 +1,21 @@
 import Box from '@mui/material/Box';
+import Skeleton from '@mui/material/Skeleton';
 import { SxProps, Theme } from '@mui/material/styles';
 import NextImage, { ImageLoaderProps } from 'next/image';
 
 import Carousel, { CarouselDots, useCarousel } from 'src/components/carousel';
-import {
-  applyDefaultContentImage,
-  DEFAULT_CONTENT_IMAGE,
-  resolveContentImage,
-} from 'src/constants/images';
+import { applyDefaultContentImage, resolveContentImage } from 'src/constants/images';
 import type { BannerItem } from 'src/types/banner';
 
 type Props = {
   list: BannerItem[];
+  loading?: boolean;
   sx?: SxProps<Theme>;
 };
 
 const passthroughLoader = ({ src }: ImageLoaderProps) => src;
 
-const DEFAULT_BANNER: BannerItem = {
-  id: 'default-banner',
-  title: 'ภาพประกอบเว็บไซต์วัด',
-  desktopImageUrl: DEFAULT_CONTENT_IMAGE,
-  mobileImageUrl: DEFAULT_CONTENT_IMAGE,
-  sortOrder: 0,
-  status: 'PUBLIC',
-};
-
-const HomeBannerList = ({ list, sx }: Props) => {
+const HomeBannerList = ({ list, loading = false, sx }: Props) => {
   const carousel = useCarousel({
     fade: true,
     speed: 500,
@@ -41,7 +30,17 @@ const HomeBannerList = ({ list, sx }: Props) => {
     }),
   });
 
-  const banners = list.length ? list : [DEFAULT_BANNER];
+  if (loading) {
+    return (
+      <Skeleton
+        variant="rectangular"
+        animation="wave"
+        sx={{ height: { xs: 280, md: 550 }, borderRadius: 2, ...sx }}
+      />
+    );
+  }
+
+  if (!list.length) return null;
 
   return (
     <Box
@@ -67,7 +66,7 @@ const HomeBannerList = ({ list, sx }: Props) => {
       }}
     >
       <Carousel {...carousel.carouselSettings}>
-        {banners.map((banner, index) => {
+        {list.map((banner, index) => {
           const desktopImage = resolveContentImage(banner.desktopImageUrl || banner.imageUrl);
           const mobileImage = resolveContentImage(banner.mobileImageUrl || desktopImage);
 

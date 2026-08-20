@@ -39,7 +39,7 @@ const COMMUNITY_FACTS = [
 
 export function CommunityHistoryView() {
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 6, md: 10 } }}>
+    <Container maxWidth={false} sx={{ py: { xs: 6, md: 10 } }}>
       <Grid container spacing={{ xs: 3, md: 5 }}>
         <Grid size={{ xs: 12, md: 7.5 }}>
           <Stack spacing={4}>

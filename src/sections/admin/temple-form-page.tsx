@@ -349,7 +349,7 @@ export default function TempleFormPage({ temple }: Props) {
         <CardHeader
           avatar={
             <Avatar variant="rounded" sx={{ bgcolor: 'info.lighter', color: 'info.dark' }}>
-              <Iconify icon="solar:gallery-wide-bold" />
+              <Iconify icon="solar:gallery-wide-bold-duotone" />
             </Avatar>
           }
           title="ภาพพื้นหลังหน้าเข้าสู่ระบบ"
@@ -377,10 +377,13 @@ export default function TempleFormPage({ temple }: Props) {
                 '& > div:first-of-type': {
                   p: '0 !important',
                   width: '100%',
+                  display: 'grid',
+                  placeItems: 'center',
                   aspectRatio: '16 / 9',
                 },
                 '& .component-image img': {
                   objectFit: 'cover !important',
+                  objectPosition: 'center !important',
                 },
               }}
             />
@@ -543,7 +546,7 @@ export default function TempleFormPage({ temple }: Props) {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card sx={{ height: 'fit-content' }}>
         <CardHeader
           avatar={
             <Avatar
@@ -665,7 +668,21 @@ export default function TempleFormPage({ temple }: Props) {
                       }}
                       helperText="รองรับ ICO, PNG, JPG และ WebP · แนะนำรูป 1:1 อย่างน้อย 512 × 512 px"
                       sx={{
-                        '& > div:first-of-type': { p: '0 !important', aspectRatio: '1 / 1' },
+                        '& > div:first-of-type': {
+                          p: '0 !important',
+                          display: 'grid',
+                          placeItems: 'center',
+                          aspectRatio: '1 / 1',
+                        },
+                        '& .upload-placeholder': { gap: 1.5 },
+                        '& .upload-placeholder-illustration': { maxWidth: 112 },
+                        '& .upload-placeholder-content': { gap: 0.5, px: 1 },
+                        '& .upload-placeholder-content .MuiTypography-h6': {
+                          typography: 'subtitle2',
+                        },
+                        '& .upload-placeholder-content .MuiTypography-body2': {
+                          typography: 'caption',
+                        },
                         '& .component-image img': { objectFit: 'contain !important' },
                       }}
                     />
@@ -689,6 +706,8 @@ export default function TempleFormPage({ temple }: Props) {
                         '& > div:first-of-type': {
                           p: '0 !important',
                           width: '100%',
+                          display: 'grid',
+                          placeItems: 'center',
                           aspectRatio: '1200 / 630',
                         },
                         '& .component-image img': { objectFit: 'cover !important' },
@@ -753,7 +772,7 @@ export default function TempleFormPage({ temple }: Props) {
 
   return (
     <Layout>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth={false} sx={{ py: 4 }}>
         <Stack spacing={3}>
           <Stack direction="row" alignItems="center" spacing={2}>
             <IconButton

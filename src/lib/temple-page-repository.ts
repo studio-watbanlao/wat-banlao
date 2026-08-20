@@ -7,7 +7,6 @@ type TemplePageRow = {
   page_key: string;
   slug: string;
   page_type: TemplePage['pageType'];
-  template_key: TemplePage['templateKey'];
   title: string;
   eyebrow?: string;
   excerpt?: string;
@@ -29,7 +28,6 @@ const normalizePage = (row: TemplePageRow): TemplePage => ({
   pageKey: row.page_key,
   slug: row.slug,
   pageType: row.page_type,
-  templateKey: row.template_key,
   title: row.title,
   eyebrow: row.eyebrow || '',
   excerpt: row.excerpt || '',

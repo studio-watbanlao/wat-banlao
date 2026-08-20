@@ -1,19 +1,19 @@
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import { alpha } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import { FileRejection, useDropzone } from 'react-dropzone';
 
-import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
-import { alpha } from '@mui/material/styles';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
+import Iconify from '../iconify';
+
+import RejectionFiles from './errors-rejection-files';
+import MultiFilePreview from './preview-multi-file';
+import SingleFilePreview from './preview-single-file';
+import { UploadProps } from './types';
 
 import { UploadIllustration } from 'src/assets/illustrations';
-
-import Iconify from '../iconify';
-import { UploadProps } from './types';
-import MultiFilePreview from './preview-multi-file';
-import RejectionFiles from './errors-rejection-files';
-import SingleFilePreview from './preview-single-file';
 
 // ----------------------------------------------------------------------
 
@@ -47,12 +47,21 @@ export default function Upload({
   const hasError = isDragReject || !!error;
 
   const renderPlaceholder = (
-    <Stack spacing={3} alignItems="center" justifyContent="center" flexWrap="wrap">
-      <UploadIllustration sx={{ width: 1, maxWidth: 200 }} />
-      <Stack spacing={1} sx={{ textAlign: 'center' }}>
-        <Typography variant="h6">Drop or Select file</Typography>
+    <Stack
+      className="upload-placeholder"
+      spacing={3}
+      alignItems="center"
+      justifyContent="center"
+      flexWrap="wrap"
+    >
+      <UploadIllustration
+        className="upload-placeholder-illustration"
+        sx={{ width: 1, maxWidth: 200 }}
+      />
+      <Stack className="upload-placeholder-content" spacing={1} sx={{ textAlign: 'center', px: 3 }}>
+        <Typography variant="h6">ลากหรือเลือกไฟล์</Typography>
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          Drop files here or click
+          ลากไฟล์มาวางที่นี่ หรือคลิก
           <Box
             component="span"
             sx={{
@@ -61,9 +70,9 @@ export default function Upload({
               textDecoration: 'underline',
             }}
           >
-            browse
+            เลือกไฟล์
           </Box>
-          thorough your machine
+          จากอุปกรณ์ของคุณ
         </Typography>
       </Stack>
     </Stack>
@@ -102,7 +111,7 @@ export default function Upload({
       <Stack direction="row" justifyContent="flex-end" spacing={1.5}>
         {onRemoveAll && (
           <Button color="inherit" variant="outlined" size="small" onClick={onRemoveAll}>
-            Remove All
+            ลบทั้งหมด
           </Button>
         )}
 
@@ -113,7 +122,7 @@ export default function Upload({
             onClick={onUpload}
             startIcon={<Iconify icon="eva:cloud-upload-fill" />}
           >
-            Upload
+            อัปโหลด
           </Button>
         )}
       </Stack>
@@ -161,7 +170,18 @@ export default function Upload({
 
       {removeSinglePreview}
 
-      {helperText && helperText}
+      {helperText && (
+        <Box
+          sx={{
+            mt: 1,
+            typography: 'caption',
+            fontFamily: 'var(--font-line-seed-sans-th), "LINE Seed Sans TH", Kanit, sans-serif',
+            color: hasError ? 'error.main' : 'text.secondary',
+          }}
+        >
+          {helperText}
+        </Box>
+      )}
 
       <RejectionFiles fileRejections={fileRejections as FileRejection[]} />
 

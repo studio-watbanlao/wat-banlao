@@ -3,6 +3,7 @@
 import Box from '@mui/material/Box';
 import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
+import type { DialogProps } from '@mui/material/Dialog';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -79,6 +80,13 @@ export function PublicPopupBanner() {
     setOpen(false);
   }, [popupBanner]);
 
+  const handleDialogClose = useCallback<NonNullable<DialogProps['onClose']>>(
+    (_event, reason) => {
+      if (reason !== 'backdropClick') handleClose();
+    },
+    [handleClose]
+  );
+
   const handleImageLoaded = useCallback(() => {
     if (!popupBanner || loadedBannerId === popupBanner.id) return;
     rememberShown(popupBanner);
@@ -107,7 +115,7 @@ export function PublicPopupBanner() {
   return (
     <Dialog
       open={open}
-      onClose={handleClose}
+      onClose={handleDialogClose}
       fullWidth
       maxWidth="md"
       slotProps={{
@@ -153,11 +161,16 @@ export function PublicPopupBanner() {
         )}
         <IconButton
           aria-label="ปิด Popup Banner"
-          onClick={handleClose}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            handleClose();
+          }}
           sx={{
             top: 12,
             right: 12,
             position: 'absolute',
+            zIndex: 1,
             color: 'common.white',
             bgcolor: 'rgba(0,0,0,0.58)',
             '&:hover': { bgcolor: 'rgba(0,0,0,0.78)' },

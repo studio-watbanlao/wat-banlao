@@ -7,7 +7,7 @@ import { getThaiBank } from 'src/constants/thai-banks';
 import { isSuperAdminUser, resolveSessionUser } from 'src/lib/supabase-auth';
 import { supabaseRequest } from 'src/lib/supabase-rest';
 import { uploadBrandingImage } from 'src/lib/supabase-storage';
-import { listAllTemples } from 'src/lib/temple-access';
+import { listAllTemples, resolveTempleAccess } from 'src/lib/temple-access';
 import { DEFAULT_TEMPLE_NAVIGATION } from 'src/lib/temple-navigation';
 import { TEMPLE_MODULES, type TempleModule, type TemplePermissions } from 'src/types/temple';
 
@@ -27,7 +27,6 @@ const STANDARD_PAGE_PACK = [
     page_key: 'home',
     slug: 'home',
     page_type: 'SYSTEM',
-    template_key: 'landing',
     title: 'หน้าแรก',
     status: 'PUBLIC',
     show_in_menu: true,
@@ -38,7 +37,6 @@ const STANDARD_PAGE_PACK = [
     page_key: 'about',
     slug: 'about-us',
     page_type: 'SYSTEM',
-    template_key: 'default',
     title: 'เกี่ยวกับวัด',
     status: 'PUBLIC',
     show_in_menu: true,
@@ -48,7 +46,6 @@ const STANDARD_PAGE_PACK = [
     page_key: 'history',
     slug: 'history',
     page_type: 'SYSTEM',
-    template_key: 'default',
     title: 'ประวัติวัด',
     status: 'PUBLIC',
     show_in_menu: true,
@@ -58,7 +55,6 @@ const STANDARD_PAGE_PACK = [
     page_key: 'contact',
     slug: 'contact-us',
     page_type: 'SYSTEM',
-    template_key: 'default',
     title: 'ติดต่อวัด',
     status: 'PUBLIC',
     show_in_menu: true,
@@ -90,7 +86,7 @@ const parseImage = (value: unknown, label: string, allowedTypes = ALLOWED_IMAGE_
   return { buffer, contentType: image.type, extension };
 };
 
-const getMembers = () =>
+const getMembers = (templeId: string) =>
   supabaseRequest<
     Array<{
       temple_id: string;
@@ -99,7 +95,9 @@ const getMembers = () =>
       permissions: TemplePermissions;
       status: string;
     }>
-  >('temple_members?select=temple_id,user_id,role,permissions,status&order=created_at.asc');
+  >(
+    `temple_members?select=temple_id,user_id,role,permissions,status&temple_id=eq.${encodeURIComponent(templeId)}&order=created_at.asc`
+  );
 
 const coordinate = (value: unknown, label: string, min: number, max: number) => {
   const rawValue = text(value, 32);
@@ -147,8 +145,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (req.method === 'GET') {
-      const [temples, members] = await Promise.all([listAllTemples(), getMembers()]);
-      return res.status(200).json({ temples, members });
+      const access = await resolveTempleAccess(req, user);
+      const members = await getMembers(access.temple.id);
+      return res.status(200).json({ temples: [access.temple], members });
     }
 
     if (req.method === 'POST') {

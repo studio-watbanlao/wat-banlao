@@ -126,7 +126,7 @@ export default function HomeAdvertisement() {
   return (
     <Container
       component={MotionViewport}
-      maxWidth="xl"
+      maxWidth={false}
       sx={{
         py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
       }}

@@ -53,7 +53,7 @@ export default function WebsiteVisitorCount({ templeId }: Props) {
 
   return (
     <Box component="section" aria-label="จำนวนผู้เข้าชมเว็บไซต์" sx={{ py: { xs: 4, md: 5 } }}>
-      <Container maxWidth="xl">
+      <Container maxWidth={false}>
         <Stack
           direction="column"
           alignItems="center"

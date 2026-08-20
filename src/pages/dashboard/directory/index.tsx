@@ -115,7 +115,7 @@ export default function TempleDirectoryPage() {
 
   return (
     <Layout>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth={false} sx={{ py: 4 }}>
         <Stack spacing={3}>
           <Stack
             direction={{ xs: 'column', sm: 'row' }}

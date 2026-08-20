@@ -17,6 +17,7 @@ import Layout from 'src/pages/dashboard/layout';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 import { popupBannerFormSchema, type PopupBannerFormValues } from 'src/schemas/popup-banner';
+import AdminFormSectionHeader from 'src/sections/admin/admin-form-section-header';
 import type { PopupBannerImagePayload, PopupBannerItem } from 'src/types/popup-banner';
 import axios from 'src/utils/axios';
 import { getErrorMessage } from 'src/utils/error-message';
@@ -129,29 +130,34 @@ export default function PopupBannerFormPage({ popupBanner }: Props) {
   return (
     <Layout>
       <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Stack spacing={3}>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <IconButton
-              aria-label="กลับไปหน้าจัดการแบนเนอร์ป๊อปอัป"
-              onClick={() => router.push(paths.dashboard.popupBanners)}
-            >
-              <Iconify icon="ri:arrow-left-line" />
-            </IconButton>
-            <div>
-              <Typography variant="h4">
-                {isEditing ? 'แก้ไขแบนเนอร์ป๊อปอัป' : 'เพิ่มแบนเนอร์ป๊อปอัป'}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                รูปประชาสัมพันธ์ที่แสดงเหนือหน้าเว็บไซต์
-              </Typography>
-            </div>
-          </Stack>
+        <Stack direction="row" alignItems="center" spacing={2}>
+          <IconButton
+            aria-label="กลับไปหน้าจัดการแบนเนอร์ป๊อปอัป"
+            onClick={() => router.push(paths.dashboard.popupBanners)}
+          >
+            <Iconify icon="ri:arrow-left-line" />
+          </IconButton>
+          <div>
+            <Typography variant="h4">
+              {isEditing ? 'แก้ไขแบนเนอร์ป๊อปอัป' : 'เพิ่มแบนเนอร์ป๊อปอัป'}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              รูปประชาสัมพันธ์ที่แสดงเหนือหน้าเว็บไซต์
+            </Typography>
+          </div>
+        </Stack>
 
-          {error ? <Alert severity="error">{error}</Alert> : null}
+        {error ? <Alert severity="error">{error}</Alert> : null}
 
-          <Card>
-            <CardContent>
-              <Form methods={methods} onSubmit={save}>
+        <Form methods={methods} onSubmit={save}>
+          <Stack spacing={3} sx={{ width: 1, mx: 'auto', mt: 3 }}>
+            <Card>
+              <AdminFormSectionHeader
+                icon="solar:document-text-bold-duotone"
+                title="ข้อมูล Popup Banner"
+                subheader="ช่วงเวลา ความถี่ ลำดับ และสถานะการแสดงผล"
+              />
+              <CardContent>
                 <Stack spacing={3}>
                   <Field.Text name="title" required label="ชื่อ Popup Banner" />
                   <Field.Text
@@ -187,44 +193,66 @@ export default function PopupBannerFormPage({ popupBanner }: Props) {
                       <MenuItem value="DRAFT">แบบร่าง</MenuItem>
                     </Field.Select>
                   </Stack>
-
-                  <Stack spacing={1} sx={{ maxWidth: 640 }}>
-                    <Typography variant="subtitle2">รูป Popup Banner *</Typography>
-                    <Field.Upload
-                      name="image"
-                      file={image || popupBanner?.imageUrl || ''}
-                      maxSize={8 * 1024 * 1024}
-                      accept={{ 'image/jpeg': [], 'image/png': [], 'image/webp': [] }}
-                      onDrop={handleDrop}
-                      onDelete={
-                        image
-                          ? () => {
-                              revokePreview(image);
-                              setValue('image', null, { shouldDirty: true, shouldValidate: true });
-                            }
-                          : undefined
-                      }
-                      helperText="แนะนำ 1200 × 1200 px · JPG, PNG หรือ WebP · ไม่เกิน 8 MB"
-                    />
-                  </Stack>
-
-                  <Stack direction="row" justifyContent="flex-end" spacing={1.5}>
-                    <Button
-                      color="inherit"
-                      disabled={saving}
-                      onClick={() => router.push(paths.dashboard.popupBanners)}
-                    >
-                      ยกเลิก
-                    </Button>
-                    <LoadingButton type="submit" variant="contained" loading={saving}>
-                      บันทึกข้อมูล
-                    </LoadingButton>
-                  </Stack>
                 </Stack>
-              </Form>
-            </CardContent>
-          </Card>
-        </Stack>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <AdminFormSectionHeader
+                icon="solar:gallery-wide-bold-duotone"
+                title="รูป Popup Banner"
+                subheader="รูปสี่เหลี่ยมที่แสดงกลางหน้าจอเว็บไซต์"
+              />
+              <CardContent>
+                <Stack spacing={1}>
+                  <Typography variant="subtitle2">รูป Popup Banner *</Typography>
+                  <Field.Upload
+                    name="image"
+                    file={image || popupBanner?.imageUrl || ''}
+                    maxSize={8 * 1024 * 1024}
+                    accept={{ 'image/jpeg': [], 'image/png': [], 'image/webp': [] }}
+                    onDrop={handleDrop}
+                    onDelete={
+                      image
+                        ? () => {
+                            revokePreview(image);
+                            setValue('image', null, {
+                              shouldDirty: true,
+                              shouldValidate: true,
+                            });
+                          }
+                        : undefined
+                    }
+                    helperText="แนะนำ 1200 × 1200 px · JPG, PNG หรือ WebP · ไม่เกิน 8 MB"
+                    sx={{
+                      maxWidth: 560,
+                      '& > div:first-of-type': {
+                        p: '0 !important',
+                        display: 'grid',
+                        placeItems: 'center',
+                        aspectRatio: '1 / 1',
+                      },
+                      '& .component-image img': { objectFit: 'contain !important' },
+                    }}
+                  />
+                </Stack>
+              </CardContent>
+            </Card>
+
+            <Stack direction="row" justifyContent="flex-end" spacing={1.5}>
+              <Button
+                color="inherit"
+                disabled={saving}
+                onClick={() => router.push(paths.dashboard.popupBanners)}
+              >
+                ยกเลิก
+              </Button>
+              <LoadingButton type="submit" variant="contained" loading={saving}>
+                บันทึกข้อมูล
+              </LoadingButton>
+            </Stack>
+          </Stack>
+        </Form>
       </Container>
     </Layout>
   );

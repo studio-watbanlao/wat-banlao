@@ -28,7 +28,6 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
-import { zodResolver } from 'src/utils/zod-resolver';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 import {
@@ -43,6 +42,7 @@ import type { ContactMessage, ContactStatus } from 'src/types/contact';
 import axios from 'src/utils/axios';
 import { getErrorMessage } from 'src/utils/error-message';
 import { fDateTime } from 'src/utils/format-time';
+import { zodResolver } from 'src/utils/zod-resolver';
 
 type StatusFilter = ContactStatus | 'ALL';
 
@@ -173,7 +173,7 @@ export default function ContactManagementPage() {
 
   return (
     <Layout>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth={false} sx={{ py: 4 }}>
         <Stack spacing={3}>
           <Stack
             direction={{ xs: 'column', sm: 'row' }}

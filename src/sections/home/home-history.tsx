@@ -65,7 +65,7 @@ const HomeHistory = () => {
 
   return (
     <Container
-      maxWidth="xl"
+      maxWidth={false}
       component={MotionViewport}
       sx={{
         py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },

@@ -20,21 +20,21 @@ import { usePublicTemple } from 'src/hooks/use-public-temple';
 import { useGetBanner } from 'src/queries/banner';
 
 const ClassicHomeView = () => {
-  const { data = [] } = useGetBanner();
+  const { data = [], isLoading } = useGetBanner();
 
   return (
     <>
       <Container
-        maxWidth="xl"
+        maxWidth={false}
         sx={{
           mt: 4,
         }}
       >
-        <HomeBannerList list={data} />
+        <HomeBannerList list={data} loading={isLoading} />
       </Container>
 
       <Container
-        maxWidth="xl"
+        maxWidth={false}
         sx={{
           py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
         }}

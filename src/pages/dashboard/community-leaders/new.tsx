@@ -1,6 +1,7 @@
 import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -171,81 +172,114 @@ export default function CommunityLeaderFormPage({ leader }: Props) {
 
             {error ? <Alert severity="error">{error}</Alert> : null}
 
-            <Card>
-              <CardHeader
-                avatar={
-                  <Avatar
-                    variant="rounded"
-                    sx={{ bgcolor: 'primary.lighter', color: 'primary.dark' }}
-                  >
-                    <Iconify icon="solar:users-group-rounded-bold" />
-                  </Avatar>
-                }
-                title="ข้อมูลผู้นำและหมู่บ้าน"
-                subheader="ข้อมูลหลักที่จะแสดงบนหน้าผู้นำชุมชนบ้านเหล่า"
-              />
-              <Divider sx={{ mt: 2 }} />
-              <CardContent>
-                <Stack spacing={3}>
-                  <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                    <Field.Select name="villageKey" label="หมู่บ้าน" required>
-                      {COMMUNITY_VILLAGES.map((village) => (
-                        <MenuItem key={village.key} value={village.key}>
-                          {village.name}
-                        </MenuItem>
-                      ))}
-                    </Field.Select>
-                    <Field.Text name="fullName" label="ชื่อ–นามสกุลผู้นำ" required />
-                  </Stack>
-                  <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                    <Field.Select name="group" label="ประเภทตำแหน่ง" required>
-                      {COMMUNITY_LEADER_GROUPS.map((group) => (
-                        <MenuItem key={group.value} value={group.value}>
-                          {group.label}
-                        </MenuItem>
-                      ))}
-                    </Field.Select>
-                    <Field.Text
-                      name="role"
-                      label="ชื่อตำแหน่ง"
-                      required
-                      placeholder="เช่น ผู้ใหญ่บ้าน หมู่ 4"
-                    />
-                  </Stack>
-                  <Field.Text
-                    name="responsibility"
-                    label="หน้าที่รับผิดชอบ"
-                    multiline
-                    rows={3}
-                    placeholder="เช่น ดูแลและประสานงานภาพรวมของหมู่บ้าน"
-                  />
-                  <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                    <Field.Text name="phone" label="เบอร์โทรศัพท์ (ไม่บังคับ)" />
-                    <Field.Text name="sortOrder" type="number" label="ลำดับการแสดง" />
-                    <Field.Select name="status" label="สถานะ">
-                      <MenuItem value="DRAFT">แบบร่าง</MenuItem>
-                      <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
-                    </Field.Select>
-                  </Stack>
-                </Stack>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader title="รูปผู้นำ" subheader="รูปจะถูกครอปให้พอดีกับการ์ดบนเว็บไซต์" />
-              <Divider sx={{ mt: 2 }} />
-              <CardContent>
-                <Field.Upload
-                  name="profileImage"
-                  file={profileImage || leader?.imageUrl || ''}
-                  maxSize={8 * 1024 * 1024}
-                  accept={{ 'image/jpeg': [], 'image/png': [], 'image/webp': [] }}
-                  onDrop={dropProfileImage}
-                  onDelete={profileImage ? removeProfileImage : undefined}
-                  helperText="แนะนำรูปแนวตั้ง เห็นใบหน้าชัดเจน · JPG, PNG หรือ WebP · ไม่เกิน 8 MB"
+            <Box
+              sx={{
+                gap: 3,
+                display: 'grid',
+                alignItems: 'start',
+                gridTemplateColumns: { xs: '1fr', lg: '360px minmax(0, 1fr)' },
+              }}
+            >
+              <Card sx={{ position: { lg: 'sticky' }, top: { lg: 96 } }}>
+                <CardHeader
+                  avatar={
+                    <Avatar
+                      variant="rounded"
+                      sx={{ bgcolor: 'primary.lighter', color: 'primary.dark' }}
+                    >
+                      <Iconify icon="solar:gallery-wide-bold-duotone" />
+                    </Avatar>
+                  }
+                  title="รูปผู้นำ"
+                  subheader="รูปจะถูกครอปให้พอดีกับการ์ดบนเว็บไซต์"
                 />
-              </CardContent>
-            </Card>
+                <Divider sx={{ mt: 2 }} />
+                <CardContent>
+                  <Field.Upload
+                    name="profileImage"
+                    file={profileImage || leader?.imageUrl || ''}
+                    maxSize={8 * 1024 * 1024}
+                    accept={{ 'image/jpeg': [], 'image/png': [], 'image/webp': [] }}
+                    onDrop={dropProfileImage}
+                    onDelete={profileImage ? removeProfileImage : undefined}
+                    helperText="แนะนำรูปแนวตั้ง เห็นใบหน้าชัดเจน · JPG, PNG หรือ WebP · ไม่เกิน 8 MB"
+                    sx={{
+                      '& > div:first-of-type': {
+                        p: '0 !important',
+                        display: 'grid',
+                        placeItems: 'center',
+                        aspectRatio: '4 / 5',
+                      },
+                      '& .upload-placeholder-illustration': { maxWidth: 150 },
+                      '& .component-image img': {
+                        objectFit: 'cover !important',
+                        objectPosition: 'center !important',
+                      },
+                    }}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader
+                  avatar={
+                    <Avatar
+                      variant="rounded"
+                      sx={{ bgcolor: 'primary.lighter', color: 'primary.dark' }}
+                    >
+                      <Iconify icon="solar:users-group-rounded-bold-duotone" />
+                    </Avatar>
+                  }
+                  title="ข้อมูลผู้นำและหมู่บ้าน"
+                  subheader="ข้อมูลหลักที่จะแสดงบนหน้าผู้นำชุมชนบ้านเหล่า"
+                />
+                <Divider sx={{ mt: 2 }} />
+                <CardContent>
+                  <Stack spacing={3}>
+                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                      <Field.Select name="villageKey" label="หมู่บ้าน" required>
+                        {COMMUNITY_VILLAGES.map((village) => (
+                          <MenuItem key={village.key} value={village.key}>
+                            {village.name}
+                          </MenuItem>
+                        ))}
+                      </Field.Select>
+                      <Field.Text name="fullName" label="ชื่อ–นามสกุลผู้นำ" required />
+                    </Stack>
+                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                      <Field.Select name="group" label="ประเภทตำแหน่ง" required>
+                        {COMMUNITY_LEADER_GROUPS.map((group) => (
+                          <MenuItem key={group.value} value={group.value}>
+                            {group.label}
+                          </MenuItem>
+                        ))}
+                      </Field.Select>
+                      <Field.Text
+                        name="role"
+                        label="ชื่อตำแหน่ง"
+                        required
+                        placeholder="เช่น ผู้ใหญ่บ้าน หมู่ 4"
+                      />
+                    </Stack>
+                    <Field.Text
+                      name="responsibility"
+                      label="หน้าที่รับผิดชอบ"
+                      multiline
+                      rows={4}
+                      placeholder="เช่น ดูแลและประสานงานภาพรวมของหมู่บ้าน"
+                    />
+                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                      <Field.Text name="phone" label="เบอร์โทรศัพท์ (ไม่บังคับ)" />
+                      <Field.Text name="sortOrder" type="number" label="ลำดับการแสดง" />
+                      <Field.Select name="status" label="สถานะ">
+                        <MenuItem value="DRAFT">แบบร่าง</MenuItem>
+                        <MenuItem value="PUBLIC">เผยแพร่</MenuItem>
+                      </Field.Select>
+                    </Stack>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Box>
 
             <Stack direction="row" justifyContent="flex-end" spacing={2}>
               <Button

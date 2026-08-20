@@ -45,7 +45,7 @@ export default function EditBannerPage() {
 
   return (
     <Layout>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth={false} sx={{ py: 4 }}>
         <Stack spacing={2}>
           <Typography variant="h4">แก้ไข Banner</Typography>
           {error ? (

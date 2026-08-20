@@ -69,7 +69,7 @@ export function CommunityLeadersView() {
   }, [loadLeaders]);
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 6, md: 10 } }}>
+    <Container maxWidth={false} sx={{ py: { xs: 6, md: 10 } }}>
       <Stack spacing={5}>
         <Stack spacing={1} sx={{ maxWidth: 760 }}>
           <Typography color="primary" variant="overline">

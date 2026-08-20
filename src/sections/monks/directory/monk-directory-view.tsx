@@ -41,7 +41,7 @@ export function MonkDirectoryView() {
     : monkEntries;
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 6, md: 10 } }}>
+    <Container maxWidth={false} sx={{ py: { xs: 6, md: 10 } }}>
       <Stack spacing={4}>
         <Stack
           direction={{ xs: 'column', md: 'row' }}

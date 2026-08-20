@@ -23,7 +23,7 @@ import Iconify from 'src/components/iconify';
 import { Logo } from 'src/components/logo';
 import { PATH_AFTER_LOGIN } from 'src/config-global';
 import { useBoolean } from 'src/hooks/use-boolean';
-import { useMainSchoolBrand } from 'src/layouts/main/school-brand';
+import { usePublicTemple } from 'src/hooks/use-public-temple';
 import { useRouter, useSearchParams } from 'src/routes/hooks';
 import { getErrorMessage } from 'src/utils/error-message';
 
@@ -39,15 +39,20 @@ const defaultValues = {
   password: '',
 };
 
+const DEFAULT_LOGIN_BACKGROUND_URL = '/assets/images/watbanlao.png';
+
 const LoginView = () => {
   const { login, loginWithGoogle } = useAuthContext();
   const router = useRouter();
   const searchParams = useSearchParams();
   const password = useBoolean();
-  const { school, isLoading: isTempleLoading } = useMainSchoolBrand();
+  const { data: temple, isLoading: isTempleLoading } = usePublicTemple();
   const [errorMsg, setErrorMsg] = useState('');
   const returnTo = searchParams.get('returnTo');
-  const loginBackgroundUrl = isTempleLoading ? '' : school.login_background_url || '';
+  const loginBackgroundUrl =
+    !isTempleLoading && temple?.branding.loginBackgroundUrl
+      ? temple.branding.loginBackgroundUrl
+      : DEFAULT_LOGIN_BACKGROUND_URL;
 
   const methods = useForm({
     resolver: yupResolver(LoginSchema),
@@ -101,9 +106,7 @@ const LoginView = () => {
           color: 'common.white',
           backgroundColor: 'primary.darker',
           backgroundImage: (theme) =>
-            loginBackgroundUrl
-              ? `linear-gradient(180deg, rgba(27, 16, 11, 0.08) 10%, ${theme.palette.primary.darker}F2 100%), url(${loginBackgroundUrl})`
-              : `linear-gradient(145deg, ${theme.palette.primary.dark}, ${theme.palette.primary.darker})`,
+            `linear-gradient(180deg, rgba(27, 16, 11, 0.08) 10%, ${theme.palette.primary.darker}F2 100%), url(${loginBackgroundUrl})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           '&::before': {
@@ -134,7 +137,7 @@ const LoginView = () => {
             ระบบจัดการเว็บไซต์วัด
           </Typography>
           <Typography variant="h4" sx={{ maxWidth: 420, fontSize: { xs: 27, sm: 34, md: 36 } }}>
-            จัดการข้อมูลวัดได้ในที่เดียว
+            {temple && temple.name}
           </Typography>
           <Typography
             variant="body1"
@@ -170,11 +173,11 @@ const LoginView = () => {
               </>
             ) : (
               <>
-                {school.logo_url ? (
+                {temple?.branding.logoUrl ? (
                   <Logo
                     disabledLink
-                    src={school.logo_url}
-                    alt={school.name}
+                    src={temple.branding.logoUrl}
+                    alt={temple.name}
                     sx={{
                       width: 48,
                       height: 48,
@@ -201,7 +204,7 @@ const LoginView = () => {
                 )}
                 <Box sx={{ minWidth: 0 }}>
                   <Typography variant="subtitle1" noWrap>
-                    {school.name}
+                    {temple?.name || 'เว็บไซต์วัด'}
                   </Typography>
                   <Typography variant="caption" sx={{ color: 'text.secondary' }}>
                     ระบบสำหรับผู้ดูแลและสมาชิกวัด

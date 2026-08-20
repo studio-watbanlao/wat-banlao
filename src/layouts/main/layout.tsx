@@ -96,7 +96,7 @@ function PublicSiteLoading({ failed = false }: { failed?: boolean }) {
         sx={{ height: { xs: 72, md: 96 }, borderBottom: '1px solid', borderColor: 'divider' }}
       >
         <Container
-          maxWidth="xl"
+          maxWidth={false}
           sx={{ height: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -117,7 +117,7 @@ function PublicSiteLoading({ failed = false }: { failed?: boolean }) {
             ไม่สามารถโหลดข้อมูลเว็บไซต์ได้ กรุณาลองรีเฟรชอีกครั้ง
           </Typography>
         ) : (
-          <Container maxWidth="xl">
+          <Container maxWidth={false}>
             <Skeleton
               variant="rounded"
               animation="wave"
@@ -250,7 +250,7 @@ export function MainLayout({
           })}
         >
           <Container
-            maxWidth="xl"
+            maxWidth={false}
             sx={{
               height: 78,
               display: 'flex',
@@ -333,7 +333,7 @@ export function MainLayout({
           })}
         >
           <Container
-            maxWidth="xl"
+            maxWidth={false}
             sx={{
               height: 46,
               display: 'flex',

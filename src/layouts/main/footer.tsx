@@ -42,7 +42,7 @@ export function Footer({
 }: FooterProps & { layoutQuery?: Breakpoint }) {
   return (
     <FooterRoot sx={sx} {...other}>
-      <Container maxWidth="xl" sx={{ position: 'relative', py: { xs: 4, md: 5 } }}>
+      <Container maxWidth={false} sx={{ position: 'relative', py: { xs: 4, md: 5 } }}>
         <Box
           sx={(theme) => ({
             gap: 3,
@@ -73,7 +73,7 @@ export function Footer({
 export function HomeFooter({ sx, ...other }: FooterProps) {
   return (
     <FooterRoot sx={sx} {...other}>
-      <Container maxWidth="xl" sx={{ position: 'relative', py: { xs: 3.5, md: 4.5 } }}>
+      <Container maxWidth={false} sx={{ position: 'relative', py: { xs: 3.5, md: 4.5 } }}>
         <Box
           sx={{
             gap: 3,

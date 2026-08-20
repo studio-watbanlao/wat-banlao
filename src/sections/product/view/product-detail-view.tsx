@@ -1,13 +1,13 @@
-import { useGetProduct } from "src/queries/product";
-import ProductDetailsCarousel from "../product-details-carousel";
-import ProductDetailsSummary from "../product-details-summary";
-import { Container, Grid, Stack } from "@mui/material";
+import { Container, Grid, Stack } from '@mui/material';
+import { useGetProduct } from 'src/queries/product';
+import ProductDetailsCarousel from '../product-details-carousel';
+import ProductDetailsSummary from '../product-details-summary';
 
 const ActivityDetailsView = () => {
   const { data: product } = useGetProduct(`eefe8fyeuhfjkek`);
 
   return (
-    <Container maxWidth="xl">
+    <Container maxWidth={false}>
       {product && (
         <Stack>
           <Grid container spacing={4}>

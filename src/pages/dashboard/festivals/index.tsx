@@ -86,7 +86,7 @@ export default function FestivalManagementPage() {
 
   return (
     <Layout>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth={false} sx={{ py: 4 }}>
         <Stack spacing={3}>
           <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
             <div>

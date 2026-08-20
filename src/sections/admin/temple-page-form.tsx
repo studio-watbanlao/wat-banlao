@@ -49,7 +49,6 @@ export default function TemplePageForm({ page }: { page?: TemplePage }) {
       pageKey: page?.pageKey || '',
       slug: page?.slug || '',
       pageType: page?.pageType || 'CUSTOM',
-      templateKey: page?.templateKey || 'default',
       eyebrow: page?.eyebrow || '',
       excerpt: page?.excerpt || '',
       content: page?.content || '',
@@ -111,7 +110,7 @@ export default function TemplePageForm({ page }: { page?: TemplePage }) {
 
   return (
     <Layout>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth={false} sx={{ py: 4 }}>
         <Stack spacing={3}>
           <Stack direction="row" alignItems="center" spacing={2}>
             <IconButton aria-label="กลับ" onClick={() => router.push(paths.dashboard.pages)}>
@@ -120,7 +119,7 @@ export default function TemplePageForm({ page }: { page?: TemplePage }) {
             <div>
               <Typography variant="h4">{page ? 'แก้ไขหน้าคงที่' : 'สร้างหน้าใหม่'}</Typography>
               <Typography variant="body2" color="text.secondary">
-                เนื้อหาแยกตามวัด และใช้ Template ร่วมกันได้
+                เนื้อหาแยกตามวัด
               </Typography>
             </div>
           </Stack>
@@ -155,11 +154,6 @@ export default function TemplePageForm({ page }: { page?: TemplePage }) {
                       </Field.Select>
                     </Stack>
                     <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-                      <Field.Select name="templateKey" label="Template">
-                        <MenuItem value="default">เนื้อหาทั่วไป</MenuItem>
-                        <MenuItem value="landing">Landing page</MenuItem>
-                        <MenuItem value="biography">ประวัติบุคคล</MenuItem>
-                      </Field.Select>
                       <Field.Select name="status" label="สถานะ">
                         <MenuItem value="DRAFT">แบบร่าง</MenuItem>
                         <MenuItem value="PUBLIC">เผยแพร่</MenuItem>

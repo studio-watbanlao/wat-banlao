@@ -33,21 +33,17 @@ export function TemplePageContent({ page }: { page: TemplePage }) {
         maxWidth="lg"
         sx={{ py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT } }}
       >
-        <Stack spacing={3} alignItems={page.templateKey === 'landing' ? 'center' : 'stretch'}>
+        <Stack spacing={3} alignItems="stretch">
           {page.eyebrow ? (
             <Typography align="center" color="text.secondary">
               {page.eyebrow}
             </Typography>
           ) : null}
-          <Typography variant="h2" align={page.templateKey === 'landing' ? 'center' : 'left'}>
+          <Typography variant="h2" align="left">
             {page.title}
           </Typography>
           {page.excerpt ? (
-            <Typography
-              variant="h6"
-              color="text.secondary"
-              align={page.templateKey === 'landing' ? 'center' : 'left'}
-            >
+            <Typography variant="h6" color="text.secondary" align="left">
               {page.excerpt}
             </Typography>
           ) : null}
@@ -94,7 +90,7 @@ export function ManagedPageOverride({
   if (isLoading) {
     return (
       <MainLayout>
-        <Container maxWidth="xl" sx={{ py: { xs: 7, md: 10 } }}>
+        <Container maxWidth={false} sx={{ py: { xs: 7, md: 10 } }}>
           <Stack spacing={2.5} alignItems="center">
             <Skeleton variant="text" width="28%" height={28} />
             <Skeleton variant="text" width="52%" height={56} />

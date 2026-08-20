@@ -27,7 +27,6 @@ import { getErrorMessage } from 'src/utils/error-message';
 const TABLE_HEAD = [
   { id: 'title', label: 'ชื่อหน้า' },
   { id: 'slug', label: 'URL', minWidth: 220 },
-  { id: 'templateKey', label: 'Template', width: 140 },
   { id: 'status', label: 'สถานะ', width: 130 },
   { id: 'showInMenu', label: 'เมนู', width: 100, align: 'center' as const },
   { id: '', label: '', width: 120 },
@@ -48,7 +47,9 @@ export default function TemplePagesList() {
     }
   }, []);
 
-  useEffect(() => { loadPages(); }, [loadPages]);
+  useEffect(() => {
+    loadPages();
+  }, [loadPages]);
 
   const removePage = async (page: TemplePage) => {
     if (!window.confirm(`ลบหน้า “${page.title}” หรือไม่?`)) return;
@@ -62,38 +63,81 @@ export default function TemplePagesList() {
 
   return (
     <Layout>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth={false} sx={{ py: 4 }}>
         <Stack spacing={3}>
           <Stack direction="row" alignItems="center" justifyContent="space-between">
             <div>
               <Typography variant="h4">จัดการหน้าคงที่</Typography>
-              <Typography variant="body2" color="text.secondary">หน้ามาตรฐานและหน้าเฉพาะของวัด</Typography>
+              <Typography variant="body2" color="text.secondary">
+                หน้ามาตรฐานและหน้าเฉพาะของวัด
+              </Typography>
             </div>
-            <Button variant="contained" startIcon={<Iconify icon="mingcute:add-line" />} onClick={() => router.push(paths.dashboard.pageNew)}>
+            <Button
+              variant="contained"
+              startIcon={<Iconify icon="mingcute:add-line" />}
+              onClick={() => router.push(paths.dashboard.pageNew)}
+            >
               สร้างหน้าใหม่
             </Button>
           </Stack>
           {error ? <Alert severity="error">{error}</Alert> : null}
           <Card>
-            <TableContainer sx={{ overflow: 'unset' }}><Scrollbar><Table sx={{ minWidth: 900 }}>
-              <TableHeadCustom headLabel={TABLE_HEAD} />
-              <TableBody>
-                {pages.map((page) => (
-                  <TableRow hover key={page.id}>
-                    <TableCell><Stack><Typography variant="subtitle2">{page.title}</Typography><Typography variant="caption" color="text.secondary">{page.pageType === 'SYSTEM' ? 'หน้ามาตรฐาน' : 'หน้าเฉพาะวัด'}</Typography></Stack></TableCell>
-                    <TableCell>/{page.slug}</TableCell>
-                    <TableCell><Chip size="small" variant="outlined" label={page.templateKey} /></TableCell>
-                    <TableCell><Chip size="small" color={page.status === 'PUBLIC' ? 'success' : 'default'} label={page.status} /></TableCell>
-                    <TableCell align="center">{page.showInMenu ? <Iconify icon="eva:checkmark-circle-2-fill" sx={{ color: 'success.main' }} /> : '—'}</TableCell>
-                    <TableCell align="right">
-                      <Tooltip title="แก้ไข"><IconButton onClick={() => router.push(paths.dashboard.pageEdit(page.id))}><Iconify icon="solar:pen-bold" /></IconButton></Tooltip>
-                      {page.pageType === 'CUSTOM' ? <Tooltip title="ลบ"><IconButton color="error" onClick={() => removePage(page)}><Iconify icon="solar:trash-bin-trash-bold" /></IconButton></Tooltip> : null}
-                    </TableCell>
-                  </TableRow>
-                ))}
-                <TableNoData notFound={pages.length === 0} />
-              </TableBody>
-            </Table></Scrollbar></TableContainer>
+            <TableContainer sx={{ overflow: 'unset' }}>
+              <Scrollbar>
+                <Table sx={{ minWidth: 900 }}>
+                  <TableHeadCustom headLabel={TABLE_HEAD} />
+                  <TableBody>
+                    {pages.map((page) => (
+                      <TableRow hover key={page.id}>
+                        <TableCell>
+                          <Stack>
+                            <Typography variant="subtitle2">{page.title}</Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {page.pageType === 'SYSTEM' ? 'หน้ามาตรฐาน' : 'หน้าเฉพาะวัด'}
+                            </Typography>
+                          </Stack>
+                        </TableCell>
+                        <TableCell>/{page.slug}</TableCell>
+                        <TableCell>
+                          <Chip
+                            size="small"
+                            color={page.status === 'PUBLIC' ? 'success' : 'default'}
+                            label={page.status}
+                          />
+                        </TableCell>
+                        <TableCell align="center">
+                          {page.showInMenu ? (
+                            <Iconify
+                              icon="eva:checkmark-circle-2-fill"
+                              sx={{ color: 'success.main' }}
+                            />
+                          ) : (
+                            '—'
+                          )}
+                        </TableCell>
+                        <TableCell align="right">
+                          <Tooltip title="แก้ไข">
+                            <IconButton
+                              onClick={() => router.push(paths.dashboard.pageEdit(page.id))}
+                            >
+                              <Iconify icon="solar:pen-bold" />
+                            </IconButton>
+                          </Tooltip>
+                          {page.pageType === 'CUSTOM' ? (
+                            <Tooltip title="ลบ">
+                              <IconButton color="error" onClick={() => removePage(page)}>
+                                <Iconify icon="solar:trash-bin-trash-bold" />
+                              </IconButton>
+                            </Tooltip>
+                          ) : null}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    <TableNoData notFound={pages.length === 0} />
+                  </TableBody>
+                </Table>
+              </Scrollbar>
+            </TableContainer>
           </Card>
         </Stack>
       </Container>

@@ -17,7 +17,7 @@ const HomeLooking = () => {
       }}
     >
       <Container
-        maxWidth="xl"
+        maxWidth={false}
         component={MotionViewport}
         sx={{
           py: { xs: 10 },
