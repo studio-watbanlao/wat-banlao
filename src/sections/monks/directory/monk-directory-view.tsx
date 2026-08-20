@@ -26,6 +26,30 @@ import Image from 'src/components/image';
 import { usePublicTemple } from 'src/hooks/use-public-temple';
 import type { TempleDirectoryEntry } from 'src/types/temple-directory';
 
+type DetailContentProps = {
+  content: string;
+};
+
+function DetailContent({ content }: DetailContentProps) {
+  return (
+    <Box
+      dangerouslySetInnerHTML={{ __html: content }}
+      sx={{
+        mt: 0.5,
+        color: 'text.secondary',
+        typography: 'body2',
+        lineHeight: 1.8,
+        overflowWrap: 'anywhere',
+        '& p': { m: 0, '& + p': { mt: 1 } },
+        '& ul, & ol': { my: 0.75, pl: 3 },
+        '& li + li': { mt: 0.5 },
+        '& a': { color: 'primary.main', textDecoration: 'underline' },
+        '& img': { maxWidth: 1, height: 'auto', borderRadius: 1 },
+      }}
+    />
+  );
+}
+
 export function MonkDirectoryView() {
   const [search, setSearch] = useState('');
   const [selectedEntry, setSelectedEntry] = useState<TempleDirectoryEntry | null>(null);
@@ -199,7 +223,15 @@ export function MonkDirectoryView() {
         fullWidth
         maxWidth="md"
         aria-labelledby="monk-detail-dialog-title"
-        slotProps={{ paper: { sx: { borderRadius: { xs: 0, sm: 3 } } } }}
+        slotProps={{
+          paper: {
+            sx: {
+              height: { xs: '100dvh', sm: 'min(820px, 90dvh)' },
+              maxHeight: '100dvh',
+              borderRadius: { xs: 0, sm: 3 },
+            },
+          },
+        }}
       >
         {selectedEntry ? (
           <>
@@ -214,21 +246,40 @@ export function MonkDirectoryView() {
               </IconButton>
             </DialogTitle>
             <Divider />
-            <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
-              <Grid container spacing={{ xs: 3, md: 4 }}>
-                <Grid size={{ xs: 12, sm: 5 }}>
-                  <Image
-                    src={selectedEntry.imageUrl}
-                    alt={`รูป${selectedEntry.fullName}`}
-                    ratio="3/4"
-                    sx={{
-                      borderRadius: 2,
-                      bgcolor: 'background.neutral',
-                      '& img': { objectPosition: 'center top' },
-                    }}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 7 }}>
+            <DialogContent sx={{ minHeight: 0, overflow: 'hidden', p: { xs: 2, sm: 3 } }}>
+              <Box
+                sx={{
+                  height: 1,
+                  minHeight: 0,
+                  display: 'grid',
+                  gap: { xs: 2.5, sm: 3 },
+                  gridTemplateColumns: { xs: '1fr', sm: '5fr 7fr' },
+                  gridTemplateRows: { xs: '220px minmax(0, 1fr)', sm: 'minmax(0, 1fr)' },
+                }}
+              >
+                <Box
+                  component="img"
+                  src={selectedEntry.imageUrl}
+                  alt={`รูป${selectedEntry.fullName}`}
+                  sx={{
+                    width: 1,
+                    height: 1,
+                    display: 'block',
+                    objectFit: 'cover',
+                    objectPosition: 'center top',
+                    borderRadius: 2,
+                    bgcolor: 'background.neutral',
+                  }}
+                />
+                <Box
+                  sx={{
+                    minWidth: 0,
+                    minHeight: 0,
+                    overflowY: 'auto',
+                    pr: { sm: 1 },
+                    scrollbarGutter: 'stable',
+                  }}
+                >
                   <Stack spacing={2.5}>
                     <Box>
                       <Typography component="h2" variant="h4">
@@ -265,19 +316,13 @@ export function MonkDirectoryView() {
                       value ? (
                         <Box key={label}>
                           <Typography variant="subtitle2">{label}</Typography>
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ mt: 0.5, whiteSpace: 'pre-line' }}
-                          >
-                            {value}
-                          </Typography>
+                          <DetailContent content={value} />
                         </Box>
                       ) : null
                     )}
                   </Stack>
-                </Grid>
-              </Grid>
+                </Box>
+              </Box>
             </DialogContent>
           </>
         ) : null}
