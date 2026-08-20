@@ -55,7 +55,16 @@ const ROUTE_DESCRIPTIONS: Record<string, string> = {
   '/parents/sacred': 'ข้อมูลสิ่งศักดิ์สิทธิ์และวัตถุมงคลภายในวัด',
 };
 
-const NO_INDEX_PREFIXES = ['/api', '/auth', '/dashboard', '/error', '/coming-soon'];
+const NO_INDEX_PREFIXES = [
+  '/api',
+  '/auth',
+  '/dashboard',
+  '/error',
+  '/coming-soon',
+  '/403',
+  '/404',
+  '/500',
+];
 
 const SEO_KEYWORDS = [
   'หลวงปู่สาธุ์',
@@ -111,12 +120,11 @@ const MataData = ({ data, url }: MataDataProps) => {
     }
   }
   const canonicalUrl = `${baseUrl}${canonicalPath === '/' ? '' : canonicalPath}`;
-  const imageUrl = absoluteUrl(
-    data?.imageUrl || temple?.branding.ogImageUrl || DEFAULT_OG_IMAGE,
-    baseUrl
-  );
-  const isDefaultOgImage = imageUrl === DEFAULT_OG_IMAGE;
-  const faviconUrl = absoluteUrl('/favicon.ico', baseUrl);
+  const rawImageUrl = data?.imageUrl || temple?.branding.ogImageUrl || DEFAULT_OG_IMAGE;
+  const imageUrl = absoluteUrl(rawImageUrl, baseUrl);
+  const isDefaultOgImage = rawImageUrl === DEFAULT_OG_IMAGE;
+  const faviconUrl = absoluteUrl(temple?.branding.faviconUrl || '/favicon.ico', baseUrl);
+  const logoUrl = absoluteUrl(temple?.branding.logoUrl || faviconUrl, baseUrl);
   const isArticle = Boolean(data?.title && pathname !== '/');
   const sameAs = [contact?.facebook, contact?.instagram, contact?.youtube]
     .map(textValue)
@@ -129,15 +137,46 @@ const MataData = ({ data, url }: MataDataProps) => {
       name: templeName,
       alternateName: textValue(contact?.nameEnglish) || undefined,
       url: baseUrl,
-      logo: imageUrl || undefined,
+      logo: logoUrl || undefined,
       image: imageUrl || undefined,
       email: textValue(contact?.email) || undefined,
       address: textValue(contact?.address) || undefined,
       keywords: SEO_KEYWORDS_CONTENT,
       sameAs: sameAs.length ? sameAs : undefined,
     }),
-    [baseUrl, contact, imageUrl, sameAs, templeName]
+    [baseUrl, contact, imageUrl, logoUrl, sameAs, templeName]
   );
+  const websiteJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': `${baseUrl}/#website`,
+    url: baseUrl,
+    name: templeName,
+    alternateName: textValue(contact?.nameEnglish) || undefined,
+    inLanguage: 'th-TH',
+    publisher: { '@id': `${baseUrl}/#organization` },
+  };
+  const breadcrumbJsonLd =
+    pathname !== '/'
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            {
+              '@type': 'ListItem',
+              position: 1,
+              name: 'หน้าแรก',
+              item: baseUrl,
+            },
+            {
+              '@type': 'ListItem',
+              position: 2,
+              name: pageName,
+              item: canonicalUrl,
+            },
+          ],
+        }
+      : null;
   const articleJsonLd = isArticle
     ? {
         '@context': 'https://schema.org',
@@ -178,6 +217,9 @@ const MataData = ({ data, url }: MataDataProps) => {
       <meta key="og-url" property="og:url" content={canonicalUrl} />
       <meta key="og-site-name" property="og:site_name" content={templeName} />
       {imageUrl ? <meta key="og-image" property="og:image" content={imageUrl} /> : null}
+      {imageUrl.startsWith('https://') ? (
+        <meta key="og-image-secure" property="og:image:secure_url" content={imageUrl} />
+      ) : null}
       {isDefaultOgImage ? (
         <meta key="og-image-width" property="og:image:width" content="1200" />
       ) : null}
@@ -189,6 +231,7 @@ const MataData = ({ data, url }: MataDataProps) => {
       <meta key="twitter-title" name="twitter:title" content={title} />
       <meta key="twitter-description" name="twitter:description" content={description} />
       {imageUrl ? <meta key="twitter-image" name="twitter:image" content={imageUrl} /> : null}
+      {imageUrl ? <meta key="twitter-image-alt" name="twitter:image:alt" content={title} /> : null}
       {process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ? (
         <meta
           key="google-site-verification"
@@ -203,6 +246,22 @@ const MataData = ({ data, url }: MataDataProps) => {
           __html: JSON.stringify(organizationJsonLd).replace(/</g, '\\u003c'),
         }}
       />
+      <script
+        key="website-jsonld"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(websiteJsonLd).replace(/</g, '\\u003c'),
+        }}
+      />
+      {breadcrumbJsonLd ? (
+        <script
+          key="breadcrumb-jsonld"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, '\\u003c'),
+          }}
+        />
+      ) : null}
       {articleJsonLd ? (
         <script
           key="article-jsonld"

@@ -12,14 +12,32 @@ const HomeLooking = () => {
 
   return (
     <Stack
+      component="section"
       sx={{
-        backgroundColor: 'rgba(145, 158, 171, 0.04)',
+        width: '100vw',
+        ml: 'calc(50% - 50vw)',
+        position: 'relative',
+        overflow: 'hidden',
+        background:
+          'linear-gradient(180deg, rgba(255, 248, 242, 0.98) 0%, rgba(255, 250, 246, 0.98) 100%)',
+        '&::after': {
+          content: '""',
+          position: 'absolute',
+          width: 420,
+          height: 420,
+          borderRadius: '50%',
+          right: -180,
+          bottom: -240,
+          background: 'rgba(108, 72, 49, 0.055)',
+        },
       }}
     >
       <Container
-        maxWidth="xl"
+        maxWidth="lg"
         component={MotionViewport}
         sx={{
+          position: 'relative',
+          zIndex: 1,
           py: { xs: 10 },
         }}
       >
@@ -34,7 +52,11 @@ const HomeLooking = () => {
               <m.div variants={varFade().inUp}>
                 <Image
                   disabledEffect
-                  sx={{ borderRadius: 3 }}
+                  sx={{
+                    borderRadius: 3,
+                    bgcolor: 'rgba(255, 255, 255, 0.72)',
+                    boxShadow: '0 24px 64px rgba(86, 55, 31, 0.14)',
+                  }}
                   alt="pha"
                   ratio="1/1"
                   src="/assets/images/img-boontom.png"

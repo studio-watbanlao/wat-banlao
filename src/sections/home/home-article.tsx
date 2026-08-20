@@ -116,7 +116,7 @@ function ActivityNewsCard({ item }: { item: ActivityItem }) {
   );
 }
 
-export default function HomeArticle({ maxWidth = 'xl' }: Props) {
+export default function HomeArticle({ maxWidth = 'lg' }: Props) {
   const { data = [], isLoading } = useGetActivity();
   const { data: temple } = usePublicTemple();
   const displayItems = data.slice(0, MAX_ITEMS);
@@ -126,9 +126,28 @@ export default function HomeArticle({ maxWidth = 'xl' }: Props) {
     <Box
       component="section"
       aria-labelledby="home-activity-news-title"
-      sx={{ bgcolor: '#f7f7f5', color: 'text.primary', py: { xs: 7, md: 11 } }}
+      sx={{
+        width: '100vw',
+        ml: 'calc(50% - 50vw)',
+        position: 'relative',
+        overflow: 'hidden',
+        background:
+          'linear-gradient(180deg, rgba(255, 247, 240, 0.98) 0%, rgba(255, 248, 242, 0.98) 100%)',
+        color: 'text.primary',
+        py: { xs: 7, md: 11 },
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          width: 320,
+          height: 320,
+          borderRadius: '50%',
+          left: -150,
+          bottom: -190,
+          background: 'rgba(194, 112, 74, 0.06)',
+        },
+      }}
     >
-      <Container maxWidth={maxWidth}>
+      <Container maxWidth={maxWidth} sx={{ position: 'relative' }}>
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
           alignItems={{ sm: 'flex-end' }}

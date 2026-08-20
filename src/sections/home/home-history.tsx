@@ -1,4 +1,4 @@
-import { Container, Grid } from '@mui/material';
+import { Box, Container, Grid } from '@mui/material';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { m } from 'framer-motion';
@@ -64,28 +64,54 @@ const HomeHistory = () => {
   );
 
   return (
-    <Container
-      maxWidth="xl"
-      component={MotionViewport}
+    <Box
+      component="section"
       sx={{
-        py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
+        width: '100vw',
+        ml: 'calc(50% - 50vw)',
+        position: 'relative',
+        overflow: 'hidden',
+        background:
+          'linear-gradient(180deg, rgba(255, 250, 246, 0.98) 0%, rgba(255, 249, 244, 0.98) 100%)',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          width: 360,
+          height: 360,
+          borderRadius: '50%',
+          top: -190,
+          right: -90,
+          background: 'rgba(201, 145, 64, 0.07)',
+        },
       }}
     >
-      <Grid container spacing={{ xs: 5, md: 8 }}>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <m.div variants={varFade().inUp}>
-            <Image
-              disabledEffect
-              alt="pha"
-              src="/assets/images/watbanlao.png"
-              sx={{ borderRadius: 2 }}
-            />
-          </m.div>
-        </Grid>
+      <Container
+        maxWidth="lg"
+        component={MotionViewport}
+        sx={{
+          position: 'relative',
+          py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
+        }}
+      >
+        <Grid container spacing={{ xs: 5, md: 8 }}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <m.div variants={varFade().inUp}>
+              <Image
+                disabledEffect
+                alt="pha"
+                src="/assets/images/watbanlao.png"
+                sx={{
+                  borderRadius: 3,
+                  boxShadow: '0 24px 56px rgba(86, 55, 31, 0.16)',
+                }}
+              />
+            </m.div>
+          </Grid>
 
-        <Grid size={{ xs: 12, md: 6 }}>{renderDescription}</Grid>
-      </Grid>
-    </Container>
+          <Grid size={{ xs: 12, md: 6 }}>{renderDescription}</Grid>
+        </Grid>
+      </Container>
+    </Box>
   );
 };
 

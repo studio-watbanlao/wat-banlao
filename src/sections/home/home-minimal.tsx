@@ -31,7 +31,7 @@ const HomeMinimal = () => {
   const theme = useTheme();
   return (
     <Container
-      maxWidth="xl"
+      maxWidth="lg"
       component={MotionViewport}
       sx={{
         py: { xs: 10 },
