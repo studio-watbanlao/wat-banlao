@@ -50,7 +50,7 @@ export default function AdminEditPageLoader<T extends { id: string }>({
 
   return (
     <Layout>
-      <Container maxWidth={false} sx={{ py: 4 }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
         <Stack spacing={2}>
           <Typography variant="h4">แก้ไข{title}</Typography>
           {error ? (

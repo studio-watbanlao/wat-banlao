@@ -46,7 +46,7 @@ const ProductView = () => {
 
   return (
     <Stack>
-      <Container maxWidth={false} sx={{ p: 0 }}>
+      <Container maxWidth="xl" sx={{ p: 0 }}>
         <Grid container spacing={2}>
           {mdUp && (
             <Grid size={{ xs: 12, md: 3 }}>

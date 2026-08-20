@@ -7,7 +7,7 @@ const ActivityDetailsView = () => {
   const { data: product } = useGetProduct(`eefe8fyeuhfjkek`);
 
   return (
-    <Container maxWidth={false}>
+    <Container maxWidth="xl">
       {product && (
         <Stack>
           <Grid container spacing={4}>

@@ -24,6 +24,7 @@ import { NavMobile } from './nav/mobile';
 import { StudentBottomNav } from './nav/mobile/student-bottom-nav';
 import type { NavMainProps } from './nav/types';
 import { MainSchoolBrand } from './school-brand';
+import { responsiveMainLayoutWidthSx } from './responsive-width';
 
 import MataData from 'src/components/mata-data/mata-data';
 import {
@@ -97,7 +98,13 @@ function PublicSiteLoading({ failed = false }: { failed?: boolean }) {
       >
         <Container
           maxWidth={false}
-          sx={{ height: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+          sx={{
+            ...responsiveMainLayoutWidthSx,
+            height: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Skeleton variant="circular" width={44} height={44} />
@@ -117,7 +124,7 @@ function PublicSiteLoading({ failed = false }: { failed?: boolean }) {
             ไม่สามารถโหลดข้อมูลเว็บไซต์ได้ กรุณาลองรีเฟรชอีกครั้ง
           </Typography>
         ) : (
-          <Container maxWidth={false}>
+          <Container maxWidth={false} sx={responsiveMainLayoutWidthSx}>
             <Skeleton
               variant="rounded"
               animation="wave"
@@ -132,7 +139,7 @@ function PublicSiteLoading({ failed = false }: { failed?: boolean }) {
 
 function PublicRouteUnavailable() {
   return (
-    <Container maxWidth="md" sx={{ py: { xs: 10, md: 16 } }}>
+    <Container maxWidth={false} sx={{ ...responsiveMainLayoutWidthSx, py: { xs: 10, md: 16 } }}>
       <Stack spacing={1.5} alignItems="center" textAlign="center">
         <RiBuildingLine size={48} />
         <Typography variant="h4">ไม่พบข้อมูลหรือบริการที่ร้องขอ</Typography>
@@ -252,6 +259,7 @@ export function MainLayout({
           <Container
             maxWidth={false}
             sx={{
+              ...responsiveMainLayoutWidthSx,
               height: 78,
               display: 'flex',
               alignItems: 'center',
@@ -335,6 +343,7 @@ export function MainLayout({
           <Container
             maxWidth={false}
             sx={{
+              ...responsiveMainLayoutWidthSx,
               height: 46,
               display: 'flex',
               alignItems: 'center',
@@ -400,6 +409,10 @@ export function MainLayout({
     <MainSection
       {...slotProps?.main}
       sx={[
+        {
+          ...responsiveMainLayoutWidthSx,
+          boxSizing: 'border-box',
+        },
         ...(Array.isArray(slotProps?.main?.sx) ? slotProps.main.sx : [slotProps?.main?.sx]),
         mobileBottom && {
           '--student-bottom-nav-height': '66px',

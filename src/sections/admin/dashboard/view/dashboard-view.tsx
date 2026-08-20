@@ -207,7 +207,7 @@ export default function DashboardView() {
   );
 
   return (
-    <Container maxWidth={false} sx={{ py: { xs: 3, md: 4 } }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 3, md: 4 } }}>
       <Stack spacing={3}>
         <Stack
           direction={{ xs: 'column', sm: 'row' }}

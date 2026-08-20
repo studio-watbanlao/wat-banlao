@@ -65,14 +65,14 @@ const HomeHistory = () => {
 
   return (
     <Container
-      maxWidth={false}
+      maxWidth="xl"
       component={MotionViewport}
       sx={{
         py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
       }}
     >
       <Grid container spacing={{ xs: 5, md: 8 }}>
-        <Grid size={{ xs: 12, md: 6 }} sx={{ pl: 4 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <m.div variants={varFade().inUp}>
             <Image
               disabledEffect

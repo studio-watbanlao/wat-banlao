@@ -73,7 +73,7 @@ const HomeLookingFor = () => {
 
   return (
     <Container
-      maxWidth={false}
+      maxWidth="xl"
       component={MotionViewport}
       sx={{
         py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },

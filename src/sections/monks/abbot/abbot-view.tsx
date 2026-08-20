@@ -97,7 +97,7 @@ export function AbbotView() {
   );
 
   return (
-    <Container maxWidth={false} sx={{ py: { xs: 6, md: 10 } }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 6, md: 10 } }}>
       <Stack spacing={{ xs: 6, md: 8 }}>
         {isLoading ? (
           <Stack alignItems="center" sx={{ py: 10 }}>

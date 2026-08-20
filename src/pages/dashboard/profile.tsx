@@ -45,7 +45,7 @@ export default function DashboardProfilePage() {
 
   return (
     <Layout>
-      <Container maxWidth={false} sx={{ py: 4 }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
         <Stack spacing={3}>
           <div>
             <Typography variant="h4">โปรไฟล์ของฉัน</Typography>

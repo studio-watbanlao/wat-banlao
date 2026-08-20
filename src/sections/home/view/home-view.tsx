@@ -25,7 +25,7 @@ const ClassicHomeView = () => {
   return (
     <>
       <Container
-        maxWidth={false}
+        maxWidth="xl"
         sx={{
           mt: 4,
         }}
@@ -34,7 +34,7 @@ const ClassicHomeView = () => {
       </Container>
 
       <Container
-        maxWidth={false}
+        maxWidth="xl"
         sx={{
           py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
         }}

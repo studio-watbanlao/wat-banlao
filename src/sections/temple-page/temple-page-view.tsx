@@ -90,7 +90,7 @@ export function ManagedPageOverride({
   if (isLoading) {
     return (
       <MainLayout>
-        <Container maxWidth={false} sx={{ py: { xs: 7, md: 10 } }}>
+        <Container maxWidth="xl" sx={{ py: { xs: 7, md: 10 } }}>
           <Stack spacing={2.5} alignItems="center">
             <Skeleton variant="text" width="28%" height={28} />
             <Skeleton variant="text" width="52%" height={56} />

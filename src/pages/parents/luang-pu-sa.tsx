@@ -14,7 +14,7 @@ const LuangPuSaPage = () => {
     <ManagedPageOverride pageKey="luang-pu-sa">
       <MainLayout>
         <Container
-          maxWidth={false}
+          maxWidth="xl"
           sx={{
             py: { xs: CONFIG.layout.HEIGHT_LAYOUT_XS, md: CONFIG.layout.HEIGHT_LAYOUT },
           }}

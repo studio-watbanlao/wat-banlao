@@ -772,7 +772,7 @@ export default function TempleFormPage({ temple }: Props) {
 
   return (
     <Layout>
-      <Container maxWidth={false} sx={{ py: 4 }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
         <Stack spacing={3}>
           <Stack direction="row" alignItems="center" spacing={2}>
             <IconButton

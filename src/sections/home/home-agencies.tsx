@@ -24,11 +24,7 @@ const DATA: Agency[] = [
 
 export default function HomeAgencies() {
   return (
-    <Container
-      maxWidth={false}
-      component={MotionViewport}
-      sx={{ textAlign: 'center', py: { xs: 8 } }}
-    >
+    <Container maxWidth="xl" component={MotionViewport} sx={{ textAlign: 'center', py: { xs: 8 } }}>
       <m.div variants={varFade().inDown}>
         <Typography variant="overline" sx={{ color: 'text.disabled' }}>
           หน่วยงานที่เกี่ยวข้อง

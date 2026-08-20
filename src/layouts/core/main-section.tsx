@@ -1,8 +1,7 @@
 'use client';
 
-import { mergeClasses } from 'minimal-shared/utils';
-
 import { styled } from '@mui/material/styles';
+import { mergeClasses } from 'minimal-shared/utils';
 
 import { layoutClasses } from './classes';
 

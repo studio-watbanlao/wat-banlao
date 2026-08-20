@@ -161,7 +161,7 @@ export default function UsersManagementPage() {
 
   return (
     <Layout>
-      <Container maxWidth={false} sx={{ py: 4 }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
         <Stack spacing={3}>
           <Typography variant="h4">จัดการผู้ใช้งาน</Typography>
 

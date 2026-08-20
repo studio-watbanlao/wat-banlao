@@ -173,7 +173,7 @@ export default function ContactManagementPage() {
 
   return (
     <Layout>
-      <Container maxWidth={false} sx={{ py: 4 }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
         <Stack spacing={3}>
           <Stack
             direction={{ xs: 'column', sm: 'row' }}

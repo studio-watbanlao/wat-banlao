@@ -10,6 +10,7 @@ import Typography from '@mui/material/Typography';
 import { varAlpha } from 'minimal-shared/utils';
 
 import { MainSchoolLogo, useMainSchoolBrand } from './school-brand';
+import { responsiveMainLayoutWidthSx } from './responsive-width';
 
 import { RiArticleLine, RiCalendarLine, RiHome5Line, RiMailLine } from 'src/components/remix-icon';
 import { CONFIG } from 'src/config-global';
@@ -42,7 +43,10 @@ export function Footer({
 }: FooterProps & { layoutQuery?: Breakpoint }) {
   return (
     <FooterRoot sx={sx} {...other}>
-      <Container maxWidth={false} sx={{ position: 'relative', py: { xs: 4, md: 5 } }}>
+      <Container
+        maxWidth={false}
+        sx={{ ...responsiveMainLayoutWidthSx, position: 'relative', py: { xs: 4, md: 5 } }}
+      >
         <Box
           sx={(theme) => ({
             gap: 3,
@@ -73,7 +77,10 @@ export function Footer({
 export function HomeFooter({ sx, ...other }: FooterProps) {
   return (
     <FooterRoot sx={sx} {...other}>
-      <Container maxWidth={false} sx={{ position: 'relative', py: { xs: 3.5, md: 4.5 } }}>
+      <Container
+        maxWidth={false}
+        sx={{ ...responsiveMainLayoutWidthSx, position: 'relative', py: { xs: 3.5, md: 4.5 } }}
+      >
         <Box
           sx={{
             gap: 3,
